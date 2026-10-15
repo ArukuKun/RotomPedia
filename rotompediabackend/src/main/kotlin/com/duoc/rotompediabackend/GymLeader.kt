@@ -14,5 +14,9 @@ data class GymLeader(
     val region: String,
     val typeSpecialty: String,
     val badgeName: String,
-    val imageUrl: String
+    val imageUrl: String,
+    val city: String = "",
+    val signaturePokemon: String = "",
+    val badgeImageUrl: String = "",
+    val description: String = ""
 )
