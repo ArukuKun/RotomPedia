@@ -141,6 +141,7 @@ fun AppNavigationController() {
 
     // AuthViewModel con Factory
     val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
+    val pokemonViewModel: PokemonViewModel = viewModel(factory = pokemonViewModelFactory)
     // --- FIN DE CAMBIOS ---
 
     val activity = LocalContext.current as FragmentActivity
@@ -149,8 +150,9 @@ fun AppNavigationController() {
     val userSession by authViewModel.userSession.collectAsState()
 
     LaunchedEffect(userSession) {
-        when (userSession) {
+        when (val session = userSession) {
             is UserSession.Active -> {
+                pokemonViewModel.setCurrentUser(session.username)
                 showBiometricPrompt(
                     activity = activity,
                     executor = executor,
@@ -165,6 +167,7 @@ fun AppNavigationController() {
                 )
             }
             is UserSession.Inactive -> {
+                pokemonViewModel.setCurrentUser("")
                 navController.navigate("login") {
                     popUpTo(0)
                 }

@@ -15,10 +15,12 @@ import com.duoc.rotompedia.util.traducirTipo
 import com.duoc.rotompedia.data.local.FavoritoDao
 import com.duoc.rotompedia.data.local.PokemonFavorito
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -110,8 +112,25 @@ class PokemonViewModel(
     private val _selectedRegionFilter = MutableStateFlow("Todos")
     val selectedRegionFilter: StateFlow<String> = _selectedRegionFilter
 
-    // ✅ ACTUALIZADO: Nueva implementación de favoritos
-    val favoritePokemonIds: StateFlow<Set<Int>> = favoritoDao.obtenerTodosLosIds()
+    // Usuario activo actual para favoritos aislados
+    private val _currentUsername = MutableStateFlow("")
+    val currentUsername: StateFlow<String> = _currentUsername
+
+    fun setCurrentUser(username: String) {
+        _currentUsername.value = username
+        Log.d(TAG, "Usuario activo en PokemonViewModel: '$username'")
+    }
+
+    // ✅ ACTUALIZADO: Favoritos aislados reactivamente por usuario activo
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val favoritePokemonIds: StateFlow<Set<Int>> = _currentUsername
+        .flatMapLatest { username ->
+            if (username.isBlank()) {
+                favoritoDao.obtenerTodosLosIds()
+            } else {
+                favoritoDao.obtenerTodosLosIdsPorUsuario(username)
+            }
+        }
         .map { it.toSet() }
         .stateIn(
             scope = viewModelScope,
@@ -289,21 +308,23 @@ class PokemonViewModel(
         }
     }
 
-    // ✅ ACTUALIZADO: Nuevas funciones de favoritos
+    // ✅ ACTUALIZADO: Favoritos aislados por usuario
     fun toggleFavorite(pokemonId: Int, pokemonName: String, isCurrentlyFavorite: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
+            val user = _currentUsername.value.ifBlank { "default_user" }
             if (isCurrentlyFavorite) {
-                // Eliminar de favoritos
-                favoritoDao.eliminarFavorito(pokemonId)
-                Log.d(TAG, "Pokémon $pokemonName ($pokemonId) eliminado de favoritos.")
+                // Eliminar de favoritos del usuario activo
+                favoritoDao.eliminarFavorito(user, pokemonId)
+                Log.d(TAG, "Pokémon $pokemonName ($pokemonId) eliminado de favoritos para '$user'.")
             } else {
-                // Agregar a favoritos
+                // Agregar a favoritos del usuario activo
                 val favorito = PokemonFavorito(
+                    usuario = user,
                     pokemonId = pokemonId,
                     nombre = pokemonName.replaceFirstChar { it.uppercase() }
                 )
                 favoritoDao.agregarFavorito(favorito)
-                Log.d(TAG, "Pokémon $pokemonName ($pokemonId) agregado a favoritos.")
+                Log.d(TAG, "Pokémon $pokemonName ($pokemonId) agregado a favoritos para '$user'.")
             }
         }
     }
