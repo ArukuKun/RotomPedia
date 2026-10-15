@@ -60,7 +60,11 @@ sealed class TypeRelationsState {
     object Loading : TypeRelationsState()
     data class Success(
         val weakAgainst: List<String>,
-        val strongAgainst: List<String>
+        val strongAgainst: List<String>,
+        val superWeakAgainst: List<String> = emptyList(),
+        val resistantAgainst: List<String> = emptyList(),
+        val superResistantAgainst: List<String> = emptyList(),
+        val immuneAgainst: List<String> = emptyList()
     ) : TypeRelationsState()
     data class Error(val message: String) : TypeRelationsState()
 }
@@ -69,7 +73,8 @@ data class EvolutionStage(
     val id: String,
     val name: String,
     val evolutionRequirement: String,
-    val isBaseForm: Boolean = false
+    val isBaseForm: Boolean = false,
+    val evolvesFromId: String? = null
 )
 
 class PokemonViewModel(
@@ -122,14 +127,19 @@ class PokemonViewModel(
         loadPokemonList()
     }
 
-    // ✅ ACTUALIZADO: Lista filtrada con la nueva implementación de favoritos
+    // Cache de IDs por tipo y Flow de IDs activos para filtrado
+    private val _typePokemonIdsCache = mutableMapOf<String, Set<Int>>()
+    private val _typeFilterPokemonIds = MutableStateFlow<Set<Int>?>(null)
+
+    // ✅ ACTUALIZADO: Lista filtrada con filtro de tipo completo y favoritos
     val filteredPokemonList: StateFlow<List<PokemonListItem>> = combine(
         _pokedexState,
         _searchQuery,
         _selectedTypeFilter,
         _selectedRegionFilter,
         _isFavoritesOnly,
-        favoritePokemonIds
+        favoritePokemonIds,
+        _typeFilterPokemonIds
     ) { flows ->
         val pokedexStateValue = flows[0] as PokedexState
         val searchQueryValue = flows[1] as String
@@ -137,6 +147,8 @@ class PokemonViewModel(
         val selectedRegionValue = flows[3] as String
         val favoritesOnly = flows[4] as Boolean
         val favIds = flows[5] as Set<Int>
+        @Suppress("UNCHECKED_CAST")
+        val typeIds = flows[6] as? Set<Int>
 
         // Si el estado no es Success, devolver lista vacía
         val baseList = (pokedexStateValue as? PokedexState.Success)?.pokemonList ?: return@combine emptyList()
@@ -153,12 +165,11 @@ class PokemonViewModel(
                         id.toString().contains(searchQueryValue)
             }
 
-            // Filtro por tipo
-            val matchesType = if (selectedTypeValue == "all") {
+            // Filtro por tipo (consulta directa a todos los Pokémon de ese tipo)
+            val matchesType = if (selectedTypeValue == "all" || typeIds == null) {
                 true
             } else {
-                val cachedTypes = _pokemonTypesCache[id]
-                cachedTypes?.any { type -> type.lowercase() == selectedTypeValue } ?: false
+                typeIds.contains(id)
             }
 
             // Filtro por región
@@ -318,7 +329,31 @@ class PokemonViewModel(
     }
 
     fun updateTypeFilter(type: String) {
-        _selectedTypeFilter.value = type.lowercase()
+        val lowerType = type.lowercase()
+        _selectedTypeFilter.value = lowerType
+        if (lowerType == "all") {
+            _typeFilterPokemonIds.value = null
+        } else {
+            val cached = _typePokemonIdsCache[lowerType]
+            if (cached != null) {
+                _typeFilterPokemonIds.value = cached
+            } else {
+                viewModelScope.launch {
+                    try {
+                        val response = withContext(Dispatchers.IO) {
+                            PokemonApi.service.getTypeDetails(lowerType)
+                        }
+                        val ids = response.pokemon.mapNotNull { extractIdFromUrl(it.pokemon.url) }.toSet()
+                        _typePokemonIdsCache[lowerType] = ids
+                        if (_selectedTypeFilter.value == lowerType) {
+                            _typeFilterPokemonIds.value = ids
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error al cargar Pokémon del tipo $lowerType: ${e.message}", e)
+                    }
+                }
+            }
+        }
     }
 
     fun updateRegionFilter(regionName: String) {
@@ -330,6 +365,7 @@ class PokemonViewModel(
         _selectedTypeFilter.value = "all"
         _selectedRegionFilter.value = "Todos"
         _isFavoritesOnly.value = false
+        _typeFilterPokemonIds.value = null
         Log.d(TAG, "Todos los filtros han sido limpiados")
     }
 
@@ -393,7 +429,11 @@ class PokemonViewModel(
         }
     }
 
-    private fun parseEvolutionChainWithStages(chainLink: ChainLink, isBaseForm: Boolean = true): List<EvolutionStage> {
+    private fun parseEvolutionChainWithStages(
+        chainLink: ChainLink,
+        isBaseForm: Boolean = true,
+        evolvesFromId: String? = null
+    ): List<EvolutionStage> {
         val evolutionStages = mutableListOf<EvolutionStage>()
 
         val currentId = chainLink.species.url.split("/").dropLast(1).last()
@@ -410,12 +450,19 @@ class PokemonViewModel(
                 id = currentId,
                 name = currentName,
                 evolutionRequirement = evolutionRequirement,
-                isBaseForm = isBaseForm
+                isBaseForm = isBaseForm,
+                evolvesFromId = evolvesFromId
             )
         )
 
         for (nextEvolution in chainLink.evolvesTo) {
-            evolutionStages.addAll(parseEvolutionChainWithStages(nextEvolution, isBaseForm = false))
+            evolutionStages.addAll(
+                parseEvolutionChainWithStages(
+                    chainLink = nextEvolution,
+                    isBaseForm = false,
+                    evolvesFromId = currentId
+                )
+            )
         }
 
         return evolutionStages
@@ -535,22 +582,56 @@ class PokemonViewModel(
                 val type1Relations = type1Details.await().damageRelations
                 val type2Relations = type2Details?.await()?.damageRelations
 
-                val weakAgainst = mutableSetOf<String>()
+                val allTypes = listOf(
+                    "normal", "fire", "water", "grass", "electric", "ice", "fighting",
+                    "poison", "ground", "flying", "psychic", "bug", "rock", "ghost",
+                    "dragon", "dark", "steel", "fairy"
+                )
+
+                fun getMultiplier(typeRel: com.duoc.rotompedia.data.model.DamageRelations, attackingType: String): Float {
+                    return when {
+                        typeRel.noDamageFrom.any { it.name.equals(attackingType, ignoreCase = true) } -> 0.0f
+                        typeRel.doubleDamageFrom.any { it.name.equals(attackingType, ignoreCase = true) } -> 2.0f
+                        typeRel.halfDamageFrom.any { it.name.equals(attackingType, ignoreCase = true) } -> 0.5f
+                        else -> 1.0f
+                    }
+                }
+
+                val superWeak = mutableListOf<String>()
+                val weak = mutableListOf<String>()
+                val resistant = mutableListOf<String>()
+                val superResistant = mutableListOf<String>()
+                val immune = mutableListOf<String>()
+
+                for (atk in allTypes) {
+                    val m1 = getMultiplier(type1Relations, atk)
+                    val m2 = if (type2Relations != null) getMultiplier(type2Relations, atk) else 1.0f
+                    val total = m1 * m2
+
+                    when {
+                        total >= 4.0f -> superWeak.add(atk)
+                        total in 1.9f..3.9f -> weak.add(atk)
+                        total == 0.0f -> immune.add(atk)
+                        total in 0.01f..0.3f -> superResistant.add(atk)
+                        total in 0.31f..0.6f -> resistant.add(atk)
+                    }
+                }
+
                 val strongAgainst = mutableSetOf<String>()
-
-                weakAgainst.addAll(type1Relations.doubleDamageFrom.map { it.name })
                 strongAgainst.addAll(type1Relations.doubleDamageTo.map { it.name })
-
                 if (type2Relations != null) {
-                    weakAgainst.addAll(type2Relations.doubleDamageFrom.map { it.name })
                     strongAgainst.addAll(type2Relations.doubleDamageTo.map { it.name })
                 }
 
                 _typeRelationsState.value = TypeRelationsState.Success(
-                    weakAgainst.toList(),
-                    strongAgainst.toList()
+                    weakAgainst = weak,
+                    strongAgainst = strongAgainst.toList(),
+                    superWeakAgainst = superWeak,
+                    resistantAgainst = resistant,
+                    superResistantAgainst = superResistant,
+                    immuneAgainst = immune
                 )
-                Log.d(TAG, "Relaciones de tipo cargadas.")
+                Log.d(TAG, "Relaciones de tipo calculadas matemáticamente con daño dual.")
 
             } catch (e: Exception) {
                 val errorMessage = "Error al cargar relaciones de tipo: ${e.message}"
