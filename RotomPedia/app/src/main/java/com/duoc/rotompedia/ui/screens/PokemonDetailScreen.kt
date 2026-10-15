@@ -56,7 +56,8 @@ private fun getStatColor(value: Int): Color {
 fun PokemonDetailScreen(
     pokemonId: String,
     onNavigateBack: () -> Unit,
-    viewModelFactory: PokemonViewModelFactory
+    viewModelFactory: PokemonViewModelFactory,
+    onPokemonClick: (String) -> Unit = {}
 ) {
     val pokemonViewModel: PokemonViewModel = viewModel(factory = viewModelFactory)
 
@@ -140,7 +141,8 @@ fun PokemonDetailScreen(
                     PokemonDetailContent(
                         pokemon = currentState.pokemonData,
                         evolutionState = evolutionState,
-                        typeRelationsState = typeRelationsState
+                        typeRelationsState = typeRelationsState,
+                        onPokemonClick = onPokemonClick
                     )
                 }
                 is PokemonDetailState.Error -> {
@@ -159,7 +161,8 @@ fun PokemonDetailScreen(
 fun PokemonDetailContent(
     pokemon: PokemonData,
     evolutionState: EvolutionState,
-    typeRelationsState: TypeRelationsState
+    typeRelationsState: TypeRelationsState,
+    onPokemonClick: (String) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -257,7 +260,11 @@ fun PokemonDetailContent(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
             is EvolutionState.Success -> {
-                EvolutionChainColumn(chain = evolutionState.evolutionChain)
+                EvolutionChainColumn(
+                    chain = evolutionState.evolutionChain,
+                    currentPokemonId = pokemon.id.toString(),
+                    onPokemonClick = onPokemonClick
+                )
             }
             is EvolutionState.Error -> {
                 Text(
@@ -351,7 +358,11 @@ fun StatRow(statInfo: StatInfo) {
 }
 
 @Composable
-fun EvolutionChainColumn(chain: List<EvolutionStage>) {
+fun EvolutionChainColumn(
+    chain: List<EvolutionStage>,
+    currentPokemonId: String = "",
+    onPokemonClick: (String) -> Unit = {}
+) {
     if (chain.size <= 1) {
         Text(
             text = "Este Pokémon no evoluciona.",
@@ -369,16 +380,25 @@ fun EvolutionChainColumn(chain: List<EvolutionStage>) {
     ) {
         chain.forEachIndexed { index, evolutionStage ->
             val pokemonId = evolutionStage.id
+            val isCurrent = pokemonId == currentPokemonId
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        if (isCurrent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                    )
+                    .clickable { onPokemonClick(pokemonId) }
+                    .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
                 if (index > 0) {
                     Icon(
                         imageVector = Icons.Default.ArrowForward,
-                        contentDescription = "Evoluciona desde",
+                        contentDescription = "Evoluciona",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                             .size(24.dp)
@@ -408,12 +428,23 @@ fun EvolutionChainColumn(chain: List<EvolutionStage>) {
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(
-                        text = evolutionStage.name,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "#$pokemonId ${evolutionStage.name}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        if (isCurrent) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "● Actual",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
 
                     if (!evolutionStage.isBaseForm) {
                         Text(
@@ -443,28 +474,106 @@ fun TypeRelationsView(state: TypeRelationsState) {
             CircularProgressIndicator(modifier = Modifier.size(24.dp))
         }
         is TypeRelationsState.Success -> {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Débil contra:",
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    state.weakAgainst.forEach { typeName ->
-                        TypeChip(originalType = typeName, translatedType = traducirTipo(typeName))
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (state.superWeakAgainst.isNotEmpty()) {
+                    Text(
+                        text = "Superdébil contra (4x):",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFD32F2F),
+                        fontSize = 14.sp
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        state.superWeakAgainst.forEach { typeName ->
+                            TypeChip(originalType = typeName, translatedType = traducirTipo(typeName))
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                if (state.weakAgainst.isNotEmpty()) {
+                    Text(
+                        text = "Débil contra (2x):",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 14.sp
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        state.weakAgainst.forEach { typeName ->
+                            TypeChip(originalType = typeName, translatedType = traducirTipo(typeName))
+                        }
+                    }
+                }
 
-                Text(
-                    text = "Fuerte contra:",
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    state.strongAgainst.forEach { typeName ->
-                        TypeChip(originalType = typeName, translatedType = traducirTipo(typeName))
+                if (state.immuneAgainst.isNotEmpty()) {
+                    Text(
+                        text = "Inmune a (0x):",
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF757575),
+                        fontSize = 14.sp
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        state.immuneAgainst.forEach { typeName ->
+                            TypeChip(originalType = typeName, translatedType = traducirTipo(typeName))
+                        }
+                    }
+                }
+
+                if (state.resistantAgainst.isNotEmpty()) {
+                    Text(
+                        text = "Resistente a (½x):",
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF2E7D32),
+                        fontSize = 14.sp
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        state.resistantAgainst.forEach { typeName ->
+                            TypeChip(originalType = typeName, translatedType = traducirTipo(typeName))
+                        }
+                    }
+                }
+
+                if (state.superResistantAgainst.isNotEmpty()) {
+                    Text(
+                        text = "Superresistente a (¼x):",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1B5E20),
+                        fontSize = 14.sp
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        state.superResistantAgainst.forEach { typeName ->
+                            TypeChip(originalType = typeName, translatedType = traducirTipo(typeName))
+                        }
+                    }
+                }
+
+                if (state.strongAgainst.isNotEmpty()) {
+                    Text(
+                        text = "Efectivo con STAB contra (2x):",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 14.sp
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        state.strongAgainst.forEach { typeName ->
+                            TypeChip(originalType = typeName, translatedType = traducirTipo(typeName))
+                        }
                     }
                 }
             }

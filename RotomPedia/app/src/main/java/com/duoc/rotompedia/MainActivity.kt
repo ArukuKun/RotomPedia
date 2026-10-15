@@ -151,11 +151,18 @@ fun AppNavigationController() {
     LaunchedEffect(userSession) {
         when (userSession) {
             is UserSession.Active -> {
-                showBiometricPrompt(activity, executor) {
-                    navController.navigate("menu_principal_screen") {
-                        popUpTo("login") { inclusive = true }
+                showBiometricPrompt(
+                    activity = activity,
+                    executor = executor,
+                    onSuccess = {
+                        navController.navigate("menu_principal_screen") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                    onErrorOrCancel = {
+                        authViewModel.cerrarSesion()
                     }
-                }
+                )
             }
             is UserSession.Inactive -> {
                 navController.navigate("login") {
@@ -210,7 +217,10 @@ fun AppNavigationController() {
                 PokemonDetailScreen(
                     pokemonId = pokemonId,
                     onNavigateBack = { navController.popBackStack() },
-                    viewModelFactory = pokemonViewModelFactory
+                    viewModelFactory = pokemonViewModelFactory,
+                    onPokemonClick = { newPokemonId ->
+                        navController.navigate("pokemon_detail/$newPokemonId")
+                    }
                 )
             }
         }
@@ -233,7 +243,10 @@ fun AppNavigationController() {
         ) { backStackEntry ->
             val region = backStackEntry.arguments?.getString("region")
             if (region != null) {
-                MapViewerScreen(region)
+                MapViewerScreen(
+                    region = region,
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
     }
@@ -242,7 +255,8 @@ fun AppNavigationController() {
 private fun showBiometricPrompt(
     activity: FragmentActivity,
     executor: Executor,
-    onSuccess: () -> Unit
+    onSuccess: () -> Unit,
+    onErrorOrCancel: () -> Unit = {}
 ) {
     val biometricManager = BiometricManager.from(activity)
     if (biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
@@ -254,7 +268,7 @@ private fun showBiometricPrompt(
 
     val promptInfo = BiometricPrompt.PromptInfo.Builder()
         .setTitle("Autenticación Requerida")
-        .setSubtitle("Usa tu huella para iniciar sesión")
+        .setSubtitle("Usa tu huella para acceder a RotomPedia")
         .setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
         .build()
 
@@ -265,6 +279,11 @@ private fun showBiometricPrompt(
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                 super.onAuthenticationSucceeded(result)
                 onSuccess()
+            }
+
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                super.onAuthenticationError(errorCode, errString)
+                onErrorOrCancel()
             }
         }
     )

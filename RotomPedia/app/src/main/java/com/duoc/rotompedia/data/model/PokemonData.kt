@@ -122,15 +122,25 @@ data class Language(
 // La respuesta completa de la API para un tipo
 @JsonClass(generateAdapter = true)
 data class TypeDetailResponse(
-    @Json(name = "damage_relations") val damageRelations: DamageRelations
+    @Json(name = "damage_relations") val damageRelations: DamageRelations,
+    @Json(name = "pokemon") val pokemon: List<TypePokemonSlot> = emptyList()
+)
+
+@JsonClass(generateAdapter = true)
+data class TypePokemonSlot(
+    val slot: Int,
+    val pokemon: NamedApiResource
 )
 
 // Contiene las listas de debilidades, fortalezas, etc.
 @JsonClass(generateAdapter = true)
 data class DamageRelations(
-    @Json(name = "double_damage_from") val doubleDamageFrom: List<TypeRelation>,
-    @Json(name = "double_damage_to") val doubleDamageTo: List<TypeRelation>
-    // Podríamos añadir half_damage_from, no_damage_from, etc. en el futuro
+    @Json(name = "double_damage_from") val doubleDamageFrom: List<TypeRelation> = emptyList(),
+    @Json(name = "double_damage_to") val doubleDamageTo: List<TypeRelation> = emptyList(),
+    @Json(name = "half_damage_from") val halfDamageFrom: List<TypeRelation> = emptyList(),
+    @Json(name = "half_damage_to") val halfDamageTo: List<TypeRelation> = emptyList(),
+    @Json(name = "no_damage_from") val noDamageFrom: List<TypeRelation> = emptyList(),
+    @Json(name = "no_damage_to") val noDamageTo: List<TypeRelation> = emptyList()
 )
 
 // Representa un tipo individual en las listas de relaciones
