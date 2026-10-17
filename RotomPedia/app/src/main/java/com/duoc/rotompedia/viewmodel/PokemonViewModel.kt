@@ -14,6 +14,8 @@ import com.duoc.rotompedia.data.remote.PokemonApi
 import com.duoc.rotompedia.util.traducirTipo
 import com.duoc.rotompedia.data.local.FavoritoDao
 import com.duoc.rotompedia.data.local.PokemonFavorito
+import com.duoc.rotompedia.data.local.CachedPokemon
+import com.duoc.rotompedia.data.local.CachedPokemonDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -80,7 +82,8 @@ data class EvolutionStage(
 )
 
 class PokemonViewModel(
-    private val favoritoDao: FavoritoDao
+    private val favoritoDao: FavoritoDao,
+    private val cachedPokemonDao: CachedPokemonDao? = null
 ) : ViewModel() {
     private val TAG = "RotomPedia_ViewModel"
 
@@ -254,9 +257,33 @@ class PokemonViewModel(
                 }
 
             } catch (e: Exception) {
-                val errorMessage = "Error al cargar la lista de Pokémon: ${e.message}"
-                _pokedexState.value = PokedexState.Error(errorMessage)
-                Log.e(TAG, errorMessage, e)
+                // Modo Offline: intentar cargar desde Room
+                val cached = try {
+                    withContext(Dispatchers.IO) {
+                        cachedPokemonDao?.getAllCachedPokemonDirect().orEmpty()
+                    }
+                } catch (ce: Exception) {
+                    emptyList()
+                }
+
+                if (cached.isNotEmpty()) {
+                    fullPokemonList = cached.map {
+                        PokemonListItem(
+                            name = it.name,
+                            url = "https://pokeapi.co/api/v2/pokemon/${it.id}/",
+                            types = it.types.split(",").filter { t -> t.isNotBlank() }
+                        )
+                    }
+                    cached.forEach { item ->
+                        _pokemonTypesCache[item.id] = item.types.split(",").filter { t -> t.isNotBlank() }
+                    }
+                    _pokedexState.value = PokedexState.Success(fullPokemonList)
+                    Log.d(TAG, "Modo Offline: cargados ${cached.size} Pokémon desde caché Room")
+                } else {
+                    val errorMessage = "Error al cargar la lista de Pokémon: ${e.message}"
+                    _pokedexState.value = PokedexState.Error(errorMessage)
+                    Log.e(TAG, errorMessage, e)
+                }
             }
         }
     }
@@ -281,10 +308,39 @@ class PokemonViewModel(
             val pokemonData = withContext(Dispatchers.IO) {
                 PokemonApi.service.getPokemon(pokemonId)
             }
+            // Guardar en Room para consulta offline
+            try {
+                cachedPokemonDao?.let { dao ->
+                    val typesStr = pokemonData.types.joinToString(",") { it.type.name }
+                    val hp = pokemonData.stats.find { it.stat.name == "hp" }?.baseStat ?: 0
+                    val atk = pokemonData.stats.find { it.stat.name == "attack" }?.baseStat ?: 0
+                    val def = pokemonData.stats.find { it.stat.name == "defense" }?.baseStat ?: 0
+                    val spa = pokemonData.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0
+                    val spd = pokemonData.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0
+                    val spe = pokemonData.stats.find { it.stat.name == "speed" }?.baseStat ?: 0
+                    dao.insertOrUpdate(
+                        CachedPokemon(
+                            id = pokemonData.id,
+                            name = pokemonData.name.replaceFirstChar { it.uppercase() },
+                            imageUrl = pokemonData.sprites.urlImagen ?: "",
+                            types = typesStr,
+                            hp = hp, attack = atk, defense = def,
+                            specialAttack = spa, specialDefense = spd, speed = spe,
+                            cryUrl = pokemonData.cries?.latest ?: pokemonData.cries?.legacy
+                        )
+                    )
+                }
+            } catch (_: Exception) {}
             pokemonData.types.map { it.type.name }
         } catch (e: Exception) {
-            Log.e(TAG, "Error al cargar tipos para Pokémon $pokemonId: ${e.message}")
-            emptyList()
+            // Intentar leer de caché offline
+            val cached = cachedPokemonDao?.getPokemonById(pokemonId)
+            if (cached != null) {
+                cached.types.split(",").filter { it.isNotBlank() }
+            } else {
+                Log.e(TAG, "Error al cargar tipos para Pokémon $pokemonId: ${e.message}")
+                emptyList()
+            }
         }
     }
 
@@ -409,10 +465,68 @@ class PokemonViewModel(
 
                 _pokemonTypesCache[response.id] = response.types.map { it.type.name }
 
+                // Guardar en caché offline Room
+                withContext(Dispatchers.IO) {
+                    try {
+                        val typesStr = response.types.joinToString(",") { it.type.name }
+                        val hp = response.stats.find { it.stat.name == "hp" }?.baseStat ?: 0
+                        val atk = response.stats.find { it.stat.name == "attack" }?.baseStat ?: 0
+                        val def = response.stats.find { it.stat.name == "defense" }?.baseStat ?: 0
+                        val spa = response.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0
+                        val spd = response.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0
+                        val spe = response.stats.find { it.stat.name == "speed" }?.baseStat ?: 0
+                        cachedPokemonDao?.insertOrUpdate(
+                            CachedPokemon(
+                                id = response.id,
+                                name = response.name.replaceFirstChar { it.uppercase() },
+                                imageUrl = response.sprites.urlImagen ?: "",
+                                types = typesStr,
+                                hp = hp, attack = atk, defense = def,
+                                specialAttack = spa, specialDefense = spd, speed = spe,
+                                cryUrl = response.cries?.latest ?: response.cries?.legacy
+                            )
+                        )
+                    } catch (ce: Exception) {
+                        Log.e(TAG, "Error guardando en caché Room: ${ce.message}")
+                    }
+                }
+
             } catch (e: Exception) {
-                val errorMessage = "Error al cargar detalles: ${e.message}"
-                _pokemonDetailState.value = PokemonDetailState.Error(errorMessage)
-                Log.e(TAG, errorMessage, e)
+                // Modo Offline: recuperar datos de Room
+                val cached = try {
+                    withContext(Dispatchers.IO) {
+                        cachedPokemonDao?.getPokemonById(pokemonId.toIntOrNull() ?: 0)
+                    }
+                } catch (ce: Exception) {
+                    null
+                }
+
+                if (cached != null) {
+                    val fallbackData = PokemonData(
+                        id = cached.id,
+                        name = cached.name,
+                        sprites = com.duoc.rotompedia.data.model.SpritesData(cached.imageUrl),
+                        types = cached.types.split(",").filter { it.isNotBlank() }.mapIndexed { idx, t ->
+                            com.duoc.rotompedia.data.model.TypesSlot(idx + 1, com.duoc.rotompedia.data.model.TypeData(t))
+                        },
+                        stats = listOf(
+                            com.duoc.rotompedia.data.model.StatInfo(cached.hp, com.duoc.rotompedia.data.model.Stat("hp")),
+                            com.duoc.rotompedia.data.model.StatInfo(cached.attack, com.duoc.rotompedia.data.model.Stat("attack")),
+                            com.duoc.rotompedia.data.model.StatInfo(cached.defense, com.duoc.rotompedia.data.model.Stat("defense")),
+                            com.duoc.rotompedia.data.model.StatInfo(cached.specialAttack, com.duoc.rotompedia.data.model.Stat("special-attack")),
+                            com.duoc.rotompedia.data.model.StatInfo(cached.specialDefense, com.duoc.rotompedia.data.model.Stat("special-defense")),
+                            com.duoc.rotompedia.data.model.StatInfo(cached.speed, com.duoc.rotompedia.data.model.Stat("speed"))
+                        ),
+                        cries = com.duoc.rotompedia.data.model.CriesData(latest = cached.cryUrl)
+                    )
+                    _pokemonDetailState.value = PokemonDetailState.Success(fallbackData)
+                    _pokemonTypesCache[cached.id] = cached.types.split(",").filter { it.isNotBlank() }
+                    Log.d(TAG, "Modo Offline: detalles de ${cached.name} recuperados de Room")
+                } else {
+                    val errorMessage = "Error al cargar detalles: ${e.message}"
+                    _pokemonDetailState.value = PokemonDetailState.Error(errorMessage)
+                    Log.e(TAG, errorMessage, e)
+                }
             }
         }
     }

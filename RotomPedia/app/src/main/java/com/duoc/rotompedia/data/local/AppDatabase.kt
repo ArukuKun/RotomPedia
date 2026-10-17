@@ -5,11 +5,22 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Usuario::class, PokemonFavorito::class], version = 3)
+@Database(
+    entities = [
+        Usuario::class,
+        PokemonFavorito::class,
+        CachedPokemon::class,
+        EquipoPokemon::class,
+        MiembroEquipo::class
+    ],
+    version = 4
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun usuarioDao(): UsuarioDao
     abstract fun favoritoDao(): FavoritoDao
+    abstract fun cachedPokemonDao(): CachedPokemonDao
+    abstract fun equipoDao(): EquipoDao
 
 
 
