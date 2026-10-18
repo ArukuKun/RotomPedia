@@ -11,7 +11,14 @@ data class  PokemonData(
     val name:String,
     val sprites: SpritesData,
     val types: List<TypesSlot>,
-    val stats: List<StatInfo>
+    val stats: List<StatInfo>,
+    val cries: CriesData? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class CriesData(
+    val latest: String? = null,
+    val legacy: String? = null
 )
 
 //Clases anidadas para las Imagenes

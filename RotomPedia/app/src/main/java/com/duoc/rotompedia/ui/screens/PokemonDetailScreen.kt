@@ -1,24 +1,34 @@
 // PokemonDetailScreen.kt
 package com.duoc.rotompedia.ui.screens
 
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -164,6 +174,25 @@ fun PokemonDetailContent(
     typeRelationsState: TypeRelationsState,
     onPokemonClick: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    var isShiny by remember { mutableStateOf(false) }
+    var isPlayingCry by remember { mutableStateOf(false) }
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+    DisposableEffect(pokemon.id) {
+        onDispose {
+            mediaPlayer?.release()
+            mediaPlayer = null
+            isPlayingCry = false
+        }
+    }
+
+    val artworkUrl = if (isShiny) {
+        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${pokemon.id}.png"
+    } else {
+        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png"
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -171,15 +200,107 @@ fun PokemonDetailContent(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png")
-                .crossfade(true)
-                .build(),
-            contentDescription = "Imagen de ${pokemon.name}",
-            modifier = Modifier.size(250.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier.size(260.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(artworkUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Imagen de ${pokemon.name}",
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Fila de acciones interactivas: Toggle Variocolor y Rugido Oficial
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Botón Variocolor (Shiny)
+            FilterChip(
+                selected = isShiny,
+                onClick = { isShiny = !isShiny },
+                label = {
+                    Text(
+                        text = if (isShiny) "✨ Variocolor" else "Normal",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = "Alternar Variocolor",
+                        modifier = Modifier.size(16.dp),
+                        tint = if (isShiny) Color(0xFFFFD700) else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = Color(0xFF263238),
+                    selectedLabelColor = Color(0xFFFFD700)
+                )
+            )
+
+            // Botón Rugido (Cry)
+            FilledTonalButton(
+                onClick = {
+                    try {
+                        mediaPlayer?.release()
+                        val cryUrl = pokemon.cries?.latest
+                            ?: "https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemon.id}.ogg"
+
+                        val player = MediaPlayer().apply {
+                            setAudioAttributes(
+                                AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                                    .build()
+                            )
+                            setDataSource(cryUrl)
+                            prepareAsync()
+                            setOnPreparedListener { mp ->
+                                isPlayingCry = true
+                                mp.start()
+                            }
+                            setOnCompletionListener {
+                                isPlayingCry = false
+                            }
+                            setOnErrorListener { _, _, _ ->
+                                isPlayingCry = false
+                                true
+                            }
+                        }
+                        mediaPlayer = player
+                    } catch (e: Exception) {
+                        isPlayingCry = false
+                    }
+                },
+                modifier = Modifier.height(38.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = if (isPlayingCry) Color(0xFFD11527) else MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = if (isPlayingCry) Color.White else MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.VolumeUp,
+                    contentDescription = "Rugido Pokémon",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (isPlayingCry) "Rugiendo..." else "Rugido",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
 
         Text(
             text = "#${pokemon.id} - ${pokemon.name.replaceFirstChar { it.uppercase() }}",

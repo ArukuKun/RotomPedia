@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.duoc.rotompedia.data.GymLeadersData
 import com.duoc.rotompedia.data.model.GymLeader
-import com.duoc.rotompedia.data.remote.GymApi
 import com.duoc.rotompedia.util.getTipoColor
 import com.duoc.rotompedia.util.traducirTipo
 import kotlinx.coroutines.launch
@@ -46,19 +46,14 @@ fun GymLeadersScreen(
     var isLoading by remember { mutableStateOf(true) }
 
     // Regiones disponibles en tu backend
-    val regions = listOf("Kanto", "Johto", "Hoenn")
+    val regions = listOf("Kanto", "Johto", "Hoenn", "Sinnoh", "Teselia", "Kalos", "Alola", "Galar", "Paldea")
+    var selectedLeaderForDetail by remember { mutableStateOf<GymLeader?>(null) }
 
-    // Cargar datos cuando cambia la región
+    // Cargar datos locales cuando cambia la región (sin red)
     LaunchedEffect(selectedRegion) {
         isLoading = true
-        try {
-            // Llamada al Microservicio (Tu backend)
-            leadersList = GymApi.service.getLeadersByRegion(selectedRegion)
-        } catch (e: Exception) {
-            leadersList = emptyList() // Manejo de error simple
-        } finally {
-            isLoading = false
-        }
+        leadersList = GymLeadersData.getByRegion(selectedRegion)
+        isLoading = false
     }
 
     ModalNavigationDrawer(
@@ -121,7 +116,7 @@ fun GymLeadersScreen(
                     }
                 )
             },
-            containerColor = Color.White // Fondo blanco solicitado
+            containerColor = Color.White
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -148,7 +143,10 @@ fun GymLeadersScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(leadersList) { leader ->
-                                GymLeaderCard(leader)
+                                GymLeaderCard(
+                                    leader = leader,
+                                    onClick = { selectedLeaderForDetail = leader }
+                                )
                             }
                         }
                     }
@@ -156,17 +154,28 @@ fun GymLeadersScreen(
             }
         }
     }
+
+    selectedLeaderForDetail?.let { leader ->
+        GymLeaderDetailDialog(
+            leader = leader,
+            onDismiss = { selectedLeaderForDetail = null }
+        )
+    }
 }
 
 @Composable
-fun GymLeaderCard(leader: GymLeader) {
+fun GymLeaderCard(
+    leader: GymLeader,
+    onClick: () -> Unit = {}
+) {
     Card(
+        onClick = onClick,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(14.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(260.dp) // Altura fija para uniformidad
+            .height(280.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -175,15 +184,15 @@ fun GymLeaderCard(leader: GymLeader) {
             // Imagen del Líder
             Box(
                 modifier = Modifier
-                    .weight(1f) // Ocupa la mayor parte del espacio
+                    .weight(1f)
                     .fillMaxWidth()
-                    .background(Color(0xFFF5F5F5)),
+                    .background(Color(0xFFF7F7F9)),
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
                     model = leader.imageUrl.ifEmpty { "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" },
                     contentDescription = leader.name,
-                    modifier = Modifier.size(120.dp),
+                    modifier = Modifier.size(110.dp),
                     contentScale = ContentScale.Fit
                 )
             }
@@ -191,43 +200,145 @@ fun GymLeaderCard(leader: GymLeader) {
             // Datos del Líder
             Column(
                 modifier = Modifier
-                    .padding(12.dp)
+                    .padding(10.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = leader.name,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Black
+                    fontSize = 15.sp,
+                    color = Color.Black,
+                    maxLines = 1
                 )
+
+                if (leader.city.isNotEmpty()) {
+                    Text(
+                        text = "📍 ${leader.city}",
+                        fontSize = 11.sp,
+                        color = Color.Gray,
+                        maxLines = 1
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Chip de Tipo (Usamos tus utilidades existentes)
                 Surface(
-                    color = getTipoColor(leader.typeSpecialty), // Tu función de colores
+                    color = getTipoColor(leader.typeSpecialty),
                     shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.height(24.dp)
+                    modifier = Modifier.height(22.dp)
                 ) {
                     Text(
-                        text = traducirTipo(leader.typeSpecialty), // Tu función de traducción
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                        text = traducirTipo(leader.typeSpecialty),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
                         color = Color.White,
-                        fontSize = 12.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Medalla: ${leader.badgeName}",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
+                    text = leader.badgeName,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFFD11527),
+                    textAlign = TextAlign.Center,
+                    maxLines = 1
                 )
+
+                if (leader.signaturePokemon.isNotEmpty()) {
+                    Text(
+                        text = "As: ${leader.signaturePokemon}",
+                        fontSize = 11.sp,
+                        color = Color(0xFF37474F),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+fun GymLeaderDetailDialog(leader: GymLeader, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cerrar", fontWeight = FontWeight.Bold)
+            }
+        },
+        title = {
+            Text(
+                text = leader.name,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+        },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                AsyncImage(
+                    model = leader.imageUrl.ifEmpty { "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" },
+                    contentDescription = leader.name,
+                    modifier = Modifier
+                        .size(130.dp)
+                        .padding(bottom = 12.dp),
+                    contentScale = ContentScale.Fit
+                )
+
+                Surface(
+                    color = getTipoColor(leader.typeSpecialty),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = "Tipo " + traducirTipo(leader.typeSpecialty),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (leader.city.isNotEmpty()) {
+                    Text(
+                        text = "📍 Ubicación: ${leader.city} (${leader.region})",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Text(
+                    text = "🏅 Medalla: ${leader.badgeName}",
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp
+                )
+
+                if (leader.signaturePokemon.isNotEmpty()) {
+                    Text(
+                        text = "⭐ Pokémon As: ${leader.signaturePokemon}",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E88E5),
+                        fontSize = 14.sp
+                    )
+                }
+
+                if (leader.description.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = leader.description,
+                        fontSize = 13.sp,
+                        color = Color.DarkGray,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    )
 }

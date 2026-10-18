@@ -2,31 +2,35 @@ package com.duoc.rotompedia.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Delete
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FavoritoDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun agregarFavorito(favorito: PokemonFavorito)
 
-    @Query("DELETE FROM favoritos WHERE pokemonId = :id")
-    suspend fun eliminarFavorito(id: Int)
+    @Query("DELETE FROM favoritos WHERE usuario = :usuario AND pokemonId = :id")
+    suspend fun eliminarFavorito(usuario: String, id: Int)
 
-    // ✅ CORREGIDO: Método para eliminar por objeto (necesario para @Delete)
     @Delete
     suspend fun eliminarFavorito(favorito: PokemonFavorito)
 
-    // Lo más importante: Obtener una lista reactiva de IDs de favoritos
+    // Obtener los IDs de favoritos para un usuario específico
+    @Query("SELECT pokemonId FROM favoritos WHERE usuario = :usuario")
+    fun obtenerTodosLosIdsPorUsuario(usuario: String): Flow<List<Int>>
+
+    // Para compatibilidad general o cuando no se define usuario
     @Query("SELECT pokemonId FROM favoritos")
     fun obtenerTodosLosIds(): Flow<List<Int>>
 
-    // ✅ AÑADIDO: Método para verificar si un Pokémon específico es favorito
-    @Query("SELECT * FROM favoritos WHERE pokemonId = :pokemonId")
-    suspend fun obtenerPorId(pokemonId: Int): PokemonFavorito?
+    // Verificar si un Pokémon es favorito de un usuario específico
+    @Query("SELECT * FROM favoritos WHERE usuario = :usuario AND pokemonId = :pokemonId")
+    suspend fun obtenerPorId(usuario: String, pokemonId: Int): PokemonFavorito?
 
-    // ✅ AÑADIDO: Obtener todos los favoritos como objetos completos
-    @Query("SELECT * FROM favoritos")
-    fun obtenerTodosLosFavoritos(): Flow<List<PokemonFavorito>>
+    // Obtener todos los favoritos como objetos completos para un usuario
+    @Query("SELECT * FROM favoritos WHERE usuario = :usuario")
+    fun obtenerTodosLosFavoritosPorUsuario(usuario: String): Flow<List<PokemonFavorito>>
 }

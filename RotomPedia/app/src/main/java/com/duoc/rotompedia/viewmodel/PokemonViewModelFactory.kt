@@ -7,14 +7,14 @@ import com.duoc.rotompedia.data.local.FavoritoDao
 
 // Factory para inyectar FavoritoDao en PokemonViewModel
 class PokemonViewModelFactory(
-    private val favoritoDao: FavoritoDao
+    private val favoritoDao: FavoritoDao,
+    private val cachedPokemonDao: com.duoc.rotompedia.data.local.CachedPokemonDao? = null
 ) : ViewModelProvider.Factory {
 
-    // Sobreescribe el método para crear la instancia del ViewModel
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PokemonViewModel::class.java)) {
-            return PokemonViewModel(favoritoDao) as T
+            return PokemonViewModel(favoritoDao, cachedPokemonDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

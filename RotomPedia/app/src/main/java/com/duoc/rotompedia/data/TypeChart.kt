@@ -3,7 +3,7 @@ package com.duoc.rotompedia.data
 //lista de los 18 tipos. En orden tienen que coincidir con la matriz
 //usamos los nombres en ingles para la logica de colores
 val TIPO_NAMES_EN = listOf(
-    "normal","fire","water","grass","electric","ice","fighting","poison","ground",
+    "normal","fire","water","electric","grass","ice","fighting","poison","ground",
     "flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"
 )
 
