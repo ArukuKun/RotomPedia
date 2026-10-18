@@ -29,6 +29,7 @@ import com.duoc.rotompedia.data.GymLeadersData
 import com.duoc.rotompedia.data.model.GymLeader
 import com.duoc.rotompedia.util.getTipoColor
 import com.duoc.rotompedia.util.traducirTipo
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
