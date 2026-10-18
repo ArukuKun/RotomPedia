@@ -628,7 +628,7 @@ class PokemonViewModel(
         details.minHappiness?.let { requirements.add("Felicidad $it") }
         details.minBeauty?.let { requirements.add("Belleza $it") }
         details.minAffection?.let { requirements.add("Afecto $it") }
-        details.timeOfDay?.let {
+        details.timeOfDay?.takeIf { it.isNotBlank() }?.let {
             requirements.add(if (it == "day") "Día" else "Noche")
         }
         details.knownMove?.let {
@@ -660,7 +660,7 @@ class PokemonViewModel(
         val itemName = details.item?.name?.replaceFirstChar { it.uppercase() } ?: "Objeto"
         val additionalReqs = mutableListOf<String>()
 
-        details.timeOfDay?.let {
+        details.timeOfDay?.takeIf { it.isNotBlank() }?.let {
             additionalReqs.add(if (it == "day") "de día" else "de noche")
         }
         details.gender?.let {

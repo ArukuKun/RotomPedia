@@ -25,11 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.duoc.rotompedia.data.GymLeadersData
 import com.duoc.rotompedia.data.model.GymLeader
-import com.duoc.rotompedia.data.remote.GymApi
 import com.duoc.rotompedia.util.getTipoColor
 import com.duoc.rotompedia.util.traducirTipo
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,17 +48,11 @@ fun GymLeadersScreen(
     val regions = listOf("Kanto", "Johto", "Hoenn", "Sinnoh", "Teselia", "Kalos", "Alola", "Galar", "Paldea")
     var selectedLeaderForDetail by remember { mutableStateOf<GymLeader?>(null) }
 
-    // Cargar datos cuando cambia la región
+    // Cargar datos locales cuando cambia la región (sin red)
     LaunchedEffect(selectedRegion) {
         isLoading = true
-        try {
-            // Llamada al Microservicio (Tu backend)
-            leadersList = GymApi.service.getLeadersByRegion(selectedRegion)
-        } catch (e: Exception) {
-            leadersList = emptyList() // Manejo de error simple
-        } finally {
-            isLoading = false
-        }
+        leadersList = GymLeadersData.getByRegion(selectedRegion)
+        isLoading = false
     }
 
     ModalNavigationDrawer(
