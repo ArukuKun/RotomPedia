@@ -4,6 +4,7 @@ package com.duoc.rotompedia.ui.screens
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -48,6 +49,8 @@ import com.duoc.rotompedia.viewmodel.PokemonViewModel
 import com.duoc.rotompedia.data.model.StatInfo
 import com.duoc.rotompedia.viewmodel.TypeRelationsState
 import com.duoc.rotompedia.util.traducirTipo
+import com.duoc.rotompedia.util.RotomThemeManager
+import com.duoc.rotompedia.util.RotomCommentaryEngine
 import com.duoc.rotompedia.viewmodel.EvolutionStage
 import com.duoc.rotompedia.viewmodel.PokemonViewModelFactory
 
@@ -317,7 +320,29 @@ fun PokemonDetailContent(
                 TypeChip(originalType = originalType, translatedType = translatedType)
             }
         }
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Widget Interactivo de Comentarios RotomDex
+        val hpStat = pokemon.stats.find { it.stat.name == "hp" }?.baseStat ?: 0
+        val atkStat = pokemon.stats.find { it.stat.name == "attack" }?.baseStat ?: 0
+        val defStat = pokemon.stats.find { it.stat.name == "defense" }?.baseStat ?: 0
+        val spaStat = pokemon.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0
+        val spdStat = pokemon.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0
+        val speStat = pokemon.stats.find { it.stat.name == "speed" }?.baseStat ?: 0
+
+        RotomDialogueBox(
+            pokemonId = pokemon.id,
+            pokemonName = pokemon.name,
+            types = pokemon.types.map { it.type.name },
+            hp = hpStat,
+            attack = atkStat,
+            defense = defStat,
+            specialAttack = spaStat,
+            specialDefense = spdStat,
+            speed = speStat
+        )
+
+        Spacer(modifier = Modifier.height(18.dp))
 
         Text(
             text = "Descripción",
@@ -701,6 +726,102 @@ fun TypeRelationsView(state: TypeRelationsState) {
         }
         is TypeRelationsState.Error -> {
             Text(text = state.message, color = MaterialTheme.colorScheme.error)
+        }
+    }
+}
+
+@Composable
+fun RotomDialogueBox(
+    pokemonId: Int,
+    pokemonName: String,
+    types: List<String>,
+    hp: Int = 0,
+    attack: Int = 0,
+    defense: Int = 0,
+    specialAttack: Int = 0,
+    specialDefense: Int = 0,
+    speed: Int = 0,
+    modifier: Modifier = Modifier
+) {
+    val rotomForm by RotomThemeManager.currentForm.collectAsState()
+    val comments = remember(pokemonId, rotomForm) {
+        RotomCommentaryEngine.getComments(
+            pokemonId = pokemonId,
+            pokemonName = pokemonName,
+            types = types,
+            hp = hp,
+            attack = attack,
+            defense = defense,
+            specialAttack = specialAttack,
+            specialDefense = specialDefense,
+            speed = speed,
+            rotomForm = rotomForm
+        )
+    }
+    var currentIndex by remember(pokemonId) { mutableStateOf(0) }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable {
+                if (comments.isNotEmpty()) {
+                    currentIndex = (currentIndex + 1) % comments.size
+                }
+            },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1E1E1E).copy(alpha = 0.95f)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            rotomForm.primaryColor.copy(alpha = 0.7f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(rotomForm.primaryColor.copy(alpha = 0.2f))
+                    .border(1.dp, rotomForm.primaryColor, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = rotomForm.iconEmoji, fontSize = 24.sp)
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "RotomDex (${rotomForm.displayName})",
+                        fontWeight = FontWeight.Bold,
+                        color = rotomForm.primaryColor,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "Toca para más 💬",
+                        fontSize = 10.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = comments.getOrElse(currentIndex) { comments.firstOrNull() ?: "" },
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            }
         }
     }
 }
