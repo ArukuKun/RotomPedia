@@ -124,6 +124,12 @@ class PokemonViewModel(
         Log.d(TAG, "Usuario activo en PokemonViewModel: '$username'")
     }
 
+    suspend fun getCachedPokemonDirect(pokemonId: Int): CachedPokemon? {
+        return withContext(Dispatchers.IO) {
+            cachedPokemonDao?.getPokemonById(pokemonId)
+        }
+    }
+
     // ✅ ACTUALIZADO: Favoritos aislados reactivamente por usuario activo
     @OptIn(ExperimentalCoroutinesApi::class)
     val favoritePokemonIds: StateFlow<Set<Int>> = _currentUsername

@@ -141,4 +141,10 @@ class TeamBuilderViewModel(
             equipoDao.eliminarMiembroPorSlot(equipoId, slot)
         }
     }
+
+    fun actualizarMiembro(miembro: MiembroEquipo) {
+        viewModelScope.launch(Dispatchers.IO) {
+            equipoDao.insertarMiembro(miembro)
+        }
+    }
 }

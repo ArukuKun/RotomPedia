@@ -81,8 +81,8 @@ data class Stat(
 @JsonClass(generateAdapter = true)
 data class PokemonSpeciesResponse(
     @Json(name = "evolution_chain") val evolutionChain: EvolutionChainUrl,
-    @Json(name = "flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>
-
+    @Json(name = "flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>,
+    @Json(name = "capture_rate") val captureRate: Int? = null
 )
 
 @JsonClass(generateAdapter = true)

@@ -239,6 +239,19 @@ fun MenuPrincipalScreen(navController: NavController, authViewModel: AuthViewMod
                 ) { navController.navigate("versus") }
             }
 
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Fila 4: Calculadora de Stats IV/EV (Sprint 3)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                MenuButton(
+                    text = "Calculadora IV/EV",
+                    contentColor = rotomForm.accentColor
+                ) { navController.navigate("stat_calculator") }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // Selector de Forma de Rotom
@@ -474,6 +487,13 @@ fun AppNavigationController() {
         composable("versus") {
             PokemonVersusScreen(
                 versusViewModel = versusViewModel,
+                pokemonViewModel = pokemonViewModel,
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+
+        composable("stat_calculator") {
+            StatCalculatorScreen(
                 pokemonViewModel = pokemonViewModel,
                 onNavigateBack = { navController.navigateUp() }
             )

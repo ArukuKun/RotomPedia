@@ -40,6 +40,12 @@ import com.duoc.rotompedia.util.getTipoColor
 import com.duoc.rotompedia.util.traducirTipo
 import com.duoc.rotompedia.viewmodel.PokemonViewModel
 import com.duoc.rotompedia.viewmodel.TeamBuilderViewModel
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import com.duoc.rotompedia.util.StatCalculator
+import com.duoc.rotompedia.util.StatCalculator.StatSpread
+import com.duoc.rotompedia.util.StatCalculator.StatType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,6 +64,7 @@ fun TeamBuilderScreen(
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var slotToSelectPokemon by remember { mutableStateOf<Int?>(null) }
+    var memberToEditStats by remember { mutableStateOf<MiembroEquipo?>(null) }
 
     Scaffold(
         topBar = {
@@ -174,7 +181,12 @@ fun TeamBuilderScreen(
                         equipoConMiembros = equipo,
                         analysis = analysis,
                         onSlotClick = { slot ->
-                            slotToSelectPokemon = slot
+                            val currentMember = equipo.miembros.find { it.slot == slot }
+                            if (currentMember != null) {
+                                memberToEditStats = currentMember
+                            } else {
+                                slotToSelectPokemon = slot
+                            }
                         },
                         onRemoveMember = { slot ->
                             teamBuilderViewModel.eliminarMiembroPorSlot(equipo.equipo.id, slot)
@@ -183,6 +195,23 @@ fun TeamBuilderScreen(
                 }
             }
         }
+    }
+
+    // Diálogo editor de estadísticas competitivas del miembro (Sprint 3)
+    if (memberToEditStats != null) {
+        val currentMember = memberToEditStats!!
+        MemberStatEditorDialog(
+            miembro = currentMember,
+            onDismiss = { memberToEditStats = null },
+            onSave = { updated ->
+                teamBuilderViewModel.actualizarMiembro(updated)
+                memberToEditStats = null
+            },
+            onChangePokemon = { slot ->
+                memberToEditStats = null
+                slotToSelectPokemon = slot
+            }
+        )
     }
 
     // Diálogo para crear equipo
@@ -337,6 +366,9 @@ fun TeamDetailContent(
     onSlotClick: (Int) -> Unit,
     onRemoveMember: (Int) -> Unit
 ) {
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -344,12 +376,43 @@ fun TeamDetailContent(
     ) {
         // Grid de los 6 slots
         item {
-            Text(
-                text = "Miembros del Equipo (${equipoConMiembros.miembros.size}/6)",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Miembros (${equipoConMiembros.miembros.size}/6)",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+
+                if (equipoConMiembros.miembros.isNotEmpty()) {
+                    OutlinedButton(
+                        onClick = {
+                            val showdown = equipoConMiembros.miembros
+                                .sortedBy { it.slot }
+                                .joinToString("\n\n") { m ->
+                                    StatCalculator.toShowdownFormat(
+                                        speciesName = m.nombre,
+                                        level = m.level,
+                                        nature = StatCalculator.getNatureByName(m.nature),
+                                        evs = StatSpread(m.evHp, m.evAtk, m.evDef, m.evSpa, m.evSpd, m.evSpe),
+                                        ivs = StatSpread(m.ivHp, m.ivAtk, m.ivDef, m.ivSpa, m.ivSpd, m.ivSpe)
+                                    )
+                                }
+                            clipboardManager.setText(AnnotatedString(showdown))
+                            Toast.makeText(context, "¡Equipo copiado para Showdown!", Toast.LENGTH_SHORT).show()
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF61DAF6))
+                    ) {
+                        Text("Exportar Showdown", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(10.dp))
         }
 
@@ -577,25 +640,37 @@ fun TeamSlotCard(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(8.dp),
+                        .padding(6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
                     AsyncImage(
                         model = miembro.spriteUrl,
                         contentDescription = miembro.nombre,
-                        modifier = Modifier.size(52.dp),
+                        modifier = Modifier.size(46.dp),
                         contentScale = ContentScale.Fit
                     )
                     Text(
                         text = miembro.nombre,
-                        fontSize = 12.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Nv.${miembro.level} • ${miembro.nature}",
+                        fontSize = 9.sp,
+                        color = Color(0xFF61DAF6),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    val totalEvs = miembro.evHp + miembro.evAtk + miembro.evDef + miembro.evSpa + miembro.evSpd + miembro.evSpe
+                    Text(
+                        text = "EVs: $totalEvs/510",
+                        fontSize = 8.sp,
+                        color = if (totalEvs > 510) Color(0xFFFF5252) else Color(0xFF69F0AE)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         BadgeTipo(tipo = miembro.tipo1)
                         miembro.tipo2?.let { BadgeTipo(tipo = it) }

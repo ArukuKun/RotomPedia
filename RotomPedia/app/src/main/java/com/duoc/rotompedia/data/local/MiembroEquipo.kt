@@ -32,5 +32,20 @@ data class MiembroEquipo(
     val defense: Int = 0,
     val specialAttack: Int = 0,
     val specialDefense: Int = 0,
-    val speed: Int = 0
+    val speed: Int = 0,
+    // Estadísticas avanzadas competitivas (Sprint 3)
+    val nature: String = "Fuerte", // Naturaleza (Firme, Alegre, Modesta, etc.)
+    val level: Int = 50, // Nivel 50 por defecto (VGC / Competitivo)
+    val evHp: Int = 0,
+    val evAtk: Int = 0,
+    val evDef: Int = 0,
+    val evSpa: Int = 0,
+    val evSpd: Int = 0,
+    val evSpe: Int = 0,
+    val ivHp: Int = 31,
+    val ivAtk: Int = 31,
+    val ivDef: Int = 31,
+    val ivSpa: Int = 31,
+    val ivSpd: Int = 31,
+    val ivSpe: Int = 31
 )
