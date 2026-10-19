@@ -7,6 +7,14 @@ package com.duoc.rotompedia.util
 object RotomCommentaryEngine {
 
     /**
+     * Lista de IDs de Pokémon favoritos del Developer.
+     * Actualmente configurado con Gardevoir (#282). En el futuro se expandirá con la lista del usuario.
+     */
+    val DEVELOPER_FAVORITES: Set<Int> = setOf(282)
+
+    fun isDeveloperFavorite(pokemonId: Int): Boolean = pokemonId in DEVELOPER_FAVORITES
+
+    /**
      * Devuelve una lista de frases temáticas de Rotom para el Pokémon consultado.
      */
     fun getComments(
@@ -25,14 +33,15 @@ object RotomCommentaryEngine {
         val nameCap = pokemonName.replaceFirstChar { it.uppercase() }
         val bst = hp + attack + defense + specialAttack + specialDefense + speed
 
-        // 1. Easter Eggs y Pokémon Específicos
+        // 1. Detección especial de Favoritos del Developer (Efecto "Shiny" de probabilidad / rareza)
+        if (isDeveloperFavorite(pokemonId)) {
+            comments.add("✨ [DATO SHINY DEL DEVELOPER] ✨ ¡Bzzzzzt! ¡Mis sensores de plasma brillan con chispas doradas! $nameCap está marcada en el núcleo de la app como el Pokémon predilecto del Developer... ¡Trátala con máximo respeto, zzt!")
+            comments.add("✨ ¡Lealtad legendaria! Gardevoir es capaz de crear un agujero negro diminuto para proteger a su entrenador. ¡Elegancia y poder místico en su estado más puro!")
+            comments.add("✨ ¡Competitivamente temible! Con su combinación Psíquico / Hada y acceso a Fuerza Lunar, Paz Mental y Bola Sombra, es una auténtica amenaza en combate.")
+        }
+
+        // 2. Easter Eggs y Pokémon Específicos
         when (pokemonId) {
-            // ⭐ GARDEVOIR (Easter Egg del Developer)
-            282 -> {
-                comments.add("¡Bzzzzzt! ¡Gardevoir! ✨ Cuenta la leyenda secreta del código que este es uno de los Pokémon favoritos del Developer... ¡Tiene un poder psíquico y hada impresionante, zzt!")
-                comments.add("¡Dato leal! Se dice que Gardevoir es capaz de abrir un agujero negro diminuto con tal de proteger a su entrenador. ¡Eso sí que es devoción, zzt!")
-                comments.add("¡Elegancia competitiva! Su Ataque Especial es devastador con Fuerza Lunar y Paz Mental. ¡Una auténtica joya!")
-            }
 
             // Kirlia / Ralts / Gallade
             280, 281 -> {

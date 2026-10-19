@@ -759,6 +759,7 @@ fun RotomDialogueBox(
         )
     }
     var currentIndex by remember(pokemonId) { mutableStateOf(0) }
+    val isDevFav = remember(pokemonId) { RotomCommentaryEngine.isDeveloperFavorite(pokemonId) }
 
     Card(
         modifier = modifier
@@ -770,11 +771,11 @@ fun RotomDialogueBox(
             },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E1E1E).copy(alpha = 0.95f)
+            containerColor = if (isDevFav) Color(0xFF231F15) else Color(0xFF1E1E1E).copy(alpha = 0.95f)
         ),
         border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            rotomForm.primaryColor.copy(alpha = 0.7f)
+            if (isDevFav) 1.5.dp else 1.dp,
+            if (isDevFav) Color(0xFFFFD700) else rotomForm.primaryColor.copy(alpha = 0.7f)
         )
     ) {
         Row(
@@ -785,11 +786,11 @@ fun RotomDialogueBox(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
-                    .background(rotomForm.primaryColor.copy(alpha = 0.2f))
-                    .border(1.dp, rotomForm.primaryColor, CircleShape),
+                    .background(if (isDevFav) Color(0xFFFFD700).copy(alpha = 0.2f) else rotomForm.primaryColor.copy(alpha = 0.2f))
+                    .border(1.dp, if (isDevFav) Color(0xFFFFD700) else rotomForm.primaryColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = rotomForm.iconEmoji, fontSize = 24.sp)
+                Text(text = if (isDevFav) "✨" else rotomForm.iconEmoji, fontSize = 24.sp)
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -801,9 +802,9 @@ fun RotomDialogueBox(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "RotomDex (${rotomForm.displayName})",
+                        text = if (isDevFav) "✨ RotomDex • Favorito del Dev" else "RotomDex (${rotomForm.displayName})",
                         fontWeight = FontWeight.Bold,
-                        color = rotomForm.primaryColor,
+                        color = if (isDevFav) Color(0xFFFFD700) else rotomForm.primaryColor,
                         fontSize = 12.sp
                     )
                     Text(
