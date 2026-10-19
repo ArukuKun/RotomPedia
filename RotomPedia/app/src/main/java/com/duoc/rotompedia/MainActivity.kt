@@ -507,7 +507,10 @@ fun AppNavigationController() {
             if (region != null) {
                 MapViewerScreen(
                     region = region,
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onPokemonClick = { pokemonId ->
+                        navController.navigate("pokemon_detail/$pokemonId")
+                    }
                 )
             }
         }

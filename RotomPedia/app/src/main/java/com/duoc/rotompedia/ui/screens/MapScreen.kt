@@ -1,17 +1,23 @@
 package com.duoc.rotompedia.ui.screens
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.ZoomOutMap
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.duoc.rotompedia.R
+import com.duoc.rotompedia.data.RegionLocationData
+import com.duoc.rotompedia.data.RouteLocation
+import com.duoc.rotompedia.util.RotomThemeManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -149,9 +158,12 @@ fun RegionSelectionContent(navController: NavController) {
 @Composable
 fun MapViewerScreen(
     region: String,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    onPokemonClick: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
+    val rotomForm by RotomThemeManager.currentForm.collectAsState()
+
     val resourceName = when (region) {
         "kanto" -> "kantomap"
         else -> "map_$region"
@@ -162,6 +174,11 @@ fun MapViewerScreen(
         "teselia" -> "Teselia (Unova)"
         else -> region.replaceFirstChar { it.uppercase() }
     }
+
+    // Datos de rutas y ubicaciones interactivas
+    val locations = remember(region) { RegionLocationData.getLocationsForRegion(region) }
+    var selectedLocation by remember { mutableStateOf<RouteLocation?>(null) }
+    var showPins by remember { mutableStateOf(true) }
 
     // Estados para zoom y paneo
     var scale by remember { mutableFloatStateOf(1f) }
@@ -180,7 +197,18 @@ fun MapViewerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mapa de $displayName") },
+                title = {
+                    Column {
+                        Text("Mapa de $displayName", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        if (locations.isNotEmpty()) {
+                            Text(
+                                "${locations.size} puntos interactivos",
+                                fontSize = 11.sp,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -191,6 +219,15 @@ fun MapViewerScreen(
                     }
                 },
                 actions = {
+                    if (locations.isNotEmpty()) {
+                        IconButton(onClick = { showPins = !showPins }) {
+                            Icon(
+                                imageVector = Icons.Default.Place,
+                                contentDescription = if (showPins) "Ocultar Pines" else "Mostrar Pines",
+                                tint = if (showPins) rotomForm.primaryColor else Color.White.copy(alpha = 0.5f)
+                            )
+                        }
+                    }
                     if (scale > 1f) {
                         IconButton(onClick = {
                             scale = 1f
@@ -211,66 +248,274 @@ fun MapViewerScreen(
             )
         }
     ) { paddingValues ->
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.Black)
-                .clip(RoundedCornerShape(0.dp))
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onDoubleTap = {
-                            if (scale > 1f) {
-                                scale = 1f
-                                offset = Offset.Zero
-                            } else {
-                                scale = 2.5f
-                            }
-                        }
-                    )
-                }
-                .transformable(state = transformState),
-            contentAlignment = Alignment.Center
+                .background(Color(0xFF0F1115))
         ) {
+            val containerWidth = maxWidth
+            val containerHeight = maxHeight
+
             if (resourceId != 0) {
-                Image(
-                    painter = painterResource(id = resourceId),
-                    contentDescription = "Mapa de $displayName",
+                val painter = painterResource(id = resourceId)
+                val intrinsicSize = painter.intrinsicSize
+                val imageRatio = if (intrinsicSize.height > 0f) intrinsicSize.width / intrinsicSize.height else 1.136f
+                val containerRatio = if (containerHeight.value > 0f) containerWidth.value / containerHeight.value else 1f
+
+                // Dimensiones exactas calculadas con ContentScale.Fit
+                val (renderedWidth, renderedHeight) = if (imageRatio > containerRatio) {
+                    val rw = containerWidth
+                    val rh = containerWidth / imageRatio
+                    rw to rh
+                } else {
+                    val rh = containerHeight
+                    val rw = containerHeight * imageRatio
+                    rw to rh
+                }
+
+                // Viewport del mapa con soporte para zoom y paneo
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .graphicsLayer {
-                            scaleX = scale
-                            scaleY = scale
-                            translationX = offset.x
-                            translationY = offset.y
-                        },
-                    contentScale = ContentScale.Fit
-                )
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onDoubleTap = {
+                                    if (scale > 1f) {
+                                        scale = 1f
+                                        offset = Offset.Zero
+                                    } else {
+                                        scale = 2.5f
+                                    }
+                                }
+                            )
+                        }
+                        .transformable(state = transformState),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(renderedWidth, renderedHeight)
+                            .graphicsLayer {
+                                scaleX = scale
+                                scaleY = scale
+                                translationX = offset.x
+                                translationY = offset.y
+                            }
+                    ) {
+                        Image(
+                            painter = painter,
+                            contentDescription = "Mapa de $displayName",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.FillBounds
+                        )
+
+                        // Pines interactivos colocados en coordenadas relativas
+                        if (showPins && locations.isNotEmpty()) {
+                            locations.forEach { location ->
+                                val pinX = renderedWidth * location.relativeX
+                                val pinY = renderedHeight * location.relativeY
+
+                                Box(
+                                    modifier = Modifier
+                                        .offset(x = pinX - 16.dp, y = pinY - 16.dp)
+                                ) {
+                                    MapPinMarker(
+                                        location = location,
+                                        onClick = { selectedLocation = location }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
-                Text(
-                    text = "Mapa de '$displayName' no encontrado.",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(16.dp)
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Mapa de '$displayName' no encontrado.",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
 
-            // Indicador de ayuda al usuario
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp),
-                shape = RoundedCornerShape(20.dp),
-                color = Color.Black.copy(alpha = 0.65f)
-            ) {
-                Text(
-                    text = if (scale > 1f) "Zoom: ${(scale * 100).toInt()}% • Doble toque para restablecer" else "Pellizca para zoom o doble toque",
-                    color = Color.White.copy(alpha = 0.85f),
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
-                )
+            // Carrusel inferior de rutas / radar Rotom
+            if (locations.isNotEmpty()) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 14.dp, vertical = 12.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    color = Color(0xFF16181F).copy(alpha = 0.94f),
+                    border = BorderStroke(1.dp, rotomForm.primaryColor.copy(alpha = 0.45f)),
+                    shadowElevation = 8.dp
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text("📡", fontSize = 13.sp)
+                                Text(
+                                    text = "Radar Rotom • ${locations.size} Ubicaciones",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = rotomForm.primaryColor
+                                )
+                            }
+                            Text(
+                                text = if (scale > 1f) "Zoom ${(scale * 100).toInt()}%" else "Toca para explorar",
+                                fontSize = 11.sp,
+                                color = Color.Gray
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(locations) { loc ->
+                                Surface(
+                                    onClick = { selectedLocation = loc },
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (selectedLocation?.id == loc.id) rotomForm.primaryColor.copy(alpha = 0.25f) else Color(0xFF222631),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (selectedLocation?.id == loc.id) rotomForm.primaryColor else Color(0xFF333845)
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text(text = loc.typeEmoji, fontSize = 13.sp)
+                                        Text(
+                                            text = loc.name,
+                                            color = Color.White,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        if (loc.wildEncounters.isNotEmpty()) {
+                                            Surface(
+                                                shape = RoundedCornerShape(6.dp),
+                                                color = rotomForm.primaryColor.copy(alpha = 0.2f)
+                                            ) {
+                                                Text(
+                                                    text = "${loc.wildEncounters.size} pkmn",
+                                                    color = rotomForm.primaryColor,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Banner informativo para regiones que aún no tienen rutas cargadas
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color(0xFF161616).copy(alpha = 0.9f),
+                    border = BorderStroke(1.dp, Color(0xFF61DAF6).copy(alpha = 0.4f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("⚡", fontSize = 16.sp)
+                        Text(
+                            text = "Kanto cuenta con radar completo. ¡Rutas de $displayName en próxima expansión!",
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
             }
+        }
+    }
+
+    // Modal Bottom Sheet al hacer clic en un punto de interés
+    selectedLocation?.let { loc ->
+        LocationDetailBottomSheet(
+            location = loc,
+            onDismiss = { selectedLocation = null },
+            onPokemonClick = { pokemonId ->
+                selectedLocation = null
+                onPokemonClick(pokemonId)
+            }
+        )
+    }
+}
+
+/**
+ * Marcador de pin interactivo con pulso animado para el radar del mapa regional.
+ */
+@Composable
+private fun MapPinMarker(
+    location: RouteLocation,
+    onClick: () -> Unit
+) {
+    val rotomForm by RotomThemeManager.currentForm.collectAsState()
+
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
+
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = Color(0xFF1E222B).copy(alpha = 0.92f),
+        border = BorderStroke(2.dp, rotomForm.primaryColor),
+        shadowElevation = 6.dp,
+        modifier = Modifier
+            .size(32.dp)
+            .graphicsLayer {
+                scaleX = pulseScale
+                scaleY = pulseScale
+            }
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = location.typeEmoji,
+                fontSize = 15.sp,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
