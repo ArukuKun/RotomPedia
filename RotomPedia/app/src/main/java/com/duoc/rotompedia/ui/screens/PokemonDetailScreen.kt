@@ -13,12 +13,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -70,7 +70,8 @@ fun PokemonDetailScreen(
     pokemonId: String,
     onNavigateBack: () -> Unit,
     viewModelFactory: PokemonViewModelFactory,
-    onPokemonClick: (String) -> Unit = {}
+    onPokemonClick: (String) -> Unit = {},
+    onCatchRateClick: (Int) -> Unit = {}
 ) {
     val pokemonViewModel: PokemonViewModel = viewModel(factory = viewModelFactory)
 
@@ -155,7 +156,8 @@ fun PokemonDetailScreen(
                         pokemon = currentState.pokemonData,
                         evolutionState = evolutionState,
                         typeRelationsState = typeRelationsState,
-                        onPokemonClick = onPokemonClick
+                        onPokemonClick = onPokemonClick,
+                        onCatchRateClick = onCatchRateClick
                     )
                 }
                 is PokemonDetailState.Error -> {
@@ -175,7 +177,8 @@ fun PokemonDetailContent(
     pokemon: PokemonData,
     evolutionState: EvolutionState,
     typeRelationsState: TypeRelationsState,
-    onPokemonClick: (String) -> Unit = {}
+    onPokemonClick: (String) -> Unit = {},
+    onCatchRateClick: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
     var isShiny by remember { mutableStateOf(false) }
@@ -290,13 +293,32 @@ fun PokemonDetailContent(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Default.VolumeUp,
+                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                     contentDescription = "Rugido Pokémon",
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = if (isPlayingCry) "Rugiendo..." else "Rugido",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            // Botón Ratio de Captura (Sprint 5)
+            FilledTonalButton(
+                onClick = { onCatchRateClick(pokemon.id) },
+                modifier = Modifier.height(38.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = Color(0xFF263238),
+                    contentColor = Color(0xFF61DAF6)
+                )
+            ) {
+                Text("🎯", fontSize = 13.sp)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Captura",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -543,7 +565,7 @@ fun EvolutionChainColumn(
             ) {
                 if (index > 0) {
                     Icon(
-                        imageVector = Icons.Default.ArrowForward,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = "Evoluciona",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier

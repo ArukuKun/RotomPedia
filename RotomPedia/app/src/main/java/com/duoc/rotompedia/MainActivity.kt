@@ -241,7 +241,7 @@ fun MenuPrincipalScreen(navController: NavController, authViewModel: AuthViewMod
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Fila 4: Calculadora de Stats IV/EV (Sprint 3)
+            // Fila 4: Calculadoras de Utilidad (Sprint 3 y 5)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -250,6 +250,24 @@ fun MenuPrincipalScreen(navController: NavController, authViewModel: AuthViewMod
                     text = "Calculadora IV/EV",
                     contentColor = rotomForm.accentColor
                 ) { navController.navigate("stat_calculator") }
+                Spacer(modifier = Modifier.width(14.dp))
+                MenuButton(
+                    text = "Ratio Captura",
+                    contentColor = rotomForm.accentColor
+                ) { navController.navigate("catch_rate_calculator?pokemonId=1") }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Fila 5: Catálogo Competitivo (Sprint 5)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                MenuButton(
+                    text = "Objetos Competitivos",
+                    contentColor = rotomForm.primaryColor
+                ) { navController.navigate("competitive_items") }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -459,6 +477,9 @@ fun AppNavigationController() {
                     viewModelFactory = pokemonViewModelFactory,
                     onPokemonClick = { newPokemonId ->
                         navController.navigate("pokemon_detail/$newPokemonId")
+                    },
+                    onCatchRateClick = { targetId ->
+                        navController.navigate("catch_rate_calculator?pokemonId=$targetId")
                     }
                 )
             }
@@ -495,6 +516,29 @@ fun AppNavigationController() {
         composable("stat_calculator") {
             StatCalculatorScreen(
                 pokemonViewModel = pokemonViewModel,
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+
+        composable(
+            route = "catch_rate_calculator?pokemonId={pokemonId}",
+            arguments = listOf(
+                navArgument("pokemonId") {
+                    type = NavType.IntType
+                    defaultValue = 1
+                }
+            )
+        ) { backStackEntry ->
+            val pokemonId = backStackEntry.arguments?.getInt("pokemonId") ?: 1
+            CatchRateCalculatorScreen(
+                pokemonViewModel = pokemonViewModel,
+                onNavigateBack = { navController.navigateUp() },
+                initialPokemonId = pokemonId
+            )
+        }
+
+        composable("competitive_items") {
+            CompetitiveItemsScreen(
                 onNavigateBack = { navController.navigateUp() }
             )
         }

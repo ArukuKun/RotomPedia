@@ -30,6 +30,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 // Lista de tipos disponibles para el filtro de UI
 val allPokemonTypes = listOf(
@@ -127,6 +129,15 @@ class PokemonViewModel(
     suspend fun getCachedPokemonDirect(pokemonId: Int): CachedPokemon? {
         return withContext(Dispatchers.IO) {
             cachedPokemonDao?.getPokemonById(pokemonId)
+        }
+    }
+
+    val allCachedPokemon: Flow<List<CachedPokemon>> = cachedPokemonDao?.getAllCachedPokemon()
+        ?: flowOf(emptyList())
+
+    suspend fun getAllCachedPokemonDirect(): List<CachedPokemon> {
+        return withContext(Dispatchers.IO) {
+            cachedPokemonDao?.getAllCachedPokemonDirect() ?: emptyList()
         }
     }
 
