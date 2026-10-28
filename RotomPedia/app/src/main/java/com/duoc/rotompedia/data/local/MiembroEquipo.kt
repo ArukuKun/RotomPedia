@@ -47,5 +47,10 @@ data class MiembroEquipo(
     val ivDef: Int = 31,
     val ivSpa: Int = 31,
     val ivSpd: Int = 31,
-    val ivSpe: Int = 31
+    val ivSpe: Int = 31,
+    // Movimientos del Pokémon (Moveset competitivo)
+    val move1: String? = null,
+    val move2: String? = null,
+    val move3: String? = null,
+    val move4: String? = null
 )

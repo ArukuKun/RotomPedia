@@ -175,7 +175,8 @@ object StatCalculator {
         level: Int = 50,
         nature: Nature,
         evs: StatSpread,
-        ivs: StatSpread
+        ivs: StatSpread,
+        moves: List<String> = emptyList()
     ): String {
         val sb = StringBuilder()
         val header = if (!item.isNullOrBlank()) "$speciesName @ $item" else speciesName
@@ -209,6 +210,15 @@ object StatCalculator {
         if (ivs.spe < 31) ivList.add("${ivs.spe} Spe")
         if (ivList.isNotEmpty()) {
             sb.appendLine("IVs: ${ivList.joinToString(" / ")}")
+        }
+
+        // Movimientos
+        if (moves.isNotEmpty()) {
+            for (move in moves) {
+                if (move.isNotBlank()) {
+                    sb.appendLine("- $move")
+                }
+            }
         }
 
         return sb.toString().trimEnd()

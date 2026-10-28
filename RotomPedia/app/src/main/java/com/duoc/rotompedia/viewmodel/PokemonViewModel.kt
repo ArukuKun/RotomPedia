@@ -196,12 +196,19 @@ class PokemonViewModel(
         baseList.filter { item ->
             val id = extractIdFromUrl(item.url) ?: return@filter false
 
-            // Filtro de búsqueda por nombre o ID
+            // Filtro de búsqueda por nombre, ID o tipo (español e inglés)
             val matchesSearch = if (searchQueryValue.isBlank()) {
                 true
             } else {
-                item.name.contains(searchQueryValue, ignoreCase = true) ||
-                        id.toString().contains(searchQueryValue)
+                val q = searchQueryValue.trim().lowercase()
+                val nameMatch = item.name.contains(q, ignoreCase = true)
+                val idMatch = id.toString().contains(q)
+                val typeKey = mapQueryToTypeKey(q)
+                val typeMatch = if (typeKey != null) {
+                    _typePokemonIdsCache[typeKey]?.contains(id) == true
+                } else false
+
+                nameMatch || idMatch || typeMatch
             }
 
             // Filtro por tipo (consulta directa a todos los Pokémon de ese tipo)
@@ -420,6 +427,45 @@ class PokemonViewModel(
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
+        val q = query.trim().lowercase()
+        val typeKey = mapQueryToTypeKey(q)
+        if (typeKey != null && !_typePokemonIdsCache.containsKey(typeKey)) {
+            viewModelScope.launch {
+                try {
+                    val response = withContext(Dispatchers.IO) {
+                        PokemonApi.service.getTypeDetails(typeKey)
+                    }
+                    val ids = response.pokemon.mapNotNull { extractIdFromUrl(it.pokemon.url) }.toSet()
+                    _typePokemonIdsCache[typeKey] = ids
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error precargando tipo para búsqueda $typeKey: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun mapQueryToTypeKey(q: String): String? {
+        return when (q) {
+            "fuego", "fire" -> "fire"
+            "agua", "water" -> "water"
+            "planta", "grass" -> "grass"
+            "electrico", "eléctrico", "electric" -> "electric"
+            "normal" -> "normal"
+            "hielo", "ice" -> "ice"
+            "lucha", "fighting" -> "fighting"
+            "veneno", "poison" -> "poison"
+            "tierra", "ground" -> "ground"
+            "volador", "flying" -> "flying"
+            "psiquico", "psíquico", "psychic" -> "psychic"
+            "bicho", "bug" -> "bug"
+            "roca", "rock" -> "rock"
+            "fantasma", "ghost" -> "ghost"
+            "dragon", "dragón" -> "dragon"
+            "siniestro", "dark" -> "dark"
+            "acero", "steel" -> "steel"
+            "hada", "fairy" -> "fairy"
+            else -> null
+        }
     }
 
     fun updateTypeFilter(type: String) {

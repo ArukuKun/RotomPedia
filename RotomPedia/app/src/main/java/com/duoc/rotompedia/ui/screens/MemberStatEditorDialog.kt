@@ -1,6 +1,7 @@
 package com.duoc.rotompedia.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,8 +11,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,11 +33,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.duoc.rotompedia.data.MoveCategory
+import com.duoc.rotompedia.data.PokemonMove
+import com.duoc.rotompedia.data.PokemonMoveData
 import com.duoc.rotompedia.data.local.MiembroEquipo
 import com.duoc.rotompedia.util.RotomThemeManager
 import com.duoc.rotompedia.util.StatCalculator
 import com.duoc.rotompedia.util.StatCalculator.StatSpread
 import com.duoc.rotompedia.util.StatCalculator.StatType
+import com.duoc.rotompedia.util.getTipoColor
+import com.duoc.rotompedia.util.traducirTipo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +55,8 @@ fun MemberStatEditorDialog(
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val rotomForm by RotomThemeManager.currentForm.collectAsState()
+
+    var selectedTab by remember { mutableIntStateOf(0) } // 0: Stats (IV/EV), 1: Movimientos (4)
 
     var level by remember { mutableStateOf(miembro.level) }
     var selectedNature by remember { mutableStateOf(StatCalculator.getNatureByName(miembro.nature)) }
@@ -64,6 +75,13 @@ fun MemberStatEditorDialog(
     var ivSpa by remember { mutableStateOf(miembro.ivSpa) }
     var ivSpd by remember { mutableStateOf(miembro.ivSpd) }
     var ivSpe by remember { mutableStateOf(miembro.ivSpe) }
+
+    // Movimientos del Pokémon
+    var move1 by remember { mutableStateOf(miembro.move1) }
+    var move2 by remember { mutableStateOf(miembro.move2) }
+    var move3 by remember { mutableStateOf(miembro.move3) }
+    var move4 by remember { mutableStateOf(miembro.move4) }
+    var slotPickingMove by remember { mutableStateOf<Int?>(null) } // 1, 2, 3 o 4
 
     val totalEvs = evHp + evAtk + evDef + evSpa + evSpd + evSpe
     val remainingEvs = 510 - totalEvs
@@ -100,7 +118,7 @@ fun MemberStatEditorDialog(
                 .fillMaxHeight(0.92f),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF141414)),
-            border = androidx.compose.foundation.BorderStroke(1.dp, rotomForm.primaryColor.copy(alpha = 0.6f))
+            border = BorderStroke(1.dp, rotomForm.primaryColor.copy(alpha = 0.6f))
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // Header del Diálogo
@@ -124,8 +142,8 @@ fun MemberStatEditorDialog(
                             Text(
                                 text = miembro.nombre,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                fontSize = 16.sp
+                                fontSize = 16.sp,
+                                color = Color.White
                             )
                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                 BadgeTipo(tipo = miembro.tipo1)
@@ -136,12 +154,14 @@ fun MemberStatEditorDialog(
 
                     Row {
                         IconButton(onClick = {
+                            val activeMoves = listOfNotNull(move1, move2, move3, move4)
                             val showdown = StatCalculator.toShowdownFormat(
                                 speciesName = miembro.nombre,
                                 level = level,
                                 nature = selectedNature,
                                 evs = StatSpread(evHp, evAtk, evDef, evSpa, evSpd, evSpe),
-                                ivs = StatSpread(ivHp, ivAtk, ivDef, ivSpa, ivSpd, ivSpe)
+                                ivs = StatSpread(ivHp, ivAtk, ivDef, ivSpa, ivSpd, ivSpe),
+                                moves = activeMoves
                             )
                             clipboardManager.setText(AnnotatedString(showdown))
                             Toast.makeText(context, "¡Build copiada a Showdown!", Toast.LENGTH_SHORT).show()
@@ -154,248 +174,324 @@ fun MemberStatEditorDialog(
                     }
                 }
 
-                // Contenido Scrolleable
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 14.dp),
-                    contentPadding = PaddingValues(vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                // Pestañas: Stats (IV/EV) vs Movimientos
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = Color(0xFF1C1C1C),
+                    contentColor = rotomForm.primaryColor
                 ) {
-                    // Controles de Nivel y Naturaleza
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            // Selector de Nivel
-                            Card(
-                                modifier = Modifier.weight(1f),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
-                                shape = RoundedCornerShape(10.dp)
+                    Tab(
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 },
+                        text = {
+                            Text(
+                                "📊 Stats (IV/EV)",
+                                fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal,
+                                color = if (selectedTab == 0) rotomForm.primaryColor else Color.Gray
+                            )
+                        }
+                    )
+                    Tab(
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 },
+                        text = {
+                            val moveCount = listOfNotNull(move1, move2, move3, move4).size
+                            Text(
+                                "⚔️ Movimientos ($moveCount/4)",
+                                fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal,
+                                color = if (selectedTab == 1) rotomForm.primaryColor else Color.Gray
+                            )
+                        }
+                    )
+                }
+
+                // ==================== CONTENIDO DE PESTAÑA 0: STATS (IV/EV) ====================
+                if (selectedTab == 0) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 14.dp),
+                        contentPadding = PaddingValues(vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // Controles de Nivel y Naturaleza
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Column(modifier = Modifier.padding(8.dp)) {
-                                    Text("Nivel", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
-                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        FilterChip(
-                                            selected = level == 50,
-                                            onClick = { level = 50 },
-                                            label = { Text("50 (VGC)", fontSize = 10.sp) },
-                                            modifier = Modifier.height(28.dp),
-                                            colors = FilterChipDefaults.filterChipColors(
-                                                selectedContainerColor = rotomForm.primaryColor,
-                                                selectedLabelColor = Color.White
+                                // Selector de Nivel
+                                Card(
+                                    modifier = Modifier.weight(1f),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Nivel", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            FilterChip(
+                                                selected = level == 50,
+                                                onClick = { level = 50 },
+                                                label = { Text("50 (VGC)", fontSize = 10.sp) },
+                                                modifier = Modifier.height(28.dp),
+                                                colors = FilterChipDefaults.filterChipColors(
+                                                    selectedContainerColor = rotomForm.primaryColor,
+                                                    selectedLabelColor = Color.White
+                                                )
                                             )
-                                        )
-                                        FilterChip(
-                                            selected = level == 100,
-                                            onClick = { level = 100 },
-                                            label = { Text("100", fontSize = 10.sp) },
-                                            modifier = Modifier.height(28.dp),
-                                            colors = FilterChipDefaults.filterChipColors(
-                                                selectedContainerColor = rotomForm.primaryColor,
-                                                selectedLabelColor = Color.White
+                                            FilterChip(
+                                                selected = level == 100,
+                                                onClick = { level = 100 },
+                                                label = { Text("100", fontSize = 10.sp) },
+                                                modifier = Modifier.height(28.dp),
+                                                colors = FilterChipDefaults.filterChipColors(
+                                                    selectedContainerColor = rotomForm.primaryColor,
+                                                    selectedLabelColor = Color.White
+                                                )
                                             )
+                                        }
+                                    }
+                                }
+
+                                // Selector de Naturaleza
+                                Card(
+                                    modifier = Modifier
+                                        .weight(1.3f)
+                                        .clickable { showNaturePicker = true },
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = BorderStroke(1.dp, Color(0xFF333333))
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Naturaleza", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                                        Text(
+                                            text = "${selectedNature.nameEs} (${selectedNature.nameEn})",
+                                            color = rotomForm.accentColor,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
                                         )
+                                        val inc = selectedNature.increasedStat
+                                        val dec = selectedNature.decreasedStat
+                                        val modText = if (inc != null) {
+                                            "+${inc.shortName} / -${dec?.shortName}"
+                                        } else "Neutra"
+                                        Text(modText, fontSize = 10.sp, color = Color.LightGray)
                                     }
                                 }
                             }
+                        }
 
-                            // Selector de Naturaleza
-                            Card(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clickable { showNaturePicker = true },
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
-                                shape = RoundedCornerShape(10.dp)
+                        // Presets rápidos de reparto de EVs
+                        item {
+                            Text("Repartos Rápidos (Presets)", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                item {
+                                    PresetChip("Sweeper Físico") {
+                                        evHp = 4; evAtk = 252; evDef = 0; evSpa = 0; evSpd = 0; evSpe = 252
+                                    }
+                                }
+                                item {
+                                    PresetChip("Sweeper Especial") {
+                                        evHp = 4; evAtk = 0; evDef = 0; evSpa = 252; evSpd = 0; evSpe = 252
+                                    }
+                                }
+                                item {
+                                    PresetChip("Bulky Defensivo") {
+                                        evHp = 252; evAtk = 0; evDef = 252; evSpa = 0; evSpd = 4; evSpe = 0
+                                    }
+                                }
+                                item {
+                                    PresetChip("Bulky Especial") {
+                                        evHp = 252; evAtk = 0; evDef = 4; evSpa = 0; evSpd = 252; evSpe = 0
+                                    }
+                                }
+                                item {
+                                    PresetChip("Limpiar") {
+                                        evHp = 0; evAtk = 0; evDef = 0; evSpa = 0; evSpd = 0; evSpe = 0
+                                    }
+                                }
+                            }
+                        }
+
+                        // Barra de límite de EVs (510)
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(modifier = Modifier.padding(8.dp)) {
-                                    Text("Naturaleza", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
-                                    Text(
-                                        text = selectedNature.nameEs,
-                                        fontWeight = FontWeight.Bold,
-                                        color = rotomForm.accentColor,
-                                        fontSize = 13.sp
-                                    )
-                                    Text(
-                                        text = if (selectedNature.increasedStat != null)
-                                            "+${selectedNature.increasedStat?.shortName} / -${selectedNature.decreasedStat?.shortName}"
-                                        else "Neutra",
-                                        fontSize = 9.sp,
-                                        color = Color.LightGray
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Presets rápidos
-                    item {
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            item {
-                                PresetChip("Sweeper Físico (252 Atk/Spe)") {
-                                    evHp = 4; evAtk = 252; evDef = 0; evSpa = 0; evSpd = 0; evSpe = 252
-                                    selectedNature = StatCalculator.ALL_NATURES.first { it.nameEn == "Jolly" }
-                                }
-                            }
-                            item {
-                                PresetChip("Sweeper Especial (252 SpA/Spe)") {
-                                    evHp = 4; evAtk = 0; evDef = 0; evSpa = 252; evSpd = 0; evSpe = 252
-                                    selectedNature = StatCalculator.ALL_NATURES.first { it.nameEn == "Timid" }
-                                }
-                            }
-                            item {
-                                PresetChip("Bulky Defensivo (252 HP/Def)") {
-                                    evHp = 252; evAtk = 0; evDef = 252; evSpa = 0; evSpd = 4; evSpe = 0
-                                    selectedNature = StatCalculator.ALL_NATURES.first { it.nameEn == "Impish" }
-                                }
-                            }
-                            item {
-                                PresetChip("Reset (0 EVs)") {
-                                    evHp = 0; evAtk = 0; evDef = 0; evSpa = 0; evSpd = 0; evSpe = 0
-                                }
-                            }
-                        }
-                    }
-
-                    // Total EVs
-                    item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("EVs Usados:", fontSize = 11.sp, color = Color.Gray)
-                                    Text(
-                                        text = "$totalEvs / 510 (${remainingEvs} libres)",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (totalEvs > 510) Color(0xFFFF5252) else Color(0xFF69F0AE)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                LinearProgressIndicator(
-                                    progress = { (totalEvs.toFloat() / 510f).coerceIn(0f, 1f) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(6.dp)
-                                        .clip(RoundedCornerShape(3.dp)),
-                                    color = if (totalEvs > 510) Color(0xFFFF5252) else rotomForm.primaryColor,
-                                    trackColor = Color(0xFF2A2A2A)
+                                Text(
+                                    text = "EVs Asignados: $totalEvs / 510",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (totalEvs > 510) Color(0xFFFF5252) else Color.White
+                                )
+                                Text(
+                                    text = "Restantes: $remainingEvs",
+                                    fontSize = 11.sp,
+                                    color = if (remainingEvs < 0) Color(0xFFFF5252) else Color(0xFF69F0AE)
                                 )
                             }
+                            LinearProgressIndicator(
+                                progress = { (totalEvs / 510f).coerceIn(0f, 1f) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp)),
+                                color = if (totalEvs > 510) Color(0xFFFF5252) else rotomForm.primaryColor,
+                                trackColor = Color(0xFF2A2A2A),
+                            )
+                        }
+
+                        // Filas de Estadísticas: HP, Atk, Def, SpA, SpD, Spe
+                        item {
+                            StatRowSlider(
+                                statType = StatType.HP,
+                                base = baseStats.hp,
+                                calculated = calculated.hp,
+                                ev = evHp,
+                                iv = ivHp,
+                                onEvChange = { evHp = it },
+                                onIvChange = { ivHp = it }
+                            )
+                        }
+                        item {
+                            StatRowSlider(
+                                statType = StatType.ATTACK,
+                                base = baseStats.atk,
+                                calculated = calculated.atk,
+                                ev = evAtk,
+                                iv = ivAtk,
+                                onEvChange = { evAtk = it },
+                                onIvChange = { ivAtk = it },
+                                isBoosted = selectedNature.increasedStat == StatType.ATTACK,
+                                isReduced = selectedNature.decreasedStat == StatType.ATTACK
+                            )
+                        }
+                        item {
+                            StatRowSlider(
+                                statType = StatType.DEFENSE,
+                                base = baseStats.def,
+                                calculated = calculated.def,
+                                ev = evDef,
+                                iv = ivDef,
+                                onEvChange = { evDef = it },
+                                onIvChange = { ivDef = it },
+                                isBoosted = selectedNature.increasedStat == StatType.DEFENSE,
+                                isReduced = selectedNature.decreasedStat == StatType.DEFENSE
+                            )
+                        }
+                        item {
+                            StatRowSlider(
+                                statType = StatType.SPECIAL_ATTACK,
+                                base = baseStats.spa,
+                                calculated = calculated.spa,
+                                ev = evSpa,
+                                iv = ivSpa,
+                                onEvChange = { evSpa = it },
+                                onIvChange = { ivSpa = it },
+                                isBoosted = selectedNature.increasedStat == StatType.SPECIAL_ATTACK,
+                                isReduced = selectedNature.decreasedStat == StatType.SPECIAL_ATTACK
+                            )
+                        }
+                        item {
+                            StatRowSlider(
+                                statType = StatType.SPECIAL_DEFENSE,
+                                base = baseStats.spd,
+                                calculated = calculated.spd,
+                                ev = evSpd,
+                                iv = ivSpd,
+                                onEvChange = { evSpd = it },
+                                onIvChange = { ivSpd = it },
+                                isBoosted = selectedNature.increasedStat == StatType.SPECIAL_DEFENSE,
+                                isReduced = selectedNature.decreasedStat == StatType.SPECIAL_DEFENSE
+                            )
+                        }
+                        item {
+                            StatRowSlider(
+                                statType = StatType.SPEED,
+                                base = baseStats.spe,
+                                calculated = calculated.spe,
+                                ev = evSpe,
+                                iv = ivSpe,
+                                onEvChange = { evSpe = it },
+                                onIvChange = { ivSpe = it },
+                                isBoosted = selectedNature.increasedStat == StatType.SPEED,
+                                isReduced = selectedNature.decreasedStat == StatType.SPEED
+                            )
                         }
                     }
+                } else {
+                    // ==================== CONTENIDO DE PESTAÑA 1: MOVIMIENTOS (MOVESET) ====================
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 14.dp),
+                        contentPadding = PaddingValues(vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        item {
+                            Text(
+                                text = "Moveset de Combate (4 Movimientos)",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "Configura los 4 ataques para cálculos de cobertura y exportación a Cobblemon/Showdown.",
+                                fontSize = 11.sp,
+                                color = Color.Gray
+                            )
+                        }
 
-                    // 6 Estadísticas con Sliders
-                    item {
-                        StatRowControl(
-                            label = "PS",
-                            statType = StatType.HP,
-                            baseStat = baseStats.hp,
-                            finalStat = calculated.hp,
-                            ev = evHp,
-                            iv = ivHp,
-                            nature = selectedNature,
-                            onEvChange = { if (totalEvs - evHp + it <= 510) evHp = it },
-                            onIvChange = { ivHp = it }
-                        )
-                    }
+                        // Slot 1
+                        item {
+                            MoveSlotCard(
+                                slotIndex = 1,
+                                moveName = move1,
+                                onClick = { slotPickingMove = 1 },
+                                onClear = { move1 = null }
+                            )
+                        }
 
-                    item {
-                        StatRowControl(
-                            label = "Ataque",
-                            statType = StatType.ATTACK,
-                            baseStat = baseStats.atk,
-                            finalStat = calculated.atk,
-                            ev = evAtk,
-                            iv = ivAtk,
-                            nature = selectedNature,
-                            onEvChange = { if (totalEvs - evAtk + it <= 510) evAtk = it },
-                            onIvChange = { ivAtk = it }
-                        )
-                    }
+                        // Slot 2
+                        item {
+                            MoveSlotCard(
+                                slotIndex = 2,
+                                moveName = move2,
+                                onClick = { slotPickingMove = 2 },
+                                onClear = { move2 = null }
+                            )
+                        }
 
-                    item {
-                        StatRowControl(
-                            label = "Defensa",
-                            statType = StatType.DEFENSE,
-                            baseStat = baseStats.def,
-                            finalStat = calculated.def,
-                            ev = evDef,
-                            iv = ivDef,
-                            nature = selectedNature,
-                            onEvChange = { if (totalEvs - evDef + it <= 510) evDef = it },
-                            onIvChange = { ivDef = it }
-                        )
-                    }
+                        // Slot 3
+                        item {
+                            MoveSlotCard(
+                                slotIndex = 3,
+                                moveName = move3,
+                                onClick = { slotPickingMove = 3 },
+                                onClear = { move3 = null }
+                            )
+                        }
 
-                    item {
-                        StatRowControl(
-                            label = "At. Esp",
-                            statType = StatType.SPECIAL_ATTACK,
-                            baseStat = baseStats.spa,
-                            finalStat = calculated.spa,
-                            ev = evSpa,
-                            iv = ivSpa,
-                            nature = selectedNature,
-                            onEvChange = { if (totalEvs - evSpa + it <= 510) evSpa = it },
-                            onIvChange = { ivSpa = it }
-                        )
-                    }
-
-                    item {
-                        StatRowControl(
-                            label = "Def. Esp",
-                            statType = StatType.SPECIAL_DEFENSE,
-                            baseStat = baseStats.spd,
-                            finalStat = calculated.spd,
-                            ev = evSpd,
-                            iv = ivSpd,
-                            nature = selectedNature,
-                            onEvChange = { if (totalEvs - evSpd + it <= 510) evSpd = it },
-                            onIvChange = { ivSpd = it }
-                        )
-                    }
-
-                    item {
-                        StatRowControl(
-                            label = "Velocidad",
-                            statType = StatType.SPEED,
-                            baseStat = baseStats.spe,
-                            finalStat = calculated.spe,
-                            ev = evSpe,
-                            iv = ivSpe,
-                            nature = selectedNature,
-                            onEvChange = { if (totalEvs - evSpe + it <= 510) evSpe = it },
-                            onIvChange = { ivSpe = it }
-                        )
-                    }
-
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("Total BST Calculado:", color = Color.Gray, fontSize = 12.sp)
-                            Text("${calculated.totalBST} pts", color = rotomForm.accentColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        // Slot 4
+                        item {
+                            MoveSlotCard(
+                                slotIndex = 4,
+                                moveName = move4,
+                                onClick = { slotPickingMove = 4 },
+                                onClear = { move4 = null }
+                            )
                         }
                     }
                 }
 
-                // Footer de Acciones
+                // Barra Inferior: Acciones
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color(0xFF1C1C1C))
-                        .padding(12.dp),
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -419,10 +515,14 @@ fun MemberStatEditorDialog(
                                 ivDef = ivDef,
                                 ivSpa = ivSpa,
                                 ivSpd = ivSpd,
-                                ivSpe = ivSpe
+                                ivSpe = ivSpe,
+                                move1 = move1,
+                                move2 = move2,
+                                move3 = move3,
+                                move4 = move4
                             )
                             onSave(updated)
-                            Toast.makeText(context, "¡Estadísticas guardadas!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "¡Build y movimientos guardados!", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = rotomForm.primaryColor),
                         shape = RoundedCornerShape(10.dp)
@@ -477,5 +577,416 @@ fun MemberStatEditorDialog(
             },
             containerColor = Color(0xFF1E1E1E)
         )
+    }
+
+    // Modal para seleccionar movimiento de un slot
+    if (slotPickingMove != null) {
+        val currentSlot = slotPickingMove!!
+        MovePickerDialog(
+            slotIndex = currentSlot,
+            onDismiss = { slotPickingMove = null },
+            onMoveSelected = { selectedMove ->
+                when (currentSlot) {
+                    1 -> move1 = selectedMove.nameEn
+                    2 -> move2 = selectedMove.nameEn
+                    3 -> move3 = selectedMove.nameEn
+                    4 -> move4 = selectedMove.nameEn
+                }
+                slotPickingMove = null
+            },
+            onClear = {
+                when (currentSlot) {
+                    1 -> move1 = null
+                    2 -> move2 = null
+                    3 -> move3 = null
+                    4 -> move4 = null
+                }
+                slotPickingMove = null
+            }
+        )
+    }
+}
+
+@Composable
+private fun MoveSlotCard(
+    slotIndex: Int,
+    moveName: String?,
+    onClick: () -> Unit,
+    onClear: () -> Unit
+) {
+    val rotomForm by RotomThemeManager.currentForm.collectAsState()
+    val moveObj = remember(moveName) { moveName?.let { PokemonMoveData.findMove(it) } }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (moveObj != null) Color(0xFF222630) else Color(0xFF1A1A1A)
+        ),
+        border = BorderStroke(
+            1.dp,
+            if (moveObj != null) getTipoColor(moveObj.type).copy(alpha = 0.6f) else Color(0xFF333333)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            if (moveObj != null) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "Mov $slotIndex: ${moveObj.nameEs}",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "(${moveObj.nameEn})",
+                            color = Color.Gray,
+                            fontSize = 11.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        BadgeTipo(tipo = moveObj.type)
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = moveObj.category.color.copy(alpha = 0.2f),
+                            border = BorderStroke(1.dp, moveObj.category.color)
+                        ) {
+                            Text(
+                                text = "${moveObj.category.emoji} ${moveObj.category.displayName}",
+                                color = moveObj.category.color,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                            )
+                        }
+                        Text(
+                            text = "Pot: ${moveObj.power ?: "-"} • Prec: ${moveObj.accuracy?.let { "$it%" } ?: "-"} • PP: ${moveObj.pp}",
+                            fontSize = 10.sp,
+                            color = Color.LightGray
+                        )
+                    }
+                    if (moveObj.description.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = moveObj.description,
+                            fontSize = 10.sp,
+                            color = Color.Gray,
+                            maxLines = 1
+                        )
+                    }
+                }
+                IconButton(onClick = onClear) {
+                    Icon(Icons.Default.Delete, contentDescription = "Quitar", tint = Color(0xFFFF5252), modifier = Modifier.size(18.dp))
+                }
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null, tint = rotomForm.primaryColor)
+                    Column {
+                        Text(
+                            text = "Movimiento $slotIndex: (Vacío)",
+                            color = Color.Gray,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "Toca para asignar un movimiento del catálogo",
+                            color = Color(0xFF666666),
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Diálogo de selección de movimientos con búsqueda en vivo, filtro por categoría y tipo.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MovePickerDialog(
+    slotIndex: Int,
+    onDismiss: () -> Unit,
+    onMoveSelected: (PokemonMove) -> Unit,
+    onClear: () -> Unit
+) {
+    val rotomForm by RotomThemeManager.currentForm.collectAsState()
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf<MoveCategory?>(null) }
+    var selectedType by remember { mutableStateOf<String?>(null) }
+
+    val filteredMoves = remember(searchQuery, selectedCategory, selectedType) {
+        PokemonMoveData.allMoves.filter { m ->
+            val matchesCategory = selectedCategory == null || m.category == selectedCategory
+            val matchesType = selectedType == null || m.type.equals(selectedType, ignoreCase = true)
+            val matchesSearch = searchQuery.isBlank() ||
+                    m.nameEs.contains(searchQuery, ignoreCase = true) ||
+                    m.nameEn.contains(searchQuery, ignoreCase = true) ||
+                    m.description.contains(searchQuery, ignoreCase = true) ||
+                    m.type.contains(searchQuery, ignoreCase = true)
+
+            matchesCategory && matchesType && matchesSearch
+        }
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.96f)
+                .fillMaxHeight(0.85f),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+            border = BorderStroke(1.dp, rotomForm.primaryColor)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                // Cabecera
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Elegir Movimiento $slotIndex",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.LightGray)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Buscador
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Buscar por nombre, tipo...", fontSize = 12.sp) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = rotomForm.primaryColor) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = rotomForm.primaryColor,
+                        unfocusedBorderColor = Color(0xFF333333)
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Filtro por Categoría
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    FilterChip(
+                        selected = selectedCategory == null,
+                        onClick = { selectedCategory = null },
+                        label = { Text("Todas", fontSize = 10.sp) }
+                    )
+                    FilterChip(
+                        selected = selectedCategory == MoveCategory.PHYSICAL,
+                        onClick = { selectedCategory = if (selectedCategory == MoveCategory.PHYSICAL) null else MoveCategory.PHYSICAL },
+                        label = { Text("💥 Físico", fontSize = 10.sp) }
+                    )
+                    FilterChip(
+                        selected = selectedCategory == MoveCategory.SPECIAL,
+                        onClick = { selectedCategory = if (selectedCategory == MoveCategory.SPECIAL) null else MoveCategory.SPECIAL },
+                        label = { Text("🔮 Especial", fontSize = 10.sp) }
+                    )
+                    FilterChip(
+                        selected = selectedCategory == MoveCategory.STATUS,
+                        onClick = { selectedCategory = if (selectedCategory == MoveCategory.STATUS) null else MoveCategory.STATUS },
+                        label = { Text("🛡️ Estado", fontSize = 10.sp) }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Conteo y Quitar
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${filteredMoves.size} movimientos disponibles",
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
+                    TextButton(onClick = onClear) {
+                        Text("Dejar Vacío", color = Color(0xFFFF5252), fontSize = 11.sp)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Lista de movimientos
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(filteredMoves) { move ->
+                        Surface(
+                            onClick = { onMoveSelected(move) },
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color(0xFF242730),
+                            border = BorderStroke(1.dp, getTipoColor(move.type).copy(alpha = 0.4f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text(move.nameEs, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                        Text("(${move.nameEn})", color = Color.Gray, fontSize = 11.sp)
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        BadgeTipo(tipo = move.type)
+                                        Text(
+                                            text = "${move.category.emoji} ${move.category.displayName}",
+                                            color = move.category.color,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = "Pot: ${move.power ?: "-"} • Prec: ${move.accuracy?.let { "$it%" } ?: "-"} • PP: ${move.pp}",
+                                            color = Color.LightGray,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                    if (move.description.isNotBlank()) {
+                                        Text(move.description, color = Color.Gray, fontSize = 10.sp, maxLines = 1)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatRowSlider(
+    statType: StatType,
+    base: Int,
+    calculated: Int,
+    ev: Int,
+    iv: Int,
+    onEvChange: (Int) -> Unit,
+    onIvChange: (Int) -> Unit,
+    isBoosted: Boolean = false,
+    isReduced: Boolean = false
+) {
+    val statColor = when (statType) {
+        StatType.HP -> Color(0xFFFF5252)
+        StatType.ATTACK -> Color(0xFFFF7043)
+        StatType.DEFENSE -> Color(0xFFFFCA28)
+        StatType.SPECIAL_ATTACK -> Color(0xFF42A5F5)
+        StatType.SPECIAL_DEFENSE -> Color(0xFF66BB6A)
+        StatType.SPEED -> Color(0xFFEC407A)
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        shape = RoundedCornerShape(10.dp)
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = statType.shortName,
+                        fontWeight = FontWeight.Bold,
+                        color = statColor,
+                        fontSize = 13.sp
+                    )
+                    Text("Base: $base", fontSize = 10.sp, color = Color.Gray)
+                    if (isBoosted) Text("(+10%)", fontSize = 10.sp, color = Color(0xFF69F0AE), fontWeight = FontWeight.Bold)
+                    if (isReduced) Text("(-10%)", fontSize = 10.sp, color = Color(0xFFFF5252), fontWeight = FontWeight.Bold)
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Toggle IV 31 vs 0
+                    FilterChip(
+                        selected = iv == 31,
+                        onClick = { onIvChange(if (iv == 31) 0 else 31) },
+                        label = { Text("IV: $iv", fontSize = 9.sp) },
+                        modifier = Modifier.height(24.dp)
+                    )
+
+                    Text(
+                        text = "$calculated",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+
+            // Slider de EV (0..252 en múltiplos de 4)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Slider(
+                    value = ev.toFloat(),
+                    onValueChange = { onEvChange((it.toInt() / 4) * 4) },
+                    valueRange = 0f..252f,
+                    steps = 62,
+                    modifier = Modifier.weight(1f),
+                    colors = SliderDefaults.colors(
+                        thumbColor = statColor,
+                        activeTrackColor = statColor
+                    )
+                )
+
+                Text(
+                    text = "EV: $ev",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    modifier = Modifier.width(50.dp)
+                )
+            }
+        }
     }
 }

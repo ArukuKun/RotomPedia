@@ -13,7 +13,7 @@ import androidx.room.RoomDatabase
         EquipoPokemon::class,
         MiembroEquipo::class
     ],
-    version = 5
+    version = 6
 )
 abstract class AppDatabase : RoomDatabase() {
 
