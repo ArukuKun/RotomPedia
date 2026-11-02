@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-and-release:
-    name: Build & Publish Release
+    name: Build & Publish APK Release
     runs-on: ubuntu-latest
 
     steps:
@@ -31,17 +31,23 @@ jobs:
         working-directory: ./RotomPedia
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Rename APK for Release
+      - name: Prepare APK Asset for Release
         run: |
           VERSION_TAG="${{ github.ref_name }}"
-          cp ./RotomPedia/app/build/outputs/apk/debug/app-debug.apk "./RotomPedia/app/build/outputs/apk/debug/RotomPedia-${VERSION_TAG}.apk"
+          echo "Preparing release APK for tag: ${VERSION_TAG}"
+          ls -la ./RotomPedia/app/build/outputs/apk/debug/
+          cp ./RotomPedia/app/build/outputs/apk/debug/app-debug.apk "./RotomPedia-${VERSION_TAG}.apk"
+          cp ./RotomPedia/app/build/outputs/apk/debug/app-debug.apk "./RotomPedia-latest.apk"
 
       - name: Create GitHub Release and Upload APK
         uses: softprops/action-gh-release@v2
         with:
           name: "RotomPedia ${{ github.ref_name }}"
           tag_name: ${{ github.ref_name }}
-          files: ./RotomPedia/app/build/outputs/apk/debug/RotomPedia-*.apk
+          files: |
+            ./RotomPedia-${{ github.ref_name }}.apk
+            ./RotomPedia-latest.apk
+          fail_on_unmatched_files: true
           draft: false
           prerelease: false
           generate_release_notes: true

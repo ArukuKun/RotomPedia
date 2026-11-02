@@ -1,4 +1,4 @@
-package com.duoc.rotompedia.data
+﻿package com.duoc.rotompedia.data
 
 /**
  * Métodos canónicos de encuentro de Pokémon salvajes.
@@ -374,6 +374,242 @@ object RegionLocationData {
             relativeY = 0.22f,
             keyItems = listOf("Título de Campeón de la Liga Pokémon", "Acceso al Hall de la Fama"),
             wildEncounters = emptyList()
+        ),
+
+        // ==================== JOHTO ====================
+        RouteLocation(
+            id = "johto_new_bark",
+            name = "Pueblo Primavera",
+            region = "johto",
+            typeEmoji = "🏡",
+            description = "El pueblo donde los vientos anuncian un nuevo comienzo. Hogar del Laboratorio del Profesor Elm.",
+            relativeX = 0.85f,
+            relativeY = 0.70f,
+            keyItems = listOf("Pokémon Inicial de Johto", "Pokégear", "Poción"),
+            wildEncounters = listOf(
+                WildEncounter(129, "Magikarp", sprite(129), listOf("water"), EncounterMethod.OLD_ROD, 100, 5, 5),
+                WildEncounter(72, "Tentacool", sprite(72), listOf("water", "poison"), EncounterMethod.SURF, 90, 15, 20)
+            )
+        ),
+        RouteLocation(
+            id = "johto_route_29",
+            name = "Ruta 29",
+            region = "johto",
+            typeEmoji = "🌿",
+            description = "Ruta boscosa hacia Ciudad Cerezo. Frecuentada por pequeños roedores y aves de Johto.",
+            relativeX = 0.72f,
+            relativeY = 0.70f,
+            keyItems = listOf("Guía de bayas", "Poción"),
+            wildEncounters = listOf(
+                WildEncounter(161, "Sentret", sprite(161), listOf("normal"), EncounterMethod.WALK, 45, 2, 4),
+                WildEncounter(16, "Pidgey", sprite(16), listOf("normal", "flying"), EncounterMethod.WALK, 35, 2, 4),
+                WildEncounter(163, "Hoothoot", sprite(163), listOf("normal", "flying"), EncounterMethod.WALK, 20, 2, 4)
+            )
+        ),
+        RouteLocation(
+            id = "johto_violet_city",
+            name = "Ciudad Malva (Torre Bellsprout)",
+            region = "johto",
+            typeEmoji = "🏛️",
+            description = "Ciudad de antiguas tradiciones. Su gimnasio está liderado por Pegaso (tipo Volador) y alberga la mística Torre Bellsprout.",
+            relativeX = 0.50f,
+            relativeY = 0.42f,
+            keyItems = listOf("Medalla Céfiro (1er Gimnasio)", "Huevo Misterioso (Togepi)", "MT31 Bofetón Lodo"),
+            wildEncounters = listOf(
+                WildEncounter(69, "Bellsprout", sprite(69), listOf("grass", "poison"), EncounterMethod.WALK, 50, 3, 6),
+                WildEncounter(92, "Gastly", sprite(92), listOf("ghost", "poison"), EncounterMethod.WALK, 35, 3, 6),
+                WildEncounter(74, "Geodude", sprite(74), listOf("rock", "ground"), EncounterMethod.CAVE, 15, 4, 6)
+            )
+        ),
+        RouteLocation(
+            id = "johto_slowpoke_well",
+            name = "Pozo Slowpoke",
+            region = "johto",
+            typeEmoji = "🕳️",
+            description = "Pozo sagrado de Pueblo Azalea donde los Slowpoke son venerados por traer la lluvia. Lugar del rescate frente al Team Rocket.",
+            relativeX = 0.44f,
+            relativeY = 0.82f,
+            keyItems = listOf("Cebo Ball (César)", "Caramelo Raro"),
+            wildEncounters = listOf(
+                WildEncounter(79, "Slowpoke", sprite(79), listOf("water", "psychic"), EncounterMethod.CAVE, 85, 5, 8),
+                WildEncounter(41, "Zubat", sprite(41), listOf("poison", "flying"), EncounterMethod.CAVE, 15, 6, 8)
+            )
+        ),
+        RouteLocation(
+            id = "johto_goldenrod_city",
+            name = "Ciudad Trigal",
+            region = "johto",
+            typeEmoji = "🏙️",
+            description = "La metrópolis comercial más grande de Johto. Sede del Gimnasio de Blanca (Normal), el Centro Comercial y la Torre Radio.",
+            relativeX = 0.28f,
+            relativeY = 0.60f,
+            keyItems = listOf("Medalla Planicie (3er Gimnasio)", "Bicicleta", "Regadera Squirtbottle", "Monedero"),
+            wildEncounters = listOf(
+                WildEncounter(63, "Abra", sprite(63), listOf("psychic"), EncounterMethod.WALK, 30, 10, 12),
+                WildEncounter(66, "Machop", sprite(66), listOf("fighting"), EncounterMethod.WALK, 25, 12, 14),
+                WildEncounter(39, "Jigglypuff", sprite(39), listOf("normal", "fairy"), EncounterMethod.WALK, 20, 12, 14)
+            )
+        ),
+        RouteLocation(
+            id = "johto_lake_of_rage",
+            name = "Lago de la Furia (Gyarados Rojo)",
+            region = "johto",
+            typeEmoji = "🔴",
+            description = "Inmenso lago septentrional donde el Team Rocket transmitió ondas forzadas provocando la aparición del mítico Gyarados Rojo variocolor.",
+            relativeX = 0.50f,
+            relativeY = 0.16f,
+            keyItems = listOf("Escama Roja", "MT10 Poder Oculto"),
+            wildEncounters = listOf(
+                WildEncounter(130, "Gyarados", sprite(130), listOf("water", "flying"), EncounterMethod.SPECIAL, 100, 30, 30),
+                WildEncounter(129, "Magikarp", sprite(129), listOf("water"), EncounterMethod.SURF, 70, 15, 25),
+                WildEncounter(118, "Goldeen", sprite(118), listOf("water"), EncounterMethod.GOOD_ROD, 30, 15, 20)
+            )
+        ),
+
+        // ==================== HOENN ====================
+        RouteLocation(
+            id = "hoenn_littleroot",
+            name = "Villa Raíz",
+            region = "hoenn",
+            typeEmoji = "🏡",
+            description = "Tranquila aldea costera rodeada de flores. Sede del Laboratorio del Profesor Abedul y punto de partida de Hoenn.",
+            relativeX = 0.35f,
+            relativeY = 0.85f,
+            keyItems = listOf("Pokémon Inicial de Hoenn", "Pokédex de Hoenn", "Zapatillas de Correr"),
+            wildEncounters = listOf(
+                WildEncounter(263, "Zigzagoon", sprite(263), listOf("normal"), EncounterMethod.WALK, 50, 2, 4),
+                WildEncounter(261, "Poochyena", sprite(261), listOf("dark"), EncounterMethod.WALK, 40, 2, 4),
+                WildEncounter(265, "Wurmple", sprite(265), listOf("bug"), EncounterMethod.WALK, 10, 2, 3)
+            )
+        ),
+        RouteLocation(
+            id = "hoenn_rustboro",
+            name = "Ciudad Férrica",
+            region = "hoenn",
+            typeEmoji = "⛏️",
+            description = "Ciudad industrial que respeta el medio ambiente. Sede de la Corporación Devon y del Gimnasio Roca de Petra.",
+            relativeX = 0.18f,
+            relativeY = 0.52f,
+            keyItems = listOf("Medalla Piedra (1er Gimnasio)", "PokéNav", "MT39 Tumba Rocas"),
+            wildEncounters = listOf(
+                WildEncounter(290, "Nincada", sprite(290), listOf("bug", "ground"), EncounterMethod.WALK, 40, 6, 8),
+                WildEncounter(276, "Taillow", sprite(276), listOf("normal", "flying"), EncounterMethod.WALK, 35, 6, 8),
+                WildEncounter(280, "Ralts", sprite(280), listOf("psychic", "fairy"), EncounterMethod.WALK, 5, 4, 4)
+            )
+        ),
+        RouteLocation(
+            id = "hoenn_granite_cave",
+            name = "Cueva Granito (Máximo Peñas)",
+            region = "hoenn",
+            typeEmoji = "🦇",
+            description = "Caverna cavernosa de Pueblo Azuliza donde se encuentra al coleccionista de piedras y Campeón Máximo Peñas.",
+            relativeX = 0.18f,
+            relativeY = 0.78f,
+            keyItems = listOf("MT47 Ala de Acero", "Carta de Devon para Máximo"),
+            wildEncounters = listOf(
+                WildEncounter(304, "Aron", sprite(304), listOf("steel", "rock"), EncounterMethod.CAVE, 40, 10, 12),
+                WildEncounter(296, "Makuhita", sprite(296), listOf("fighting"), EncounterMethod.CAVE, 30, 9, 11),
+                WildEncounter(302, "Sableye", sprite(302), listOf("dark", "ghost"), EncounterMethod.CAVE, 20, 10, 12),
+                WildEncounter(41, "Zubat", sprite(41), listOf("poison", "flying"), EncounterMethod.CAVE, 10, 9, 11)
+            )
+        ),
+        RouteLocation(
+            id = "hoenn_sky_pillar",
+            name = "Pilar Celeste (Rayquaza)",
+            region = "hoenn",
+            typeEmoji = "🐉",
+            description = "Antigua torre monumental que perfora las nubes, construida por el Clan Meteoro para comunicarse con el dragón celeste Rayquaza.",
+            relativeX = 0.88f,
+            relativeY = 0.78f,
+            keyItems = listOf("Orbe Verde", "MT02 Garra Dragón"),
+            wildEncounters = listOf(
+                WildEncounter(384, "Rayquaza", sprite(384), listOf("dragon", "flying"), EncounterMethod.SPECIAL, 100, 70, 70),
+                WildEncounter(344, "Claydol", sprite(344), listOf("ground", "psychic"), EncounterMethod.CAVE, 35, 52, 56),
+                WildEncounter(356, "Dusclops", sprite(356), listOf("ghost"), EncounterMethod.CAVE, 30, 52, 55),
+                WildEncounter(277, "Swellow", sprite(277), listOf("normal", "flying"), EncounterMethod.CAVE, 20, 50, 54),
+                WildEncounter(334, "Altaria", sprite(334), listOf("dragon", "flying"), EncounterMethod.CAVE, 15, 52, 56)
+            )
+        ),
+
+        // ==================== SINNOH ====================
+        RouteLocation(
+            id = "sinnoh_twinleaf",
+            name = "Pueblo Hojaverde",
+            region = "sinnoh",
+            typeEmoji = "🏡",
+            description = "Tranquila localidad con clima fresco donde el protagonista y su rival inician su aventura hacia el Lago Veraz.",
+            relativeX = 0.20f,
+            relativeY = 0.82f,
+            keyItems = listOf("Bolsa de Aventurero", "Diario"),
+            wildEncounters = listOf(
+                WildEncounter(396, "Starly", sprite(396), listOf("normal", "flying"), EncounterMethod.WALK, 50, 2, 4),
+                WildEncounter(399, "Bidoof", sprite(399), listOf("normal"), EncounterMethod.WALK, 50, 2, 4)
+            )
+        ),
+        RouteLocation(
+            id = "sinnoh_mt_coronet",
+            name = "Monte Corona",
+            region = "sinnoh",
+            typeEmoji = "🏔️",
+            description = "La cordillera nevada que divide a la región de Sinnoh en dos mitades culturales y ecológicas. Conduce a la Columna Lanza.",
+            relativeX = 0.50f,
+            relativeY = 0.44f,
+            keyItems = listOf("Lustresfera", "Diamansfera", "MT03 Hidropulso"),
+            wildEncounters = listOf(
+                WildEncounter(436, "Bronzor", sprite(436), listOf("steel", "psychic"), EncounterMethod.CAVE, 35, 14, 18),
+                WildEncounter(459, "Snover", sprite(459), listOf("grass", "ice"), EncounterMethod.WALK, 30, 32, 36),
+                WildEncounter(394, "Grovyle", sprite(394), listOf("grass"), EncounterMethod.CAVE, 10, 30, 32),
+                WildEncounter(447, "Riolu", sprite(447), listOf("fighting"), EncounterMethod.CAVE, 5, 15, 18)
+            )
+        ),
+        RouteLocation(
+            id = "sinnoh_spear_pillar",
+            name = "Columna Lanza (Dialga / Palkia)",
+            region = "sinnoh",
+            typeEmoji = "🌌",
+            description = "El altar de la creación en la cumbre del Monte Corona, donde el tiempo y el espacio convergen y reside el poder de Dialga y Palkia.",
+            relativeX = 0.50f,
+            relativeY = 0.28f,
+            keyItems = listOf("Flauta Azur", "Orbe Griseo"),
+            wildEncounters = listOf(
+                WildEncounter(483, "Dialga", sprite(483), listOf("steel", "dragon"), EncounterMethod.SPECIAL, 50, 47, 47),
+                WildEncounter(484, "Palkia", sprite(484), listOf("water", "dragon"), EncounterMethod.SPECIAL, 50, 47, 47),
+                WildEncounter(437, "Bronzong", sprite(437), listOf("steel", "psychic"), EncounterMethod.CAVE, 40, 46, 50)
+            )
+        ),
+
+        // ==================== PALDEA ====================
+        RouteLocation(
+            id = "paldea_cabo_poco",
+            name = "Pueblo Cabo",
+            region = "paldea",
+            typeEmoji = "🏡",
+            description = "Pintoresca ensenada sureña de Paldea donde reside el Campeón Mencía y el Laboratorio de la Profesora Albora / Turo.",
+            relativeX = 0.45f,
+            relativeY = 0.90f,
+            keyItems = listOf("RotomDex Móvil", "Orbe Teracristal", "Sandwich de Koraidon/Miraidon"),
+            wildEncounters = listOf(
+                WildEncounter(915, "Lechonk", sprite(915), listOf("normal"), EncounterMethod.WALK, 40, 2, 4),
+                WildEncounter(917, "Tarountula", sprite(917), listOf("bug"), EncounterMethod.WALK, 30, 2, 3),
+                WildEncounter(921, "Pawmi", sprite(921), listOf("electric"), EncounterMethod.WALK, 20, 2, 4),
+                WildEncounter(661, "Fletchling", sprite(661), listOf("normal", "flying"), EncounterMethod.WALK, 10, 2, 4)
+            )
+        ),
+        RouteLocation(
+            id = "paldea_area_zero",
+            name = "Área Cero (Gran Foso de Paldea)",
+            region = "paldea",
+            typeEmoji = "🌀",
+            description = "Enigmático abismo en el centro de Paldea repleto de cristales de Teracristalización y Pokémon Paradoja del Pasado y Futuro.",
+            relativeX = 0.50f,
+            relativeY = 0.50f,
+            keyItems = listOf("Libro Escarlata / Púrpura", "Cristal Estelar"),
+            wildEncounters = listOf(
+                WildEncounter(1007, "Koraidon", sprite(1007), listOf("fighting", "dragon"), EncounterMethod.SPECIAL, 50, 68, 68),
+                WildEncounter(1008, "Miraidon", sprite(1008), listOf("electric", "dragon"), EncounterMethod.SPECIAL, 50, 68, 68),
+                WildEncounter(1005, "Roaring Moon", sprite(1005), listOf("dragon", "dark"), EncounterMethod.CAVE, 40, 56, 60),
+                WildEncounter(1006, "Iron Valiant", sprite(1006), listOf("fairy", "fighting"), EncounterMethod.CAVE, 40, 56, 60)
+            )
         )
     )
 }

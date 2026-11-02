@@ -218,3 +218,74 @@ data class NamedApiResource(
     val name: String,
     val url: String
 )
+
+// ==================== FORMAS DE POKÉMON ====================
+
+@JsonClass(generateAdapter = true)
+data class PokemonVariety(
+    @Json(name = "is_default") val isDefault: Boolean,
+    @Json(name = "pokemon") val pokemon: NamedApiResource
+)
+
+@JsonClass(generateAdapter = true)
+data class PokemonSpeciesVarieties(
+    val id: Int,
+    val name: String,
+    @Json(name = "evolution_chain") val evolutionChain: EvolutionChainUrl,
+    @Json(name = "flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>,
+    @Json(name = "capture_rate") val captureRate: Int? = null,
+    @Json(name = "varieties") val varieties: List<PokemonVariety> = emptyList()
+)
+
+// ==================== MOVIMIENTOS ====================
+
+@JsonClass(generateAdapter = true)
+data class MoveVersionGroupDetail(
+    @Json(name = "level_learned_at") val levelLearnedAt: Int,
+    @Json(name = "move_learn_method") val moveLearnMethod: NamedApiResource,
+    @Json(name = "version_group") val versionGroup: NamedApiResource
+)
+
+@JsonClass(generateAdapter = true)
+data class PokemonMoveEntry(
+    @Json(name = "move") val move: NamedApiResource,
+    @Json(name = "version_group_details") val versionGroupDetails: List<MoveVersionGroupDetail>
+)
+
+// PokemonData extendida con moves (nueva versión con moves)
+@JsonClass(generateAdapter = true)
+data class PokemonDataWithMoves(
+    val id: Int,
+    val name: String,
+    val sprites: SpritesData,
+    val types: List<TypesSlot>,
+    val stats: List<StatInfo>,
+    val cries: CriesData? = null,
+    val moves: List<PokemonMoveEntry> = emptyList()
+)
+
+// Detalle de un movimiento individual
+@JsonClass(generateAdapter = true)
+data class MoveDetailResponse(
+    val id: Int,
+    val name: String,
+    val accuracy: Int? = null,
+    val power: Int? = null,
+    val pp: Int? = null,
+    @Json(name = "damage_class") val damageClass: NamedApiResource? = null,
+    val type: NamedApiResource? = null,
+    @Json(name = "effect_entries") val effectEntries: List<MoveEffectEntry> = emptyList(),
+    @Json(name = "names") val names: List<MoveName> = emptyList()
+)
+
+@JsonClass(generateAdapter = true)
+data class MoveEffectEntry(
+    @Json(name = "short_effect") val shortEffect: String,
+    val language: Language
+)
+
+@JsonClass(generateAdapter = true)
+data class MoveName(
+    val name: String,
+    val language: Language
+)

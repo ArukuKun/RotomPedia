@@ -1,4 +1,4 @@
-package com.duoc.rotompedia.ui.screens
+﻿package com.duoc.rotompedia.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -7,7 +7,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import com.duoc.rotompedia.util.RotomThemeManager
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.duoc.rotompedia.data.PokemonFormsData
 import com.duoc.rotompedia.data.PokemonMoveData
 import com.duoc.rotompedia.data.local.EquipoConMiembros
 import com.duoc.rotompedia.data.local.MiembroEquipo
@@ -208,6 +211,7 @@ fun TeamBuilderScreen(
         val currentMember = memberToEditStats!!
         MemberStatEditorDialog(
             miembro = currentMember,
+            pokemonViewModel = pokemonViewModel,
             onDismiss = { memberToEditStats = null },
             onSave = { updated ->
                 teamBuilderViewModel.actualizarMiembro(updated)
@@ -1150,7 +1154,7 @@ fun TeamSlotCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(134.dp)
+            .height(152.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(
@@ -1188,7 +1192,7 @@ fun TeamSlotCard(
                     AsyncImage(
                         model = miembro.spriteUrl,
                         contentDescription = miembro.nombre,
-                        modifier = Modifier.size(46.dp),
+                        modifier = Modifier.size(42.dp),
                         contentScale = ContentScale.Fit
                     )
                     Text(
@@ -1286,7 +1290,7 @@ fun OptTypeChipsRow(types: List<String>) {
     }
 }
 
-// Diálogo para buscar y seleccionar un Pokémon con filtro de tipos en tiempo real
+// Diálogo para buscar y seleccionar un Pokémon con filtro de tipos, generaciones y formas alternativas
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonPickerDialog(
@@ -1310,8 +1314,63 @@ fun PokemonPickerDialog(
     var query by remember { mutableStateOf("") }
     val pokedexList by pokemonViewModel.filteredPokemonList.collectAsState()
     val selectedTypeFilter by pokemonViewModel.selectedTypeFilter.collectAsState()
+    var selectedGenFilter by remember { mutableStateOf("Todos") }
     val coroutineScope = rememberCoroutineScope()
     var isLoadingSelection by remember { mutableStateOf(false) }
+
+    val genFilters = listOf("Todos", "⚡ Formas / Megas", "Kanto", "Johto", "Hoenn", "Sinnoh", "Teselia", "Kalos", "Alola", "Galar", "Paldea")
+
+    fun getGenRange(gen: String): IntRange? = when (gen) {
+        "Kanto" -> 1..151
+        "Johto" -> 152..251
+        "Hoenn" -> 252..386
+        "Sinnoh" -> 387..493
+        "Teselia" -> 494..649
+        "Kalos" -> 650..721
+        "Alola" -> 722..809
+        "Galar" -> 810..905
+        "Paldea" -> 906..1025
+        else -> null
+    }
+
+    // Filtrar formas alternativas competitivas
+    val matchingForms = remember(query, selectedTypeFilter, selectedGenFilter) {
+        if (selectedGenFilter != "Todos" && selectedGenFilter != "⚡ Formas / Megas") {
+            emptyList()
+        } else {
+            val q = query.trim().lowercase()
+            PokemonFormsData.allForms.filter { form ->
+                val matchesQuery = q.isEmpty() ||
+                        form.displayName.lowercase().contains(q) ||
+                        form.nameEn.lowercase().contains(q) ||
+                        form.id.toString() == q ||
+                        form.formTag.lowercase().contains(q)
+
+                val matchesType = selectedTypeFilter == "all" ||
+                        form.tipo1.equals(selectedTypeFilter, ignoreCase = true) ||
+                        form.tipo2?.equals(selectedTypeFilter, ignoreCase = true) == true
+
+                matchesQuery && matchesType
+            }
+        }
+    }
+
+    // Filtrar especies base
+    val filteredBaseList = remember(pokedexList, selectedGenFilter) {
+        if (selectedGenFilter == "⚡ Formas / Megas") {
+            emptyList()
+        } else {
+            val range = getGenRange(selectedGenFilter)
+            if (range != null) {
+                pokedexList.filter { item ->
+                    val id = item.url.split("/").dropLast(1).last().toIntOrNull() ?: 1
+                    id in range
+                }
+            } else {
+                pokedexList
+            }
+        }
+    }
 
     Dialog(onDismissRequest = {
         pokemonViewModel.updateTypeFilter("all")
@@ -1320,22 +1379,31 @@ fun PokemonPickerDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.88f),
+                .fillMaxHeight(0.90f),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Elige un Pokémon",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Column {
+                        Text(
+                            text = "Elige un Pokémon",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        val totalCount = matchingForms.size + filteredBaseList.size
+                        Text(
+                            text = "$totalCount resultados disponibles",
+                            fontSize = 11.sp,
+                            color = Color(0xFFFF6D00)
+                        )
+                    }
                     IconButton(onClick = {
                         pokemonViewModel.updateTypeFilter("all")
                         onDismiss()
@@ -1344,17 +1412,27 @@ fun PokemonPickerDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                // Campo de búsqueda por nombre o número o tipo
+                // Campo de búsqueda por nombre, número, tipo o forma
                 OutlinedTextField(
                     value = query,
                     onValueChange = {
                         query = it
                         pokemonViewModel.updateSearchQuery(it)
                     },
-                    placeholder = { Text("Buscar por nombre, número o tipo...") },
+                    placeholder = { Text("Buscar nombre, #ID, tipo o forma (Mega, Hisui...)", fontSize = 12.sp) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            IconButton(onClick = {
+                                query = ""
+                                pokemonViewModel.updateSearchQuery("")
+                            }) {
+                                Icon(Icons.Default.Close, contentDescription = "Limpiar", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -1364,17 +1442,51 @@ fun PokemonPickerDialog(
                     )
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                // Chips horizontales para filtrar por Tipo Pokémon
-                Row(
+                // Filtro 1: Generación / Región / Formas
+                Text(
+                    text = "Región / Categoría:",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Gray
+                )
+                LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 2.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    allPokemonTypes.forEach { typeName ->
+                    items(genFilters) { gen ->
+                        val isSelected = gen == selectedGenFilter
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { selectedGenFilter = gen },
+                            label = { Text(gen, fontSize = 10.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = if (gen.contains("Formas")) Color(0xFF61DAF6) else Color(0xFFFF6D00),
+                                selectedLabelColor = if (gen.contains("Formas")) Color.Black else Color.White,
+                                containerColor = Color(0xFF2A2A2A),
+                                labelColor = Color.LightGray
+                            )
+                        )
+                    }
+                }
+
+                // Filtro 2: Tipo Elemental
+                Text(
+                    text = "Tipo:",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Gray
+                )
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(allPokemonTypes) { typeName ->
                         FilterChip(
                             selected = typeName == selectedTypeFilter,
                             onClick = {
@@ -1383,7 +1495,7 @@ fun PokemonPickerDialog(
                             label = {
                                 Text(
                                     traducirTipo(typeName),
-                                    fontSize = 11.sp,
+                                    fontSize = 10.sp,
                                     fontWeight = if (typeName == selectedTypeFilter) FontWeight.Bold else FontWeight.Normal
                                 )
                             },
@@ -1402,7 +1514,7 @@ fun PokemonPickerDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 if (isLoadingSelection) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -1411,67 +1523,181 @@ fun PokemonPickerDialog(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        items(pokedexList) { item ->
-                            val id = item.url.split("/").dropLast(1).last().toIntOrNull() ?: 1
-                            val spriteUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+                        // Sección 1: Formas alternativas y Megas coincidentes
+                        if (matchingForms.isNotEmpty()) {
+                            item {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
+                                ) {
+                                    Text("⚡", fontSize = 12.sp)
+                                    Text(
+                                        text = "Formas Alternativas / Megas (${matchingForms.size})",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF61DAF6)
+                                    )
+                                }
+                            }
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Color(0xFF2A2A2A))
-                                    .clickable {
-                                        isLoadingSelection = true
-                                        coroutineScope.launch {
-                                            try {
-                                                val details = withContext(Dispatchers.IO) {
-                                                    com.duoc.rotompedia.data.remote.PokemonApi.service.getPokemon(id)
-                                                }
-                                                val t1 = details.types.getOrNull(0)?.type?.name ?: "normal"
-                                                val t2 = details.types.getOrNull(1)?.type?.name
-                                                val hp = details.stats.find { it.stat.name == "hp" }?.baseStat ?: 0
-                                                val atk = details.stats.find { it.stat.name == "attack" }?.baseStat ?: 0
-                                                val def = details.stats.find { it.stat.name == "defense" }?.baseStat ?: 0
-                                                val spa = details.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0
-                                                val spd = details.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0
-                                                val spe = details.stats.find { it.stat.name == "speed" }?.baseStat ?: 0
-
-                                                pokemonViewModel.updateTypeFilter("all")
-                                                onPokemonSelected(
-                                                    id, details.name,
-                                                    details.sprites.urlImagen ?: spriteUrl,
-                                                    t1, t2, hp, atk, def, spa, spd, spe
-                                                )
-                                            } catch (e: Exception) {
-                                                pokemonViewModel.updateTypeFilter("all")
-                                                onPokemonSelected(
-                                                    id, item.name, spriteUrl,
-                                                    "normal", null,
-                                                    0, 0, 0, 0, 0, 0
-                                                )
-                                            } finally {
-                                                isLoadingSelection = false
-                                            }
+                            items(matchingForms, key = { "form_${it.id}" }) { form ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0xFF222630))
+                                        .border(1.dp, getTipoColor(form.tipo1).copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                                        .clickable {
+                                            pokemonViewModel.updateTypeFilter("all")
+                                            onPokemonSelected(
+                                                form.id,
+                                                form.displayName,
+                                                form.spriteUrl,
+                                                form.tipo1,
+                                                form.tipo2,
+                                                form.hp, form.atk, form.def, form.spa, form.spd, form.spe
+                                            )
+                                        }
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    AsyncImage(
+                                        model = form.spriteUrl,
+                                        contentDescription = form.displayName,
+                                        modifier = Modifier.size(44.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = form.displayName,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            BadgeTipo(tipo = form.tipo1)
+                                            form.tipo2?.let { BadgeTipo(tipo = it) }
                                         }
                                     }
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                AsyncImage(
-                                    model = spriteUrl,
-                                    contentDescription = item.name,
-                                    modifier = Modifier.size(44.dp),
-                                    contentScale = ContentScale.Fit
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column {
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = Color(0xFF61DAF6).copy(alpha = 0.2f)
+                                        ) {
+                                            Text(
+                                                text = form.formTag,
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF61DAF6),
+                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                        Text(
+                                            text = "BST: ${form.hp + form.atk + form.def + form.spa + form.spd + form.spe}",
+                                            fontSize = 9.sp,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Sección 2: Pokémon base de la Pokédex
+                        if (filteredBaseList.isNotEmpty()) {
+                            if (matchingForms.isNotEmpty()) {
+                                item {
                                     Text(
-                                        text = "#${id.toString().padStart(3, '0')} ${item.name}",
-                                        fontSize = 14.sp,
+                                        text = "Pokédex Nacional",
+                                        fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = Color.LightGray,
+                                        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
+                                    )
+                                }
+                            }
+
+                            items(filteredBaseList, key = { it.name }) { item ->
+                                val id = item.url.split("/").dropLast(1).last().toIntOrNull() ?: 1
+                                val spriteUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0xFF2A2A2A))
+                                        .clickable {
+                                            isLoadingSelection = true
+                                            coroutineScope.launch {
+                                                try {
+                                                    val details = withContext(Dispatchers.IO) {
+                                                        com.duoc.rotompedia.data.remote.PokemonApi.service.getPokemon(id)
+                                                    }
+                                                    val t1 = details.types.getOrNull(0)?.type?.name ?: "normal"
+                                                    val t2 = details.types.getOrNull(1)?.type?.name
+                                                    val hp = details.stats.find { it.stat.name == "hp" }?.baseStat ?: 0
+                                                    val atk = details.stats.find { it.stat.name == "attack" }?.baseStat ?: 0
+                                                    val def = details.stats.find { it.stat.name == "defense" }?.baseStat ?: 0
+                                                    val spa = details.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0
+                                                    val spd = details.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0
+                                                    val spe = details.stats.find { it.stat.name == "speed" }?.baseStat ?: 0
+
+                                                    pokemonViewModel.updateTypeFilter("all")
+                                                    onPokemonSelected(
+                                                        id, details.name.replaceFirstChar { c -> c.uppercase() },
+                                                        details.sprites.urlImagen ?: spriteUrl,
+                                                        t1, t2, hp, atk, def, spa, spd, spe
+                                                    )
+                                                } catch (e: Exception) {
+                                                    pokemonViewModel.updateTypeFilter("all")
+                                                    onPokemonSelected(
+                                                        id, item.name.replaceFirstChar { c -> c.uppercase() }, spriteUrl,
+                                                        "normal", null,
+                                                        0, 0, 0, 0, 0, 0
+                                                    )
+                                                } finally {
+                                                    isLoadingSelection = false
+                                                }
+                                            }
+                                        }
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    AsyncImage(
+                                        model = spriteUrl,
+                                        contentDescription = item.name,
+                                        modifier = Modifier.size(44.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = "#${id.toString().padStart(3, '0')} ${item.name.replaceFirstChar { c -> c.uppercase() }}",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (matchingForms.isEmpty() && filteredBaseList.isEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No se encontraron Pokémon ni formas con esos filtros.",
+                                        color = Color.Gray,
+                                        fontSize = 13.sp
                                     )
                                 }
                             }

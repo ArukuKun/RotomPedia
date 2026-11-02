@@ -1,4 +1,4 @@
-// PokemonDetailScreen.kt
+﻿// PokemonDetailScreen.kt
 package com.duoc.rotompedia.ui.screens
 
 import android.media.AudioAttributes
@@ -8,6 +8,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +46,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.duoc.rotompedia.viewmodel.EvolutionState
+import com.duoc.rotompedia.data.PokemonFormsData
+import com.duoc.rotompedia.data.AlternateFormItem
+import com.duoc.rotompedia.data.model.TypesSlot
+import com.duoc.rotompedia.data.model.TypeData
+import com.duoc.rotompedia.data.model.Stat
 import com.duoc.rotompedia.data.model.PokemonData
 import com.duoc.rotompedia.viewmodel.PokemonDetailState
 import com.duoc.rotompedia.viewmodel.PokemonViewModel
@@ -177,6 +185,7 @@ fun PokemonDetailContent(
     pokemon: PokemonData,
     evolutionState: EvolutionState,
     typeRelationsState: TypeRelationsState,
+    pokemonViewModel: PokemonViewModel? = null,
     onPokemonClick: (String) -> Unit = {},
     onCatchRateClick: (Int) -> Unit = {}
 ) {
@@ -185,7 +194,24 @@ fun PokemonDetailContent(
     var isPlayingCry by remember { mutableStateOf(false) }
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
 
-    DisposableEffect(pokemon.id) {
+    // Formas alternativas, Megas y variantes regionales de esta especie
+    val availableForms = remember(pokemon.id) {
+        PokemonFormsData.getFormsForSpecies(pokemon.id)
+    }
+    var selectedForm by remember(pokemon.id) { mutableStateOf<AlternateFormItem?>(null) }
+
+    // Actualizar relaciones de tipo cuando el usuario cambia de forma
+    LaunchedEffect(selectedForm) {
+        if (selectedForm != null) {
+            val t1 = TypesSlot(1, TypeData(selectedForm!!.tipo1))
+            val t2 = selectedForm!!.tipo2?.let { TypesSlot(2, TypeData(it)) }
+            pokemonViewModel?.loadTypeRelations(listOfNotNull(t1, t2))
+        } else {
+            pokemonViewModel?.loadTypeRelations(pokemon.types)
+        }
+    }
+
+    DisposableEffect(pokemon.id, selectedForm) {
         onDispose {
             mediaPlayer?.release()
             mediaPlayer = null
@@ -193,7 +219,19 @@ fun PokemonDetailContent(
         }
     }
 
-    val artworkUrl = if (isShiny) {
+    val displayId = selectedForm?.id ?: pokemon.id
+    val displayName = selectedForm?.displayName ?: pokemon.name.replaceFirstChar { it.uppercase() }
+    val displayTypes = remember(selectedForm, pokemon.types) {
+        if (selectedForm != null) {
+            listOfNotNull(selectedForm!!.tipo1, selectedForm!!.tipo2)
+        } else {
+            pokemon.types.map { it.type.name }
+        }
+    }
+
+    val artworkUrl = if (selectedForm != null) {
+        selectedForm!!.spriteUrl
+    } else if (isShiny) {
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${pokemon.id}.png"
     } else {
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png"
@@ -206,6 +244,67 @@ fun PokemonDetailContent(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Selector de Formas Alternativas / Megas si existen para este Pokémon
+        if (availableForms.isNotEmpty()) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFF1E222B)
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Text(
+                        text = "⚡ Formas y Variantes Disponibles (${availableForms.size + 1})",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF61DAF6),
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        item {
+                            FilterChip(
+                                selected = selectedForm == null,
+                                onClick = { selectedForm = null },
+                                label = {
+                                    Text(
+                                        text = "Base",
+                                        fontSize = 11.sp,
+                                        fontWeight = if (selectedForm == null) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFFD11527),
+                                    selectedLabelColor = Color.White
+                                )
+                            )
+                        }
+                        items(availableForms) { form ->
+                            val isSelected = selectedForm?.id == form.id
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { selectedForm = form },
+                                label = {
+                                    Text(
+                                        text = "${form.formTag}: ${form.displayName.replace("Mega ", "").replace(" de Hisui", "").replace(" de Alola", "").replace(" de Galar", "").replace(" de Paldea", "")}",
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFF61DAF6),
+                                    selectedLabelColor = Color.Black
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         Box(
             modifier = Modifier.size(260.dp),
             contentAlignment = Alignment.Center
@@ -215,7 +314,7 @@ fun PokemonDetailContent(
                     .data(artworkUrl)
                     .crossfade(true)
                     .build(),
-                contentDescription = "Imagen de ${pokemon.name}",
+                contentDescription = "Imagen de $displayName",
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -226,30 +325,46 @@ fun PokemonDetailContent(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Botón Variocolor (Shiny)
-            FilterChip(
-                selected = isShiny,
-                onClick = { isShiny = !isShiny },
-                label = {
-                    Text(
-                        text = if (isShiny) "✨ Variocolor" else "Normal",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 13.sp
+            if (selectedForm == null) {
+                // Botón Variocolor (Shiny)
+                FilterChip(
+                    selected = isShiny,
+                    onClick = { isShiny = !isShiny },
+                    label = {
+                        Text(
+                            text = if (isShiny) "✨ Variocolor" else "Normal",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = "Alternar Variocolor",
+                            modifier = Modifier.size(16.dp),
+                            tint = if (isShiny) Color(0xFFFFD700) else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF263238),
+                        selectedLabelColor = Color(0xFFFFD700)
                     )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.AutoAwesome,
-                        contentDescription = "Alternar Variocolor",
-                        modifier = Modifier.size(16.dp),
-                        tint = if (isShiny) Color(0xFFFFD700) else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Color(0xFF263238),
-                    selectedLabelColor = Color(0xFFFFD700)
                 )
-            )
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFF61DAF6).copy(alpha = 0.2f),
+                    border = BorderStroke(1.dp, Color(0xFF61DAF6))
+                ) {
+                    Text(
+                        text = "🧬 ${selectedForm!!.formTag}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF61DAF6),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                    )
+                }
+            }
 
             // Botón Rugido (Cry)
             FilledTonalButton(
@@ -305,7 +420,7 @@ fun PokemonDetailContent(
                 )
             }
 
-            // Botón Ratio de Captura (Sprint 5)
+            // Botón Ratio de Captura
             FilledTonalButton(
                 onClick = { onCatchRateClick(pokemon.id) },
                 modifier = Modifier.height(38.dp),
@@ -328,16 +443,16 @@ fun PokemonDetailContent(
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = "#${pokemon.id} - ${pokemon.name.replaceFirstChar { it.uppercase() }}",
-            fontSize = 32.sp,
+            text = "#$displayId - $displayName",
+            fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            pokemon.types.forEach { typeSlot ->
-                val originalType = typeSlot.type.name
+            displayTypes.forEach { originalType ->
                 val translatedType = traducirTipo(originalType)
                 TypeChip(originalType = originalType, translatedType = translatedType)
             }
@@ -345,17 +460,17 @@ fun PokemonDetailContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Widget Interactivo de Comentarios RotomDex
-        val hpStat = pokemon.stats.find { it.stat.name == "hp" }?.baseStat ?: 0
-        val atkStat = pokemon.stats.find { it.stat.name == "attack" }?.baseStat ?: 0
-        val defStat = pokemon.stats.find { it.stat.name == "defense" }?.baseStat ?: 0
-        val spaStat = pokemon.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0
-        val spdStat = pokemon.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0
-        val speStat = pokemon.stats.find { it.stat.name == "speed" }?.baseStat ?: 0
+        val hpStat = selectedForm?.hp ?: pokemon.stats.find { it.stat.name == "hp" }?.baseStat ?: 0
+        val atkStat = selectedForm?.atk ?: pokemon.stats.find { it.stat.name == "attack" }?.baseStat ?: 0
+        val defStat = selectedForm?.def ?: pokemon.stats.find { it.stat.name == "defense" }?.baseStat ?: 0
+        val spaStat = selectedForm?.spa ?: pokemon.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0
+        val spdStat = selectedForm?.spd ?: pokemon.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0
+        val speStat = selectedForm?.spe ?: pokemon.stats.find { it.stat.name == "speed" }?.baseStat ?: 0
 
         RotomDialogueBox(
             pokemonId = pokemon.id,
-            pokemonName = pokemon.name,
-            types = pokemon.types.map { it.type.name },
+            pokemonName = displayName,
+            types = displayTypes,
             hp = hpStat,
             attack = atkStat,
             defense = defStat,
@@ -387,16 +502,42 @@ fun PokemonDetailContent(
         }
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "Estadísticas Base",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.SemiBold,
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.onBackground
-        )
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Estadísticas Base",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            val totalBst = hpStat + atkStat + defStat + spaStat + spdStat + speStat
+            Text(
+                text = "BST: $totalBst",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF61DAF6)
+            )
+        }
         Spacer(modifier = Modifier.height(12.dp))
+
+        val statsToRender = if (selectedForm != null) {
+            listOf(
+                StatInfo(selectedForm!!.hp, Stat("hp")),
+                StatInfo(selectedForm!!.atk, Stat("attack")),
+                StatInfo(selectedForm!!.def, Stat("defense")),
+                StatInfo(selectedForm!!.spa, Stat("special-attack")),
+                StatInfo(selectedForm!!.spd, Stat("special-defense")),
+                StatInfo(selectedForm!!.spe, Stat("speed"))
+            )
+        } else {
+            pokemon.stats
+        }
+
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            pokemon.stats.forEach { statInfo ->
+            statsToRender.forEach { statInfo ->
                 StatRow(statInfo = statInfo)
             }
         }

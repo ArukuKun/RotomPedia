@@ -1,4 +1,4 @@
-package com.duoc.rotompedia.ui.screens
+﻿package com.duoc.rotompedia.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -602,81 +602,19 @@ fun CatchRateCalculatorScreen(
         }
     }
 
-    // Modal para cambiar el Pokémon objetivo
+    // Modal para cambiar el Pokémon objetivo con acceso a todos los Pokémon, generaciones y formas
     if (showPokemonPicker) {
-        val cachedPokemonList: List<CachedPokemon> by pokemonViewModel.allCachedPokemon.collectAsState(initial = emptyList())
-        var searchQuery by remember { mutableStateOf("") }
-
-        val filteredList = remember(searchQuery, cachedPokemonList) {
-            if (searchQuery.isBlank()) cachedPokemonList
-            else cachedPokemonList.filter {
-                it.name.contains(searchQuery, ignoreCase = true) || it.id.toString() == searchQuery.trim()
-            }
-        }
-
-        AlertDialog(
-            onDismissRequest = { showPokemonPicker = false },
-            title = { Text("Seleccionar Pokémon Objetivo", fontWeight = FontWeight.Bold) },
-            text = {
-                Column(modifier = Modifier.height(380.dp)) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Buscar por nombre o #ID...") },
-                        singleLine = true,
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        items(filteredList) { pkm ->
-                            Surface(
-                                onClick = {
-                                    selectedId = pkm.id
-                                    selectedName = pkm.name
-                                    selectedSprite = pkm.imageUrl
-                                    selectedTypes = pkm.types.split(",").filter { it.isNotBlank() }
-                                    targetSpeed = if (pkm.speed > 0) pkm.speed else 60
-                                    baseCatchRate = resolveBaseCatchRate(pkm.id)
-                                    showPokemonPicker = false
-                                },
-                                shape = RoundedCornerShape(10.dp),
-                                color = Color(0xFF232733),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    AsyncImage(
-                                        model = pkm.imageUrl,
-                                        contentDescription = pkm.name,
-                                        modifier = Modifier.size(40.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Column {
-                                        Text(
-                                            text = "#${pkm.id} - ${pkm.name.replaceFirstChar { it.uppercase() }}",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 14.sp
-                                        )
-                                        Text(
-                                            text = "Vel: ${pkm.speed} • Ratio: ${resolveBaseCatchRate(pkm.id)}",
-                                            fontSize = 11.sp,
-                                            color = Color.Gray
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showPokemonPicker = false }) {
-                    Text("Cerrar")
-                }
+        PokemonPickerDialog(
+            pokemonViewModel = pokemonViewModel,
+            onDismiss = { showPokemonPicker = false },
+            onPokemonSelected = { id, name, sprite, tipo1, tipo2, _, _, _, _, _, spe ->
+                selectedId = id
+                selectedName = name
+                selectedSprite = sprite
+                selectedTypes = listOfNotNull(tipo1, tipo2)
+                targetSpeed = if (spe > 0) spe else 60
+                baseCatchRate = resolveBaseCatchRate(id)
+                showPokemonPicker = false
             }
         )
     }

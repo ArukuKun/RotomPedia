@@ -6,8 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.duoc.rotompedia.data.model.ChainLink
 import com.duoc.rotompedia.data.model.EvolutionDetail
+import com.duoc.rotompedia.data.model.MoveDetailResponse
 import com.duoc.rotompedia.data.model.PokemonData
+import com.duoc.rotompedia.data.model.PokemonDataWithMoves
 import com.duoc.rotompedia.data.model.PokemonListItem
+import com.duoc.rotompedia.data.model.PokemonSpeciesVarieties
+import com.duoc.rotompedia.data.model.PokemonVariety
 import com.duoc.rotompedia.data.model.Species
 import com.duoc.rotompedia.data.model.TypesSlot
 import com.duoc.rotompedia.data.remote.PokemonApi
@@ -32,6 +36,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.asStateFlow
 
 // Lista de tipos disponibles para el filtro de UI
 val allPokemonTypes = listOf(
@@ -81,6 +86,39 @@ data class EvolutionStage(
     val evolutionRequirement: String,
     val isBaseForm: Boolean = false,
     val evolvesFromId: String? = null
+)
+
+// Estado para movimientos de un Pokémon
+sealed class PokemonMovesState {
+    object Idle : PokemonMovesState()
+    object Loading : PokemonMovesState()
+    data class Success(
+        val levelUpMoves: List<MoveDetailResponse>,
+        val machineMoves: List<MoveDetailResponse>,
+        val eggMoves: List<MoveDetailResponse>,
+        val tutorMoves: List<MoveDetailResponse>
+    ) : PokemonMovesState()
+    data class Error(val message: String) : PokemonMovesState()
+}
+
+// Estado para formas de un Pokémon
+sealed class PokemonFormsState {
+    object Idle : PokemonFormsState()
+    object Loading : PokemonFormsState()
+    data class Success(val varieties: List<PokemonVariety>) : PokemonFormsState()
+    data class Error(val message: String) : PokemonFormsState()
+}
+
+// Datos de un Pokémon forma alternativa
+data class PokemonFormData(
+    val id: Int,
+    val name: String,
+    val formDisplayName: String,
+    val spriteUrl: String,
+    val types: List<String>,
+    val hp: Int, val atk: Int, val def: Int,
+    val spa: Int, val spd: Int, val spe: Int,
+    val isDefault: Boolean
 )
 
 class PokemonViewModel(
@@ -134,6 +172,23 @@ class PokemonViewModel(
 
     val allCachedPokemon: Flow<List<CachedPokemon>> = cachedPokemonDao?.getAllCachedPokemon()
         ?: flowOf(emptyList())
+
+    // ==================== MOVIMIENTOS ====================
+    private val _pokemonMovesState = MutableStateFlow<PokemonMovesState>(PokemonMovesState.Idle)
+    val pokemonMovesState: StateFlow<PokemonMovesState> = _pokemonMovesState.asStateFlow()
+
+    // Cache de movimientos para no refetchear (pokemonId -> lista de moves por método)
+    private val _movesCache = mutableMapOf<Int, PokemonMovesState.Success>()
+
+    // ==================== FORMAS ====================
+    private val _pokemonFormsState = MutableStateFlow<PokemonFormsState>(PokemonFormsState.Idle)
+    val pokemonFormsState: StateFlow<PokemonFormsState> = _pokemonFormsState.asStateFlow()
+
+    private val _pokemonFormDataCache = mutableMapOf<String, PokemonFormData>()
+
+    // ==================== BÚSQUEDA DIRECTA POR NOMBRE ====================
+    private val _searchedPokemon = MutableStateFlow<PokemonFormData?>(null)
+    val searchedPokemon: StateFlow<PokemonFormData?> = _searchedPokemon.asStateFlow()
 
     suspend fun getAllCachedPokemonDirect(): List<CachedPokemon> {
         return withContext(Dispatchers.IO) {
@@ -837,5 +892,205 @@ class PokemonViewModel(
                 Log.e(TAG, errorMessage, e)
             }
         }
+    }
+
+    // Carga los movimientos reales de un Pokémon desde PokeAPI
+    fun loadPokemonMoves(pokemonId: Int) {
+        // Retornar caché si ya se cargó
+        _movesCache[pokemonId]?.let {
+            _pokemonMovesState.value = it
+            return
+        }
+
+        viewModelScope.launch {
+            _pokemonMovesState.value = PokemonMovesState.Loading
+            try {
+                val pokemonWithMoves = withContext(Dispatchers.IO) {
+                    PokemonApi.service.getPokemonWithMoves(pokemonId.toString())
+                }
+
+                // Agrupar por método de aprendizaje (tomamos la versión más reciente de cada move)
+                val movesByMethod = pokemonWithMoves.moves
+                    .groupBy { entry ->
+                        // Preferir el detalle de versión más reciente
+                        entry.versionGroupDetails
+                            .maxByOrNull { it.versionGroup.url.split("/").dropLast(1).last().toIntOrNull() ?: 0 }
+                            ?.moveLearnMethod?.name ?: "level-up"
+                    }
+
+                val levelUpNames = movesByMethod["level-up"]
+                    ?.sortedBy { entry ->
+                        entry.versionGroupDetails.maxByOrNull {
+                            it.versionGroup.url.split("/").dropLast(1).last().toIntOrNull() ?: 0
+                        }?.levelLearnedAt ?: 0
+                    }
+                    ?.map { it.move.name } ?: emptyList()
+
+                val machineNames = movesByMethod["machine"]?.map { it.move.name } ?: emptyList()
+                val eggNames = movesByMethod["egg"]?.map { it.move.name } ?: emptyList()
+                val tutorNames = movesByMethod["tutor"]?.map { it.move.name } ?: emptyList()
+
+                // Fetch detalles de moves en paralelo (limitamos a los más importantes)
+                val maxMoves = 60
+                suspend fun fetchMoveDetails(names: List<String>, limit: Int = maxMoves): List<MoveDetailResponse> {
+                    return names.take(limit).mapNotNull { moveName ->
+                        try {
+                            withContext(Dispatchers.IO) {
+                                PokemonApi.service.getMoveDetail(moveName)
+                            }
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                }
+
+                val levelUpMoves = fetchMoveDetails(levelUpNames)
+                val machineMoves = fetchMoveDetails(machineNames)
+                val eggMoves = fetchMoveDetails(eggNames)
+                val tutorMoves = fetchMoveDetails(tutorNames, 30)
+
+                val result = PokemonMovesState.Success(levelUpMoves, machineMoves, eggMoves, tutorMoves)
+                _movesCache[pokemonId] = result
+                _pokemonMovesState.value = result
+                Log.d(TAG, "Movimientos de #$pokemonId cargados: ${levelUpMoves.size} nivel, ${machineMoves.size} MT, ${eggMoves.size} huevo")
+
+            } catch (e: Exception) {
+                _pokemonMovesState.value = PokemonMovesState.Error("Error al cargar movimientos: ${e.message}")
+                Log.e(TAG, "Error al cargar movimientos de #$pokemonId: ${e.message}")
+            }
+        }
+    }
+
+    // Carga las formas/variantes de un Pokémon desde PokeAPI
+    fun loadPokemonForms(speciesId: Int) {
+        viewModelScope.launch {
+            _pokemonFormsState.value = PokemonFormsState.Loading
+            try {
+                val species = withContext(Dispatchers.IO) {
+                    PokemonApi.service.getPokemonSpeciesWithVarieties(speciesId)
+                }
+
+                if (species.varieties.size <= 1) {
+                    _pokemonFormsState.value = PokemonFormsState.Idle
+                    return@launch
+                }
+
+                _pokemonFormsState.value = PokemonFormsState.Success(species.varieties)
+                Log.d(TAG, "Formas de especie #$speciesId: ${species.varieties.size} variantes")
+
+            } catch (e: Exception) {
+                _pokemonFormsState.value = PokemonFormsState.Error("Error al cargar formas: ${e.message}")
+                Log.e(TAG, "Error al cargar formas de #$speciesId: ${e.message}")
+            }
+        }
+    }
+
+    // Carga datos completos de una forma específica (para mostrar sus stats/sprite)
+    suspend fun loadFormData(formName: String): PokemonFormData? {
+        _pokemonFormDataCache[formName]?.let { return it }
+        return try {
+            val data = withContext(Dispatchers.IO) {
+                PokemonApi.service.getPokemonWithMoves(formName)
+            }
+            val formData = PokemonFormData(
+                id = data.id,
+                name = data.name,
+                formDisplayName = formatFormDisplayName(data.name),
+                spriteUrl = data.sprites.urlImagen ?: "",
+                types = data.types.map { it.type.name },
+                hp = data.stats.find { it.stat.name == "hp" }?.baseStat ?: 0,
+                atk = data.stats.find { it.stat.name == "attack" }?.baseStat ?: 0,
+                def = data.stats.find { it.stat.name == "defense" }?.baseStat ?: 0,
+                spa = data.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0,
+                spd = data.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0,
+                spe = data.stats.find { it.stat.name == "speed" }?.baseStat ?: 0,
+                isDefault = false
+            )
+            _pokemonFormDataCache[formName] = formData
+            formData
+        } catch (e: Exception) {
+            Log.e(TAG, "Error cargando forma $formName: ${e.message}")
+            null
+        }
+    }
+
+    // Búsqueda directa de un Pokémon por nombre (para calculadoras)
+    fun searchAndFetchPokemon(nameOrId: String, onResult: (PokemonFormData?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val data = withContext(Dispatchers.IO) {
+                    PokemonApi.service.getPokemonWithMoves(nameOrId.lowercase().trim())
+                }
+                val formData = PokemonFormData(
+                    id = data.id,
+                    name = data.name,
+                    formDisplayName = data.name.replaceFirstChar { it.uppercase() },
+                    spriteUrl = data.sprites.urlImagen ?: "",
+                    types = data.types.map { it.type.name },
+                    hp = data.stats.find { it.stat.name == "hp" }?.baseStat ?: 0,
+                    atk = data.stats.find { it.stat.name == "attack" }?.baseStat ?: 0,
+                    def = data.stats.find { it.stat.name == "defense" }?.baseStat ?: 0,
+                    spa = data.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0,
+                    spd = data.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0,
+                    spe = data.stats.find { it.stat.name == "speed" }?.baseStat ?: 0,
+                    isDefault = true
+                )
+                // Guardar en cache Room
+                withContext(Dispatchers.IO) {
+                    try {
+                        cachedPokemonDao?.insertOrUpdate(
+                            CachedPokemon(
+                                id = data.id,
+                                name = data.name.replaceFirstChar { it.uppercase() },
+                                imageUrl = data.sprites.urlImagen ?: "",
+                                types = data.types.joinToString(",") { it.type.name },
+                                hp = formData.hp, attack = formData.atk, defense = formData.def,
+                                specialAttack = formData.spa, specialDefense = formData.spd, speed = formData.spe
+                            )
+                        )
+                    } catch (ce: Exception) { /* ignore cache errors */ }
+                }
+                onResult(formData)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error buscando pokemon '$nameOrId': ${e.message}")
+                onResult(null)
+            }
+        }
+    }
+
+    private fun formatFormDisplayName(apiName: String): String {
+        return when {
+            apiName.endsWith("-mega") -> "Mega"
+            apiName.endsWith("-mega-x") -> "Mega X"
+            apiName.endsWith("-mega-y") -> "Mega Y"
+            apiName.contains("-alola") -> "Alola"
+            apiName.contains("-galar") -> "Galar"
+            apiName.contains("-hisui") -> "Hisui"
+            apiName.contains("-paldea") -> "Paldea"
+            apiName.contains("-midday") -> "Mediodía"
+            apiName.contains("-midnight") -> "Medianoche"
+            apiName.contains("-dusk") -> "Crepúsculo"
+            apiName.contains("-shield") -> "Escudo"
+            apiName.contains("-blade") -> "Espada"
+            apiName.contains("-origin") -> "Origen"
+            apiName.contains("-sky") -> "Celeste"
+            apiName.contains("-therian") -> "Tótem"
+            apiName.contains("-black") -> "Negro"
+            apiName.contains("-white") -> "Blanco"
+            apiName.contains("-resolute") -> "Resuelto"
+            apiName.contains("-zen") -> "Zen"
+            apiName.contains("-primal") -> "Primigenio"
+            apiName.contains("-ash") -> "Ash"
+            apiName.contains("-starter") -> "Inicial"
+            apiName.contains("-complete") -> "Completo"
+            apiName.contains("-50") -> "50%"
+            apiName.contains("-10") -> "10%"
+            else -> apiName.split("-").drop(1).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+                .ifEmpty { "Normal" }
+        }
+    }
+
+    fun resetMovesState() {
+        _pokemonMovesState.value = PokemonMovesState.Idle
     }
 }

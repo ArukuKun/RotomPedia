@@ -1,9 +1,12 @@
 package com.duoc.rotompedia.data.remote
 
 import com.duoc.rotompedia.data.model.EvolutionChainResponse
+import com.duoc.rotompedia.data.model.MoveDetailResponse
 import com.duoc.rotompedia.data.model.PokemonData
+import com.duoc.rotompedia.data.model.PokemonDataWithMoves
 import com.duoc.rotompedia.data.model.PokemonListResponse
 import com.duoc.rotompedia.data.model.PokemonSpeciesResponse
+import com.duoc.rotompedia.data.model.PokemonSpeciesVarieties
 import com.duoc.rotompedia.data.model.TypeDetailResponse
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -47,6 +50,24 @@ interface PokeApiService {
     suspend fun getTypeDetails(
         @Path("name") name: String
     ): TypeDetailResponse
+
+    // Obtiene un Pokémon con su lista de movimientos incluida
+    @GET("pokemon/{nameOrId}")
+    suspend fun getPokemonWithMoves(
+        @Path("nameOrId") nameOrId: String
+    ): PokemonDataWithMoves
+
+    // Obtiene detalles de un movimiento específico
+    @GET("move/{nameOrId}")
+    suspend fun getMoveDetail(
+        @Path("nameOrId") nameOrId: String
+    ): MoveDetailResponse
+
+    // Obtiene la especie con sus variedades/formas
+    @GET("pokemon-species/{id}")
+    suspend fun getPokemonSpeciesWithVarieties(
+        @Path("id") pokemonId: Int
+    ): PokemonSpeciesVarieties
 }
 
 //Objeto singleton que crea y mantiene una unica instancia

@@ -1,4 +1,4 @@
-package com.duoc.rotompedia.ui.screens
+﻿package com.duoc.rotompedia.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -43,11 +43,15 @@ import com.duoc.rotompedia.util.StatCalculator.StatSpread
 import com.duoc.rotompedia.util.StatCalculator.StatType
 import com.duoc.rotompedia.util.getTipoColor
 import com.duoc.rotompedia.util.traducirTipo
+import com.duoc.rotompedia.data.model.MoveDetailResponse
+import com.duoc.rotompedia.viewmodel.PokemonMovesState
+import com.duoc.rotompedia.viewmodel.PokemonViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MemberStatEditorDialog(
     miembro: MiembroEquipo,
+    pokemonViewModel: PokemonViewModel,
     onDismiss: () -> Unit,
     onSave: (MiembroEquipo) -> Unit,
     onChangePokemon: (slot: Int) -> Unit
@@ -82,6 +86,14 @@ fun MemberStatEditorDialog(
     var move3 by remember { mutableStateOf(miembro.move3) }
     var move4 by remember { mutableStateOf(miembro.move4) }
     var slotPickingMove by remember { mutableStateOf<Int?>(null) } // 1, 2, 3 o 4
+
+    // Cargar movimientos reales del Pokemon cuando el usuario cambia a la pestana de Movimientos
+    LaunchedEffect(selectedTab, miembro.pokemonId) {
+        if (selectedTab == 1) {
+            pokemonViewModel.loadPokemonMoves(miembro.pokemonId)
+        }
+    }
+    val pokemonMovesState by pokemonViewModel.pokemonMovesState.collectAsState()
 
     val totalEvs = evHp + evAtk + evDef + evSpa + evSpd + evSpe
     val remainingEvs = 510 - totalEvs
@@ -584,6 +596,7 @@ fun MemberStatEditorDialog(
         val currentSlot = slotPickingMove!!
         MovePickerDialog(
             slotIndex = currentSlot,
+            pokemonMovesState = pokemonMovesState,
             onDismiss = { slotPickingMove = null },
             onMoveSelected = { selectedMove ->
                 when (currentSlot) {
@@ -725,6 +738,7 @@ private fun MoveSlotCard(
 @Composable
 fun MovePickerDialog(
     slotIndex: Int,
+    pokemonMovesState: PokemonMovesState,
     onDismiss: () -> Unit,
     onMoveSelected: (PokemonMove) -> Unit,
     onClear: () -> Unit
@@ -733,9 +747,31 @@ fun MovePickerDialog(
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<MoveCategory?>(null) }
     var selectedType by remember { mutableStateOf<String?>(null) }
+    var selectedMethodTab by remember { mutableIntStateOf(0) }
 
-    val filteredMoves = remember(searchQuery, selectedCategory, selectedType) {
-        PokemonMoveData.allMoves.filter { m ->
+    val pokemonMovesList: List<PokemonMove> = remember(pokemonMovesState, selectedMethodTab) {
+        when (pokemonMovesState) {
+            is PokemonMovesState.Success -> {
+                val lvlMoves = pokemonMovesState.levelUpMoves.map { PokemonMoveData.fromMoveDetail(it) }
+                val machMoves = pokemonMovesState.machineMoves.map { PokemonMoveData.fromMoveDetail(it) }
+                val eggMoves = pokemonMovesState.eggMoves.map { PokemonMoveData.fromMoveDetail(it) }
+                val tutMoves = pokemonMovesState.tutorMoves.map { PokemonMoveData.fromMoveDetail(it) }
+
+                when (selectedMethodTab) {
+                    1 -> lvlMoves
+                    2 -> machMoves
+                    3 -> eggMoves
+                    4 -> tutMoves
+                    5 -> PokemonMoveData.allMoves
+                    else -> (lvlMoves + machMoves + eggMoves + tutMoves).distinctBy { it.nameEn }
+                }
+            }
+            else -> PokemonMoveData.allMoves
+        }
+    }
+
+    val filteredMoves = remember(searchQuery, selectedCategory, selectedType, pokemonMovesList) {
+        pokemonMovesList.filter { m ->
             val matchesCategory = selectedCategory == null || m.category == selectedCategory
             val matchesType = selectedType == null || m.type.equals(selectedType, ignoreCase = true)
             val matchesSearch = searchQuery.isBlank() ||
@@ -752,37 +788,100 @@ fun MovePickerDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.96f)
-                .fillMaxHeight(0.85f),
+                .fillMaxHeight(0.88f),
             shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
             border = BorderStroke(1.dp, rotomForm.primaryColor)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
-                // Cabecera
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Elegir Movimiento $slotIndex",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Column {
+                        Text(
+                            text = "Elegir Movimiento $slotIndex",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        if (pokemonMovesState is PokemonMovesState.Success) {
+                            Text(
+                                text = "Movimientos aprendibles oficiales de PokeAPI",
+                                fontSize = 10.sp,
+                                color = rotomForm.accentColor
+                            )
+                        }
+                    }
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.LightGray)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                // Buscador
+                if (pokemonMovesState is PokemonMovesState.Success) {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        val tabs = listOf(
+                            0 to "🌟 Todos",
+                            1 to "⚔️ Nivel (${pokemonMovesState.levelUpMoves.size})",
+                            2 to "💿 MT (${pokemonMovesState.machineMoves.size})",
+                            3 to "🥚 Huevo (${pokemonMovesState.eggMoves.size})",
+                            4 to "🎓 Tutor (${pokemonMovesState.tutorMoves.size})",
+                            5 to "📚 General"
+                        )
+                        items(tabs) { (tabIdx, label) ->
+                            FilterChip(
+                                selected = selectedMethodTab == tabIdx,
+                                onClick = { selectedMethodTab = tabIdx },
+                                label = { Text(label, fontSize = 10.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = rotomForm.primaryColor,
+                                    selectedLabelColor = Color.White,
+                                    containerColor = Color(0xFF262626),
+                                    labelColor = Color.LightGray
+                                )
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                } else if (pokemonMovesState is PokemonMovesState.Loading) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF222630))
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = rotomForm.primaryColor)
+                        Text(
+                            text = "Consultando movimientos reales en PokeAPI...",
+                            fontSize = 11.sp,
+                            color = Color.LightGray,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
+
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     placeholder = { Text("Buscar por nombre, tipo...", fontSize = 12.sp) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = rotomForm.primaryColor) },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(Icons.Default.Close, contentDescription = "Limpiar", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -793,9 +892,8 @@ fun MovePickerDialog(
                     )
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                // Filtro por Categoría
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -824,7 +922,6 @@ fun MovePickerDialog(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // Conteo y Quitar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -842,52 +939,63 @@ fun MovePickerDialog(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Lista de movimientos
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    items(filteredMoves) { move ->
-                        Surface(
-                            onClick = { onMoveSelected(move) },
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color(0xFF242730),
-                            border = BorderStroke(1.dp, getTipoColor(move.type).copy(alpha = 0.4f)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                if (filteredMoves.isEmpty()) {
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = if (pokemonMovesState is PokemonMovesState.Loading) "Cargando ataques..." else "No hay movimientos con esos filtros",
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        items(filteredMoves, key = { it.nameEn }) { move ->
+                            Surface(
+                                onClick = { onMoveSelected(move) },
+                                shape = RoundedCornerShape(10.dp),
+                                color = Color(0xFF242730),
+                                border = BorderStroke(1.dp, getTipoColor(move.type).copy(alpha = 0.4f)),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Text(move.nameEs, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                        Text("(${move.nameEn})", color = Color.Gray, fontSize = 11.sp)
-                                    }
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        BadgeTipo(tipo = move.type)
-                                        Text(
-                                            text = "${move.category.emoji} ${move.category.displayName}",
-                                            color = move.category.color,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                        Text(
-                                            text = "Pot: ${move.power ?: "-"} • Prec: ${move.accuracy?.let { "$it%" } ?: "-"} • PP: ${move.pp}",
-                                            color = Color.LightGray,
-                                            fontSize = 10.sp
-                                        )
-                                    }
-                                    if (move.description.isNotBlank()) {
-                                        Text(move.description, color = Color.Gray, fontSize = 10.sp, maxLines = 1)
+                                Row(
+                                    modifier = Modifier.padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            Text(move.nameEs, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (move.nameEs != move.nameEn) {
+                                                Text("(${move.nameEn})", color = Color.Gray, fontSize = 11.sp)
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            BadgeTipo(tipo = move.type)
+                                            Text(
+                                                text = "${move.category.emoji} ${move.category.displayName}",
+                                                color = move.category.color,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                            Text(
+                                                text = "Pot: ${move.power ?: "-"} • Prec: ${move.accuracy?.let { "$it%" } ?: "-"} • PP: ${move.pp}",
+                                                color = Color.LightGray,
+                                                fontSize = 10.sp
+                                            )
+                                        }
+                                        if (move.description.isNotBlank()) {
+                                            Text(move.description, color = Color.Gray, fontSize = 10.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                        }
                                     }
                                 }
                             }

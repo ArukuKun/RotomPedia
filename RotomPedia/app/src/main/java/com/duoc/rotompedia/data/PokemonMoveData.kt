@@ -1,6 +1,8 @@
 package com.duoc.rotompedia.data
 
 import androidx.compose.ui.graphics.Color
+import com.duoc.rotompedia.data.model.MoveDetailResponse
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Categoría de daño de un movimiento Pokémon.
@@ -29,6 +31,48 @@ data class PokemonMove(
  * Catálogo maestro de movimientos competitivos canónicos (VGC, Singles y Cobblemon).
  */
 object PokemonMoveData {
+
+    private val dynamicMoves = ConcurrentHashMap<String, PokemonMove>()
+
+    fun registerMove(move: PokemonMove) {
+        dynamicMoves[move.nameEn.trim().lowercase()] = move
+        dynamicMoves[move.nameEs.trim().lowercase()] = move
+        dynamicMoves[move.nameEn.replace(" ", "").lowercase()] = move
+        dynamicMoves[move.nameEs.replace(" ", "").lowercase()] = move
+    }
+
+    fun registerMoves(moves: List<PokemonMove>) {
+        moves.forEach { registerMove(it) }
+    }
+
+    fun fromMoveDetail(detail: MoveDetailResponse): PokemonMove {
+        val spanishName = detail.names.find { it.language.name == "es" }?.name
+        val nameEnFormatted = detail.name.split("-").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+        val nameEsFormatted = spanishName ?: nameEnFormatted
+
+        val category = when (detail.damageClass?.name?.lowercase()) {
+            "physical" -> MoveCategory.PHYSICAL
+            "special" -> MoveCategory.SPECIAL
+            else -> MoveCategory.STATUS
+        }
+
+        val description = detail.effectEntries.find { it.language.name == "es" }?.shortEffect
+            ?: detail.effectEntries.find { it.language.name == "en" }?.shortEffect
+            ?: ""
+
+        val move = PokemonMove(
+            nameEn = nameEnFormatted,
+            nameEs = nameEsFormatted,
+            type = detail.type?.name?.lowercase() ?: "normal",
+            category = category,
+            power = detail.power,
+            accuracy = detail.accuracy,
+            pp = detail.pp ?: 15,
+            description = description.replace("\$effect_chance%", "")
+        )
+        registerMove(move)
+        return move
+    }
 
     val allMoves: List<PokemonMove> = listOf(
         // ==================== TIPO NORMAL ====================
@@ -164,10 +208,13 @@ object PokemonMoveData {
 
     fun findMove(nameOrQuery: String): PokemonMove? {
         val q = nameOrQuery.trim().lowercase()
-        return allMoves.find {
-            it.nameEn.equals(q, ignoreCase = true) ||
-            it.nameEs.equals(q, ignoreCase = true) ||
-            it.nameEn.replace(" ", "").equals(q.replace(" ", ""), ignoreCase = true)
-        }
+        return dynamicMoves[q]
+            ?: dynamicMoves[q.replace(" ", "")]
+            ?: allMoves.find {
+                it.nameEn.equals(q, ignoreCase = true) ||
+                it.nameEs.equals(q, ignoreCase = true) ||
+                it.nameEn.replace(" ", "").equals(q.replace(" ", ""), ignoreCase = true) ||
+                it.nameEs.replace(" ", "").equals(q.replace(" ", ""), ignoreCase = true)
+            }
     }
 }
