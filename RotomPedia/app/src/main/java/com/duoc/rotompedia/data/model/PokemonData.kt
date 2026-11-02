@@ -12,7 +12,8 @@ data class  PokemonData(
     val sprites: SpritesData,
     val types: List<TypesSlot>,
     val stats: List<StatInfo>,
-    val cries: CriesData? = null
+    val cries: CriesData? = null,
+    val species: NamedApiResource? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -218,6 +219,15 @@ data class NamedApiResource(
     val name: String,
     val url: String
 )
+
+@JsonClass(generateAdapter = true)
+data class PokemonEncounter(
+    @Json(name = "location_area") val locationArea: NamedApiResource,
+    @Json(name = "version_details") val versionDetails: List<EncounterVersion>
+)
+
+@JsonClass(generateAdapter = true)
+data class EncounterVersion(val version: NamedApiResource)
 
 // ==================== FORMAS DE POKÉMON ====================
 

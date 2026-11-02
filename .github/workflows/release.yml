@@ -29,7 +29,7 @@ jobs:
 
       - name: Build Debug APK
         working-directory: ./RotomPedia
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew testDebugUnitTest lintDebug assembleDebug --stacktrace
 
       - name: Prepare APK Asset for Release
         run: |
@@ -49,7 +49,8 @@ jobs:
             ./RotomPedia-latest.apk
           fail_on_unmatched_files: true
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
+          body_path: docs/v3.3-release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

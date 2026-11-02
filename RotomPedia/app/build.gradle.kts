@@ -16,8 +16,8 @@ android {
         applicationId = "com.duoc.rotompedia"
         minSdk = 25
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 30300
+        versionName = "3.3.0-rc1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -93,9 +93,8 @@ dependencies {
 
     // --- TESTING UNITARIO (Carpeta test) ---
     testImplementation("junit:junit:4.13.2")
-    // Usamos la versión 4.x que es la más estable para entornos mixtos Java/Kotlin
-    testImplementation("org.mockito:mockito-core:4.11.0")
-    testImplementation("org.mockito:mockito-inline:4.11.0") // Permite mockear clases finales
+    // Mockito 5 incluye mocks inline y soporta el JDK 21 del entorno local.
+    testImplementation("org.mockito:mockito-core:5.14.2")
 
     // Corrutinas y Arquitectur a
     testImplementation("androidx.arch.core:core-testing:2.2.0")

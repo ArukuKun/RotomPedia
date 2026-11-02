@@ -6,6 +6,13 @@ El proyecto simula una Pokédex moderna que permite gestionar usuarios, guardar 
 
 ## ✨ Características Principales
 
+### Candidata 3.3.0-rc1: Pokédex-first
+
+Formas integradas después de Evoluciones, búsqueda de variantes en español y datos
+de selección desde PokeAPI. Incluye consulta de movimientos y localizaciones.
+Consulta el [diagnóstico y checklist de validación](docs/v3.3-validacion.md).
+La RC requiere validación en Android antes de considerarse estable.
+
 El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en módulos:
 
 ### 1. 🔐 Seguridad y Autenticación

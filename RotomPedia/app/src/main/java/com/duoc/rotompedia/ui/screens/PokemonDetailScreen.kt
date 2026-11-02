@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.ui.Alignment
@@ -46,11 +47,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.duoc.rotompedia.viewmodel.EvolutionState
-import com.duoc.rotompedia.data.PokemonFormsData
-import com.duoc.rotompedia.data.AlternateFormItem
-import com.duoc.rotompedia.data.model.TypesSlot
-import com.duoc.rotompedia.data.model.TypeData
-import com.duoc.rotompedia.data.model.Stat
+import com.duoc.rotompedia.data.PokemonFormCatalog
+import com.duoc.rotompedia.viewmodel.PokemonFormsState
 import com.duoc.rotompedia.data.model.PokemonData
 import com.duoc.rotompedia.viewmodel.PokemonDetailState
 import com.duoc.rotompedia.viewmodel.PokemonViewModel
@@ -82,10 +80,11 @@ fun PokemonDetailScreen(
     onCatchRateClick: (Int) -> Unit = {}
 ) {
     val pokemonViewModel: PokemonViewModel = viewModel(factory = viewModelFactory)
+    var selectedPokemonId by rememberSaveable(pokemonId) { mutableStateOf(pokemonId) }
 
-    LaunchedEffect(key1 = pokemonId) {
-        pokemonViewModel.loadPokemonDetails(pokemonId)
-        pokemonViewModel.loadEvolutionChain(pokemonId)
+    LaunchedEffect(selectedPokemonId) {
+        pokemonViewModel.loadPokemonDetails(selectedPokemonId)
+        pokemonViewModel.loadEvolutionChain(selectedPokemonId)
     }
 
     val detailState by pokemonViewModel.pokemonDetailState.collectAsState()
@@ -93,8 +92,9 @@ fun PokemonDetailScreen(
     val typeRelationsState by pokemonViewModel.typeRelationsState.collectAsState()
 
     // Cargar el estado de favorito de manera reactiva
-    val pokemonIdInt = pokemonId.toIntOrNull() ?: 0
-    val isFavorite by pokemonViewModel.getIsFavoriteFlow(pokemonIdInt).collectAsState(initial = false)
+    val pokemonIdInt = selectedPokemonId.toIntOrNull() ?: 0
+    val favorites by pokemonViewModel.favoritePokemonIds.collectAsState()
+    val isFavorite = pokemonIdInt in favorites
 
     Scaffold(
         topBar = {
@@ -104,17 +104,17 @@ fun PokemonDetailScreen(
                         text = when (detailState) {
                             is PokemonDetailState.Success -> {
                                 val pokemon = (detailState as PokemonDetailState.Success).pokemonData
-                                "#${pokemon.id} - ${pokemon.name.replaceFirstChar { it.uppercase() }}"
+                                "#${pokemon.id} · ${PokemonFormCatalog.displayName(pokemon.name)}"
                             }
                             else -> "Detalle #$pokemonId"
                         }
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFD11527),
+                    containerColor = Color(0xFF1E222B),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    actionIconContentColor = Color(0xFF61DAF6)
                 ),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
@@ -164,6 +164,8 @@ fun PokemonDetailScreen(
                         pokemon = currentState.pokemonData,
                         evolutionState = evolutionState,
                         typeRelationsState = typeRelationsState,
+                        pokemonViewModel = pokemonViewModel,
+                        onFormClick = { selectedPokemonId = it.toString() },
                         onPokemonClick = onPokemonClick,
                         onCatchRateClick = onCatchRateClick
                     )
@@ -180,38 +182,31 @@ fun PokemonDetailScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PokemonDetailContent(
     pokemon: PokemonData,
     evolutionState: EvolutionState,
     typeRelationsState: TypeRelationsState,
-    pokemonViewModel: PokemonViewModel? = null,
+    pokemonViewModel: PokemonViewModel,
+    onFormClick: (Int) -> Unit = {},
     onPokemonClick: (String) -> Unit = {},
     onCatchRateClick: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
-    var isShiny by remember { mutableStateOf(false) }
+    var isShiny by remember(pokemon.id) { mutableStateOf(false) }
     var isPlayingCry by remember { mutableStateOf(false) }
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
 
-    // Formas alternativas, Megas y variantes regionales de esta especie
-    val availableForms = remember(pokemon.id) {
-        PokemonFormsData.getFormsForSpecies(pokemon.id)
-    }
-    var selectedForm by remember(pokemon.id) { mutableStateOf<AlternateFormItem?>(null) }
-
-    // Actualizar relaciones de tipo cuando el usuario cambia de forma
-    LaunchedEffect(selectedForm) {
-        if (selectedForm != null) {
-            val t1 = TypesSlot(1, TypeData(selectedForm!!.tipo1))
-            val t2 = selectedForm!!.tipo2?.let { TypesSlot(2, TypeData(it)) }
-            pokemonViewModel?.loadTypeRelations(listOfNotNull(t1, t2))
-        } else {
-            pokemonViewModel?.loadTypeRelations(pokemon.types)
-        }
+    val speciesId = pokemon.species?.url?.trimEnd('/')?.substringAfterLast('/')?.toIntOrNull()
+        ?: PokemonFormCatalog.find(pokemon.name)?.speciesId ?: pokemon.id
+    val availableForms by pokemonViewModel.formVarieties.collectAsState()
+    val formsState by pokemonViewModel.pokemonFormsState.collectAsState()
+    LaunchedEffect(speciesId) {
+        pokemonViewModel.loadFormVarieties(speciesId)
     }
 
-    DisposableEffect(pokemon.id, selectedForm) {
+    DisposableEffect(pokemon.id) {
         onDispose {
             mediaPlayer?.release()
             mediaPlayer = null
@@ -219,19 +214,11 @@ fun PokemonDetailContent(
         }
     }
 
-    val displayId = selectedForm?.id ?: pokemon.id
-    val displayName = selectedForm?.displayName ?: pokemon.name.replaceFirstChar { it.uppercase() }
-    val displayTypes = remember(selectedForm, pokemon.types) {
-        if (selectedForm != null) {
-            listOfNotNull(selectedForm!!.tipo1, selectedForm!!.tipo2)
-        } else {
-            pokemon.types.map { it.type.name }
-        }
-    }
+    val displayId = pokemon.id
+    val displayName = PokemonFormCatalog.displayName(pokemon.name)
+    val displayTypes = pokemon.types.map { it.type.name }
 
-    val artworkUrl = if (selectedForm != null) {
-        selectedForm!!.spriteUrl
-    } else if (isShiny) {
+    val artworkUrl = if (isShiny) {
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${pokemon.id}.png"
     } else {
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png"
@@ -244,67 +231,6 @@ fun PokemonDetailContent(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Selector de Formas Alternativas / Megas si existen para este Pokémon
-        if (availableForms.isNotEmpty()) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = Color(0xFF1E222B)
-            ) {
-                Column(modifier = Modifier.padding(10.dp)) {
-                    Text(
-                        text = "⚡ Formas y Variantes Disponibles (${availableForms.size + 1})",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF61DAF6),
-                        modifier = Modifier.padding(bottom = 6.dp)
-                    )
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        item {
-                            FilterChip(
-                                selected = selectedForm == null,
-                                onClick = { selectedForm = null },
-                                label = {
-                                    Text(
-                                        text = "Base",
-                                        fontSize = 11.sp,
-                                        fontWeight = if (selectedForm == null) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFFD11527),
-                                    selectedLabelColor = Color.White
-                                )
-                            )
-                        }
-                        items(availableForms) { form ->
-                            val isSelected = selectedForm?.id == form.id
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { selectedForm = form },
-                                label = {
-                                    Text(
-                                        text = "${form.formTag}: ${form.displayName.replace("Mega ", "").replace(" de Hisui", "").replace(" de Alola", "").replace(" de Galar", "").replace(" de Paldea", "")}",
-                                        fontSize = 11.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF61DAF6),
-                                    selectedLabelColor = Color.Black
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
         Box(
             modifier = Modifier.size(260.dp),
             contentAlignment = Alignment.Center
@@ -321,11 +247,11 @@ fun PokemonDetailContent(
         Spacer(modifier = Modifier.height(10.dp))
 
         // Fila de acciones interactivas: Toggle Variocolor y Rugido Oficial
-        Row(
+        FlowRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (selectedForm == null) {
+            run {
                 // Botón Variocolor (Shiny)
                 FilterChip(
                     selected = isShiny,
@@ -350,20 +276,6 @@ fun PokemonDetailContent(
                         selectedLabelColor = Color(0xFFFFD700)
                     )
                 )
-            } else {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFF61DAF6).copy(alpha = 0.2f),
-                    border = BorderStroke(1.dp, Color(0xFF61DAF6))
-                ) {
-                    Text(
-                        text = "🧬 ${selectedForm!!.formTag}",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF61DAF6),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                    )
-                }
             }
 
             // Botón Rugido (Cry)
@@ -422,7 +334,7 @@ fun PokemonDetailContent(
 
             // Botón Ratio de Captura
             FilledTonalButton(
-                onClick = { onCatchRateClick(pokemon.id) },
+                onClick = { onCatchRateClick(speciesId) },
                 modifier = Modifier.height(38.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.filledTonalButtonColors(
@@ -460,12 +372,12 @@ fun PokemonDetailContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Widget Interactivo de Comentarios RotomDex
-        val hpStat = selectedForm?.hp ?: pokemon.stats.find { it.stat.name == "hp" }?.baseStat ?: 0
-        val atkStat = selectedForm?.atk ?: pokemon.stats.find { it.stat.name == "attack" }?.baseStat ?: 0
-        val defStat = selectedForm?.def ?: pokemon.stats.find { it.stat.name == "defense" }?.baseStat ?: 0
-        val spaStat = selectedForm?.spa ?: pokemon.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0
-        val spdStat = selectedForm?.spd ?: pokemon.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0
-        val speStat = selectedForm?.spe ?: pokemon.stats.find { it.stat.name == "speed" }?.baseStat ?: 0
+        val hpStat = pokemon.stats.find { it.stat.name == "hp" }?.baseStat ?: 0
+        val atkStat = pokemon.stats.find { it.stat.name == "attack" }?.baseStat ?: 0
+        val defStat = pokemon.stats.find { it.stat.name == "defense" }?.baseStat ?: 0
+        val spaStat = pokemon.stats.find { it.stat.name == "special-attack" }?.baseStat ?: 0
+        val spdStat = pokemon.stats.find { it.stat.name == "special-defense" }?.baseStat ?: 0
+        val speStat = pokemon.stats.find { it.stat.name == "speed" }?.baseStat ?: 0
 
         RotomDialogueBox(
             pokemonId = pokemon.id,
@@ -491,12 +403,16 @@ fun PokemonDetailContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         if (evolutionState is EvolutionState.Success) {
-            Text(
-                text = evolutionState.description,
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Justify
-            )
+            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+                Text(
+                    text = evolutionState.description,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        } else if (evolutionState is EvolutionState.Error) {
+            Text(evolutionState.message, color = MaterialTheme.colorScheme.error)
         } else {
             CircularProgressIndicator(modifier = Modifier.size(24.dp))
         }
@@ -523,22 +439,13 @@ fun PokemonDetailContent(
         }
         Spacer(modifier = Modifier.height(12.dp))
 
-        val statsToRender = if (selectedForm != null) {
-            listOf(
-                StatInfo(selectedForm!!.hp, Stat("hp")),
-                StatInfo(selectedForm!!.atk, Stat("attack")),
-                StatInfo(selectedForm!!.def, Stat("defense")),
-                StatInfo(selectedForm!!.spa, Stat("special-attack")),
-                StatInfo(selectedForm!!.spd, Stat("special-defense")),
-                StatInfo(selectedForm!!.spe, Stat("speed"))
-            )
-        } else {
-            pokemon.stats
-        }
+        val statsToRender = pokemon.stats
 
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            statsToRender.forEach { statInfo ->
-                StatRow(statInfo = statInfo)
+        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                statsToRender.forEach { statInfo ->
+                    StatRow(statInfo = statInfo)
+                }
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -552,7 +459,9 @@ fun PokemonDetailContent(
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        TypeRelationsView(state = typeRelationsState)
+        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+            Box(Modifier.padding(16.dp)) { TypeRelationsView(state = typeRelationsState) }
+        }
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
@@ -571,7 +480,7 @@ fun PokemonDetailContent(
             is EvolutionState.Success -> {
                 EvolutionChainColumn(
                     chain = evolutionState.evolutionChain,
-                    currentPokemonId = pokemon.id.toString(),
+                    currentPokemonId = speciesId.toString(),
                     onPokemonClick = onPokemonClick
                 )
             }
@@ -582,6 +491,48 @@ fun PokemonDetailContent(
                 )
             }
         }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Formas", fontSize = 22.sp, fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.onBackground)
+        Spacer(Modifier.height(12.dp))
+        if (formsState is PokemonFormsState.Loading) {
+            CircularProgressIndicator(Modifier.size(24.dp))
+        }
+        if (formsState is PokemonFormsState.Error) {
+            Text((formsState as PokemonFormsState.Error).message, color = MaterialTheme.colorScheme.error)
+            TextButton(onClick = { pokemonViewModel.loadFormVarieties(speciesId) }) { Text("Reintentar") }
+        }
+        if (availableForms.size > 1) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                items(availableForms, key = { it.name }) { form ->
+                    val selected = form.id == pokemon.id
+                    Card(
+                        onClick = { if (!selected) onFormClick(form.id) },
+                        modifier = Modifier.width(160.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(if (selected) 2.dp else 1.dp,
+                            if (selected) Color(0xFF61DAF6) else MaterialTheme.colorScheme.outlineVariant),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            AsyncImage(model = form.spriteUrl, contentDescription = form.formDisplayName,
+                                modifier = Modifier.size(96.dp))
+                            Text(form.formDisplayName, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                            Text(if (selected) "✓ Seleccionada" else if (form.isDefault) "Predeterminada" else
+                                PokemonFormCatalog.find(form.name)?.formTag ?: "Variante", fontSize = 12.sp,
+                                color = if (selected) Color(0xFF61DAF6) else MaterialTheme.colorScheme.onSurfaceVariant)
+                            form.types.forEach { type -> Text(traducirTipo(type), fontSize = 12.sp) }
+                        }
+                    }
+                }
+            }
+        } else if (formsState is PokemonFormsState.Success) {
+            Text("Esta especie no tiene otras variedades de combate en PokeAPI.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        PokemonMovesSection(pokemonId = pokemon.id, pokemonViewModel = pokemonViewModel)
+        PokemonLocationsSection(pokemonId = pokemon.id)
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
@@ -626,7 +577,7 @@ fun TypeChip(originalType: String, translatedType: String) {
 @Composable
 fun StatRow(statInfo: StatInfo) {
     val statName = when (statInfo.stat.name) {
-        "hp" -> "HP"
+        "hp" -> "PS"
         "attack" -> "Ataque"
         "defense" -> "Defensa"
         "special-attack" -> "At. Esp."
@@ -757,7 +708,7 @@ fun EvolutionChainColumn(
 
                     if (!evolutionStage.isBaseForm) {
                         Text(
-                            text = "Req: ${evolutionStage.evolutionRequirement}",
+                            text = "Desde ${chain.firstOrNull { it.id == evolutionStage.evolvesFromId }?.name ?: "etapa anterior"}: ${evolutionStage.evolutionRequirement}",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.primary
@@ -907,7 +858,7 @@ fun RotomDialogueBox(
     modifier: Modifier = Modifier
 ) {
     val rotomForm by RotomThemeManager.currentForm.collectAsState()
-    val comments = remember(pokemonId, rotomForm) {
+    val comments = remember(pokemonId, pokemonName, types, hp, attack, defense, specialAttack, specialDefense, speed, rotomForm) {
         RotomCommentaryEngine.getComments(
             pokemonId = pokemonId,
             pokemonName = pokemonName,

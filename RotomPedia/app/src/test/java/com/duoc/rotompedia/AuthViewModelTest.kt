@@ -10,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -53,6 +54,7 @@ class AuthViewModelTest {
     fun registrarUsuario_camposVacios_retornaError() = runTest {
         // Acción
         viewModel.registrarUsuario("", "", "")
+        advanceUntilIdle()
 
         // Verificación
         assertEquals(AuthState.EMPTY_FIELDS, viewModel.authState.value)
@@ -67,6 +69,7 @@ class AuthViewModelTest {
 
         // Acción
         viewModel.registrarUsuario("Ash", "ash@pueblo.paleta", "123456")
+        advanceUntilIdle()
 
         // Verificación
         assertEquals(AuthState.USER_EXISTS, viewModel.authState.value)
