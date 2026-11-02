@@ -1,4 +1,4 @@
-﻿package com.duoc.rotompedia.ui.screens
+package com.duoc.rotompedia.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -697,6 +697,221 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                         }
                                     }
                                 }
+
+                            }
+                        }
+                    }
+                    HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
+
+                    // Filas de Resumen por Miembro (Debilidades y Resistencias)
+                    // Fila: Debilidad Critica (x4)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(68.dp)
+                                .height(26.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFF3E1A1A))
+                                .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "\u26A0 Debil. x4",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFF5252),
+                                maxLines = 1
+                            )
+                        }
+
+                        for (slot in 0 until 6) {
+                            val m = members.find { it.slot == slot }
+                            Box(
+                                modifier = Modifier
+                                    .width(44.dp)
+                                    .height(26.dp)
+                                    .padding(horizontal = 2.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (m != null) {
+                                    val count4x = TypeEffectiveness.ALL_TYPES.count {
+                                        TypeEffectiveness.getDualMultiplier(it, m.tipo1, m.tipo2) >= 3.9f
+                                    }
+                                    val bg = if (count4x > 0) Color(0xFFD32F2F) else Color(0xFF1E1E1E)
+                                    val fg = if (count4x > 0) Color.White else Color.Gray
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(bg),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "$count4x",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = fg
+                                        )
+                                    }
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(Color(0xFF161616)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "-", fontSize = 11.sp, color = Color(0xFF383838))
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Fila: Debilidad Normal (x2)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(68.dp)
+                                .height(26.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFF37221A))
+                                .border(1.dp, Color(0xFFE64A19), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "\uD83D\uDD34 Debil. x2",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFF8A65),
+                                maxLines = 1
+                            )
+                        }
+
+                        for (slot in 0 until 6) {
+                            val m = members.find { it.slot == slot }
+                            Box(
+                                modifier = Modifier
+                                    .width(44.dp)
+                                    .height(26.dp)
+                                    .padding(horizontal = 2.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (m != null) {
+                                    val count2x = TypeEffectiveness.ALL_TYPES.count {
+                                        val mult = TypeEffectiveness.getDualMultiplier(it, m.tipo1, m.tipo2)
+                                        mult in 1.9f..2.1f
+                                    }
+                                    val bg = if (count2x > 0) Color(0xFFE64A19) else Color(0xFF1E1E1E)
+                                    val fg = if (count2x > 0) Color.White else Color.Gray
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(bg),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "$count2x",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = fg
+                                        )
+                                    }
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(Color(0xFF161616)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "-", fontSize = 11.sp, color = Color(0xFF383838))
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Fila: Resistencias Totales (<= 0.5x e Inmunidades)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(68.dp)
+                                .height(26.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFF1A3320))
+                                .border(1.dp, Color(0xFF2E7D32), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "\uD83D\uDFE2 Resist.",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF69F0AE),
+                                maxLines = 1
+                            )
+                        }
+
+                        for (slot in 0 until 6) {
+                            val m = members.find { it.slot == slot }
+                            Box(
+                                modifier = Modifier
+                                    .width(44.dp)
+                                    .height(26.dp)
+                                    .padding(horizontal = 2.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (m != null) {
+                                    val countResist = TypeEffectiveness.ALL_TYPES.count {
+                                        val mult = TypeEffectiveness.getDualMultiplier(it, m.tipo1, m.tipo2)
+                                        mult <= 0.55f
+                                    }
+                                    val bg = if (countResist > 0) Color(0xFF2E7D32) else Color(0xFF1E1E1E)
+                                    val fg = if (countResist > 0) Color.White else Color.Gray
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(bg),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "$countResist",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = fg
+                                        )
+                                    }
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(Color(0xFF161616)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "-", fontSize = 11.sp, color = Color(0xFF383838))
+                                    }
+                                }
                             }
                         }
                     }
@@ -714,12 +929,12 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                LegendBadge(text = "4", label = "x4", bg = Color(0xFF00BCD4), fg = Color.White)
-                LegendBadge(text = "2", label = "x2", bg = Color(0xFF2E7D32), fg = Color.White)
-                LegendBadge(text = "1", label = "x1", bg = Color(0xFF232323), fg = Color.Gray)
-                LegendBadge(text = "½", label = "x0.5", bg = Color(0xFFC62828), fg = Color.White)
-                LegendBadge(text = "¼", label = "x0.25", bg = Color(0xFFBF360C), fg = Color.White)
-                LegendBadge(text = "0", label = "Inmune", bg = Color(0xFF151515), fg = Color.White)
+                LegendBadge(text = "4", label = "x4", bg = Color(0xFFD32F2F), fg = Color.White)
+                LegendBadge(text = "2", label = "x2", bg = Color(0xFFE64A19), fg = Color.White)
+                LegendBadge(text = "-", label = "x1", bg = Color(0xFF232323), fg = Color.Gray)
+                LegendBadge(text = "\u00BD", label = "x0.5", bg = Color(0xFF2E7D32), fg = Color.White)
+                LegendBadge(text = "\u00BC", label = "x0.25", bg = Color(0xFF1B5E20), fg = Color.White)
+                LegendBadge(text = "0", label = "Inmune", bg = Color(0xFF283593), fg = Color.White)
             }
         }
     }
@@ -1113,15 +1328,15 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
  */
 fun getMultiplierDisplay(mult: Float): Triple<String, Color, Color> {
     return when {
-        mult >= 3.9f -> Triple("4", Color(0xFF00BCD4), Color.White)   // Cyan x4 (debilidad crítica)
-        mult in 1.9f..2.1f -> Triple("2", Color(0xFF2E7D32), Color.White) // Verde x2 (débil)
-        mult in 0.9f..1.1f -> Triple("1", Color(0xFF232323), Color(0xFF757575)) // Gris x1 (neutro)
-        mult in 0.45f..0.55f -> Triple("½", Color(0xFFC62828), Color.White) // Rojo oscuro x0.5 (resistente)
-        mult in 0.2f..0.3f -> Triple("¼", Color(0xFFBF360C), Color.White) // Óxido x0.25 (doble resistencia)
-        mult == 0.0f -> Triple("0", Color(0xFF151515), Color.White) // Negro x0 (inmune)
+        mult >= 3.9f -> Triple("4", Color(0xFFD32F2F), Color.White)   // Rojo Intenso x4 (debilidad critica)
+        mult in 1.9f..2.1f -> Triple("2", Color(0xFFE64A19), Color.White) // Naranja-Rojo x2 (debil)
+        mult in 0.9f..1.1f -> Triple("-", Color(0xFF232323), Color(0xFF757575)) // Gris neutro x1
+        mult in 0.45f..0.55f -> Triple("\u00BD", Color(0xFF2E7D32), Color.White) // Verde x0.5 (resistente)
+        mult in 0.2f..0.3f -> Triple("\u00BC", Color(0xFF1B5E20), Color.White) // Verde oscuro x0.25 (doble resistencia)
+        mult == 0.0f -> Triple("0", Color(0xFF283593), Color.White) // Azul marino x0 (inmune)
         else -> Triple(
-            if (mult > 1f) String.format(Locale.US, "%.1f", mult) else "½",
-            if (mult > 1f) Color(0xFF2E7D32) else Color(0xFFC62828),
+            if (mult > 1f) String.format(Locale.US, "%.1f", mult) else "\u00BD",
+            if (mult > 1f) Color(0xFFE64A19) else Color(0xFF2E7D32),
             Color.White
         )
     }
