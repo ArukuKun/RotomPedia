@@ -11,7 +11,10 @@ El proyecto simula una Pokédex moderna que permite gestionar usuarios, guardar 
 Formas integradas después de Evoluciones, búsqueda de variantes en español y datos
 de selección desde PokeAPI. Incluye consulta de movimientos y localizaciones.
 Consulta el [diagnóstico y checklist de validación](docs/v3.3-validacion.md).
-La RC requiere validación en Android antes de considerarse estable.
+**[Leer la guía completa de cambios, especificaciones y próximos pasos](docs/README-v3.3.md).**
+
+La validación manual fue reportada como completada por el usuario. La distribución
+publicada sigue siendo `3.3.0-rc1`; no se ha promovido automáticamente a estable.
 
 El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en módulos:
 
