@@ -42,7 +42,11 @@ class AuthViewModelTest {
         application = Mockito.mock(Application::class.java)
 
         // 2. Inyección
-        viewModel = AuthViewModel(application, usuarioDao)
+        val sessions = com.duoc.rotompedia.data.repository.DefaultSessionRepository(object : com.duoc.rotompedia.data.repository.SessionStore {
+            override fun read(): String? = null
+            override fun write(username: String?) = Unit
+        }) { true }
+        viewModel = AuthViewModel(application, usuarioDao, sessions)
     }
 
     @After

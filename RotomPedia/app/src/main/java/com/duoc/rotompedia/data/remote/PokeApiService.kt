@@ -22,6 +22,9 @@ private const val BASE_URL = "https://pokeapi.co/api/v2/"
 
 //Interfaz retrofit
 interface PokeApiService {
+    @GET("pokemon-form/{id}")
+    suspend fun getPokemonFormIdentity(@Path("id") id: Int): com.duoc.rotompedia.data.model.PokemonFormIdentityResponse
+
     @GET("pokemon/{id}/encounters")
     suspend fun getPokemonEncounters(@Path("id") id: Int): List<com.duoc.rotompedia.data.model.PokemonEncounter>
 

@@ -1,7 +1,7 @@
 package com.duoc.rotompedia.viewmodel
 
 import android.app.Application
-import android.content.Context
+import com.duoc.rotompedia.data.repository.SessionRepository
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.duoc.rotompedia.data.local.Usuario
@@ -9,6 +9,10 @@ import com.duoc.rotompedia.data.local.UsuarioDao
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.Job
 
 enum class AuthState {
     IDLE, LOADING, REGISTRATION_SUCCESS, USER_EXISTS, EMAIL_EXISTS, INVALID_CREDENTIALS, EMPTY_FIELDS
@@ -23,13 +27,15 @@ sealed class UserSession {
 // CAMBIO AQUÍ: Ahora recibe 'usuarioDao' en el constructor
 class AuthViewModel(
     application: Application,
-    private val usuarioDao: UsuarioDao
+    private val usuarioDao: UsuarioDao,
+    private val sessions: SessionRepository
 ) : AndroidViewModel(application) {
 
-    private val sharedPreferences = application.getSharedPreferences("rotompedia_prefs", Context.MODE_PRIVATE)
-
-    private val _userSession = MutableStateFlow<UserSession>(UserSession.Undetermined)
-    val userSession = _userSession.asStateFlow()
+    val userSession = sessions.session.map { owner ->
+        if (!owner.restored) UserSession.Undetermined
+        else owner.username?.let { UserSession.Active(it) } ?: UserSession.Inactive
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, UserSession.Undetermined)
+    private var loginJob: Job? = null
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.IDLE)
     val authState = _authState.asStateFlow()
@@ -40,22 +46,15 @@ class AuthViewModel(
 
     // El resto de tu lógica sigue IGUAL...
     fun checkSession() {
-        val savedUser = sharedPreferences.getString(LOGGED_IN_USER_KEY, null)
-        if (savedUser != null) {
-            _userSession.value = UserSession.Active(savedUser)
-        } else {
-            _userSession.value = UserSession.Inactive
-        }
+        viewModelScope.launch { sessions.restore() }
     }
 
     fun iniciarSesion(nombreUsuario: String, contrasena: String, recordar: Boolean) {
-        viewModelScope.launch {
+        loginJob?.cancel()
+        loginJob = viewModelScope.launch {
             val usuario = usuarioDao.obtenerUsuarioPorNombre(nombreUsuario)
             if (usuario != null && usuario.contrasena == contrasena) {
-                if (recordar) {
-                    sharedPreferences.edit().putString(LOGGED_IN_USER_KEY, nombreUsuario).apply()
-                }
-                _userSession.value = UserSession.Active(nombreUsuario)
+                sessions.signIn(nombreUsuario, recordar)
             } else {
                 _authState.value = AuthState.INVALID_CREDENTIALS
             }
@@ -63,9 +62,9 @@ class AuthViewModel(
     }
 
     fun cerrarSesion() {
+        loginJob?.cancel()
         viewModelScope.launch {
-            sharedPreferences.edit().remove(LOGGED_IN_USER_KEY).apply()
-            _userSession.value = UserSession.Inactive
+            sessions.signOut()
             _authState.value = AuthState.IDLE
         }
     }

@@ -221,6 +221,13 @@ data class NamedApiResource(
 )
 
 @JsonClass(generateAdapter = true)
+data class PokemonFormIdentityResponse(
+    val id: Int, val name: String, val pokemon: NamedApiResource,
+    @Json(name = "is_mega") val isMega: Boolean,
+    @Json(name = "is_battle_only") val isBattleOnly: Boolean
+)
+
+@JsonClass(generateAdapter = true)
 data class PokemonEncounter(
     @Json(name = "location_area") val locationArea: NamedApiResource,
     @Json(name = "version_details") val versionDetails: List<EncounterVersion>

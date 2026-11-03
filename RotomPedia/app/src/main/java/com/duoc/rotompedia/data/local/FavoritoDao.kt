@@ -22,10 +22,6 @@ interface FavoritoDao {
     @Query("SELECT pokemonId FROM favoritos WHERE usuario = :usuario")
     fun obtenerTodosLosIdsPorUsuario(usuario: String): Flow<List<Int>>
 
-    // Para compatibilidad general o cuando no se define usuario
-    @Query("SELECT pokemonId FROM favoritos")
-    fun obtenerTodosLosIds(): Flow<List<Int>>
-
     // Verificar si un Pokémon es favorito de un usuario específico
     @Query("SELECT * FROM favoritos WHERE usuario = :usuario AND pokemonId = :pokemonId")
     suspend fun obtenerPorId(usuario: String, pokemonId: Int): PokemonFavorito?

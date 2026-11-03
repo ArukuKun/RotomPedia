@@ -2,6 +2,7 @@
 package com.duoc.rotompedia.viewmodel
 
 import android.util.Log
+import com.duoc.rotompedia.data.repository.*
 import com.duoc.rotompedia.data.PokemonFormCatalog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.awaitAll
@@ -22,8 +23,6 @@ import com.duoc.rotompedia.data.model.Species
 import com.duoc.rotompedia.data.model.TypesSlot
 import com.duoc.rotompedia.data.remote.PokemonApi
 import com.duoc.rotompedia.util.traducirTipo
-import com.duoc.rotompedia.data.local.FavoritoDao
-import com.duoc.rotompedia.data.local.PokemonFavorito
 import com.duoc.rotompedia.data.local.CachedPokemon
 import com.duoc.rotompedia.data.local.CachedPokemonDao
 import kotlinx.coroutines.Dispatchers
@@ -129,8 +128,10 @@ data class PokemonFormData(
 )
 
 class PokemonViewModel(
-    private val favoritoDao: FavoritoDao,
-    private val cachedPokemonDao: CachedPokemonDao? = null
+    private val cachedPokemonDao: CachedPokemonDao? = null,
+    private val sessions: SessionRepository,
+    private val favorites: FavoritesRepository,
+    private val pokemonRepository: PokemonRepository
 ) : ViewModel() {
     private val TAG = "RotomPedia_ViewModel"
 
@@ -181,13 +182,8 @@ class PokemonViewModel(
     val selectedRegionFilter: StateFlow<String> = _selectedRegionFilter
 
     // Usuario activo actual para favoritos aislados
-    private val _currentUsername = MutableStateFlow("")
-    val currentUsername: StateFlow<String> = _currentUsername
-
-    fun setCurrentUser(username: String) {
-        _currentUsername.value = username
-        Log.d(TAG, "Usuario activo en PokemonViewModel: '$username'")
-    }
+    val currentUsername = sessions.session.map { it.username.orEmpty() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
     suspend fun getCachedPokemonDirect(pokemonId: Int): CachedPokemon? {
         return withContext(Dispatchers.IO) {
@@ -232,19 +228,10 @@ class PokemonViewModel(
     }
 
     // ✅ ACTUALIZADO: Favoritos aislados reactivamente por usuario activo
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val favoritePokemonIds: StateFlow<Set<Int>> = _currentUsername
-        .flatMapLatest { username ->
-            if (username.isBlank()) {
-                favoritoDao.obtenerTodosLosIds()
-            } else {
-                favoritoDao.obtenerTodosLosIdsPorUsuario(username)
-            }
-        }
-        .map { it.toSet() }
+    val favoritePokemonIds: StateFlow<Set<Int>> = favorites.ids
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = emptySet()
         )
 
@@ -420,7 +407,7 @@ class PokemonViewModel(
     private suspend fun loadPokemonTypes(pokemonId: Int): List<String> {
         return try {
             val pokemonData = withContext(Dispatchers.IO) {
-                PokemonApi.service.getPokemon(pokemonId)
+                pokemonRepository.getPokemon(pokemonId.toString())
             }
             // Guardar en Room para consulta offline
             try {
@@ -480,22 +467,9 @@ class PokemonViewModel(
 
     // ✅ ACTUALIZADO: Favoritos aislados por usuario
     fun toggleFavorite(pokemonId: Int, pokemonName: String, isCurrentlyFavorite: Boolean) {
+        val owner = sessions.capture()
         viewModelScope.launch(Dispatchers.IO) {
-            val user = _currentUsername.value.ifBlank { "default_user" }
-            if (isCurrentlyFavorite) {
-                // Eliminar de favoritos del usuario activo
-                favoritoDao.eliminarFavorito(user, pokemonId)
-                Log.d(TAG, "Pokémon $pokemonName ($pokemonId) eliminado de favoritos para '$user'.")
-            } else {
-                // Agregar a favoritos del usuario activo
-                val favorito = PokemonFavorito(
-                    usuario = user,
-                    pokemonId = pokemonId,
-                    nombre = pokemonName.replaceFirstChar { it.uppercase() }
-                )
-                favoritoDao.agregarFavorito(favorito)
-                Log.d(TAG, "Pokémon $pokemonName ($pokemonId) agregado a favoritos para '$user'.")
-            }
+            favorites.toggle(owner, pokemonId, pokemonName)
         }
     }
 
@@ -614,7 +588,7 @@ class PokemonViewModel(
             _pokemonDetailState.value = PokemonDetailState.Loading
             try {
                 val response = withContext(Dispatchers.IO) {
-                    PokemonApi.service.getPokemon(pokemonId.toInt())
+                    pokemonRepository.getPokemon(pokemonId)
                 }
                 _pokemonDetailState.value = PokemonDetailState.Success(response)
                 Log.d(TAG, "Detalles de ${response.name} cargados exitosamente.")
@@ -694,7 +668,7 @@ class PokemonViewModel(
             _evolutionState.value = EvolutionState.Loading
             try {
                 val speciesResponse = withContext(Dispatchers.IO) {
-                    val pokemon = PokemonApi.service.getPokemon(pokemonId.toInt())
+                    val pokemon = pokemonRepository.getPokemon(pokemonId)
                     val speciesId = pokemon.species?.url?.trimEnd('/')?.substringAfterLast('/')?.toIntOrNull()
                         ?: pokemonId.toInt()
                     PokemonApi.service.getPokemonSpecies(speciesId)
@@ -1019,7 +993,7 @@ class PokemonViewModel(
         _pokemonFormDataCache[formName]?.let { return it }
         return try {
             val data = withContext(Dispatchers.IO) {
-                PokemonApi.service.getPokemonByName(formName)
+                pokemonRepository.getPokemon(formName)
             }
             val formData = PokemonFormData(
                 id = data.id,

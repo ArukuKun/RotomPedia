@@ -371,23 +371,24 @@ fun AppNavigationController() {
     val application = context.applicationContext as android.app.Application
 
     // Base de datos UNA vez
-    val database = remember { AppDatabase.getDatabase(context) }
+    val container = remember { com.duoc.rotompedia.di.AppContainer.get(context) }
+    val database = container.database
 
     // Factories
     val authViewModelFactory = remember {
-        AuthViewModelFactory(application, database.usuarioDao())
+        AuthViewModelFactory(application, database.usuarioDao(), container.sessions)
     }
 
     val pokemonViewModelFactory = remember {
-        PokemonViewModelFactory(database.favoritoDao(), database.cachedPokemonDao())
+        PokemonViewModelFactory(database.cachedPokemonDao(), container.sessions, container.favorites, container.pokemon)
     }
 
     val teamBuilderViewModelFactory = remember {
-        TeamBuilderViewModelFactory(database.equipoDao(), database.cachedPokemonDao())
+        TeamBuilderViewModelFactory(container.teams, container.sessions)
     }
 
     val versusViewModel = remember {
-        PokemonVersusViewModel(database.cachedPokemonDao())
+        PokemonVersusViewModel(database.cachedPokemonDao(), container.pokemon)
     }
 
     // ViewModels
@@ -404,8 +405,6 @@ fun AppNavigationController() {
     LaunchedEffect(userSession) {
         when (val session = userSession) {
             is UserSession.Active -> {
-                pokemonViewModel.setCurrentUser(session.username)
-                teamBuilderViewModel.setCurrentUser(session.username)
                 showBiometricPrompt(
                     activity = activity,
                     executor = executor,
@@ -420,8 +419,6 @@ fun AppNavigationController() {
                 )
             }
             is UserSession.Inactive -> {
-                pokemonViewModel.setCurrentUser("")
-                teamBuilderViewModel.setCurrentUser("")
                 navController.navigate("login") {
                     popUpTo(0)
                 }

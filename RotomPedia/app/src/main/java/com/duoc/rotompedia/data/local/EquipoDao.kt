@@ -10,24 +10,21 @@ interface EquipoDao {
     fun obtenerEquiposPorUsuario(usuario: String): Flow<List<EquipoConMiembros>>
 
     @Transaction
-    @Query("SELECT * FROM equipos WHERE id = :equipoId")
-    suspend fun obtenerEquipoPorId(equipoId: Long): EquipoConMiembros?
+    @Query("SELECT * FROM equipos WHERE id = :equipoId AND usuario = :usuario")
+    suspend fun obtenerEquipoPorId(equipoId: Long, usuario: String): EquipoConMiembros?
 
     @Transaction
-    @Query("SELECT * FROM equipos WHERE id = :equipoId")
-    fun observarEquipoPorId(equipoId: Long): Flow<EquipoConMiembros?>
+    @Query("SELECT * FROM equipos WHERE id = :equipoId AND usuario = :usuario")
+    fun observarEquipoPorId(equipoId: Long, usuario: String): Flow<EquipoConMiembros?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarEquipo(equipo: EquipoPokemon): Long
 
-    @Update
-    suspend fun actualizarEquipo(equipo: EquipoPokemon)
+    @Query("UPDATE equipos SET nombre = :nombre WHERE id = :equipoId AND usuario = :usuario")
+    suspend fun renombrar(equipoId: Long, usuario: String, nombre: String)
 
-    @Delete
-    suspend fun eliminarEquipo(equipo: EquipoPokemon)
-
-    @Query("DELETE FROM equipos WHERE id = :equipoId")
-    suspend fun eliminarEquipoPorId(equipoId: Long)
+    @Query("DELETE FROM equipos WHERE id = :equipoId AND usuario = :usuario")
+    suspend fun eliminarEquipoPorId(equipoId: Long, usuario: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarMiembro(miembro: MiembroEquipo): Long
@@ -35,12 +32,24 @@ interface EquipoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarMiembros(miembros: List<MiembroEquipo>)
 
-    @Query("DELETE FROM miembros_equipo WHERE id = :miembroId")
-    suspend fun eliminarMiembro(miembroId: Long)
+    @Query("SELECT * FROM miembros_equipo WHERE id = :miembroId")
+    suspend fun miembro(miembroId: Long): MiembroEquipo?
 
-    @Query("DELETE FROM miembros_equipo WHERE equipoId = :equipoId AND slot = :slot")
-    suspend fun eliminarMiembroPorSlot(equipoId: Long, slot: Int)
+    @Query("DELETE FROM miembros_equipo WHERE equipoId = :equipoId AND slot = :slot AND EXISTS (SELECT 1 FROM equipos WHERE id = :equipoId AND usuario = :usuario)")
+    suspend fun eliminarMiembroPorSlot(equipoId: Long, slot: Int, usuario: String)
 
-    @Query("DELETE FROM miembros_equipo WHERE equipoId = :equipoId")
-    suspend fun eliminarTodosLosMiembros(equipoId: Long)
+    @Transaction
+    suspend fun guardarMiembro(usuario: String, value: MiembroEquipo, replaceSlot: Boolean): Boolean {
+        if (obtenerEquipoPorId(value.equipoId, usuario) == null || value.slot !in 0..5) return false
+        if (value.id != 0L) {
+            val previous = miembro(value.id) ?: return false
+            if (previous.equipoId != value.equipoId || previous.slot != value.slot) return false
+        }
+        if (replaceSlot) {
+            if (value.id != 0L) return false
+            eliminarMiembroPorSlot(value.equipoId, value.slot, usuario)
+        }
+        insertarMiembro(value)
+        return true
+    }
 }

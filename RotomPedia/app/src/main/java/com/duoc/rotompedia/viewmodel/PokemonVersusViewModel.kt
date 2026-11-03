@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.duoc.rotompedia.data.local.CachedPokemonDao
 import com.duoc.rotompedia.data.model.PokemonData
-import com.duoc.rotompedia.data.remote.PokemonApi
 import com.duoc.rotompedia.util.TypeEffectiveness
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +22,8 @@ data class VersusMatchupAnalysis(
 )
 
 class PokemonVersusViewModel(
-    private val cachedPokemonDao: CachedPokemonDao? = null
+    private val cachedPokemonDao: CachedPokemonDao? = null,
+    private val repository: com.duoc.rotompedia.data.repository.PokemonRepository
 ) : ViewModel() {
 
     private val _pokemon1 = MutableStateFlow<PokemonData?>(null)
@@ -52,7 +52,7 @@ class PokemonVersusViewModel(
             _isLoadingP1.value = true
             try {
                 val data = withContext(Dispatchers.IO) {
-                    PokemonApi.service.getPokemon(pokemonId)
+                    repository.getPokemon(pokemonId.toString())
                 }
                 _pokemon1.value = data
                 recalculateAnalysis()
@@ -76,7 +76,7 @@ class PokemonVersusViewModel(
             _isLoadingP2.value = true
             try {
                 val data = withContext(Dispatchers.IO) {
-                    PokemonApi.service.getPokemon(pokemonId)
+                    repository.getPokemon(pokemonId.toString())
                 }
                 _pokemon2.value = data
                 recalculateAnalysis()
