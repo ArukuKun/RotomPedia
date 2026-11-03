@@ -29,7 +29,7 @@ class RoomPersistenceTest {
     private fun legacy(name: String, version: Int) {
         context.deleteDatabase(name)
         val json = JSONObject(java.io.File(System.getProperty("rotompedia.schemaDir"),
-            "com.duoc.rotompedia.data.local.AppDatabase/6.json").readText())
+            "com.duoc.rotompedia.data.local.AppDatabase/${if (version == 7) 7 else 6}.json").readText())
         val helper = FrameworkSQLiteOpenHelperFactory().create(SupportSQLiteOpenHelper.Configuration.builder(context)
             .name(name).callback(object : SupportSQLiteOpenHelper.Callback(version) {
                 override fun onCreate(db: SupportSQLiteDatabase) {
@@ -68,6 +68,23 @@ class RoomPersistenceTest {
 
     private fun open(name: String) = Room.databaseBuilder(context, AppDatabase::class.java, name)
         .addMigrations(*DatabaseMigrations.ALL).allowMainThreadQueries().build()
+
+    @Test fun `v7 upgrade adds explorer metadata without rewriting saved identities`() = runTest {
+        val name = "migration7.db"
+        legacy(name, 7)
+        val db = open(name)
+        try {
+            db.openHelper.writableDatabase
+            val member = db.equipoDao().obtenerEquipoPorId(42, "ash")!!.miembros.single()
+            assertEquals(10051, member.pokemonId)
+            assertEquals("Mega Blaziken", member.nombre)
+            assertEquals(73, member.level)
+            assertEquals("Unknown Move", member.move4)
+            assertNotNull(db.favoritoDao().obtenerPorId("ash", 10051))
+            assertEquals("legacy-password", db.usuarioDao().obtenerUsuarioPorNombre("ash")!!.contrasena)
+            assertTrue(db.pokemonIndexDao().observeExplorer().first().isEmpty())
+        } finally { db.close() }
+    }
 
     @Test fun `v6 upgrade preserves personal data and contradictory legacy IDs exactly`() = runTest {
         val name = "migration6.db"

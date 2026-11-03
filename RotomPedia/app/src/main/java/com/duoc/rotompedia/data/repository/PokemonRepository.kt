@@ -12,6 +12,7 @@ sealed interface IdentityResolution {
 }
 
 interface PokemonRepository {
+    fun observeExplorer(): Flow<List<com.duoc.rotompedia.data.explorer.ExplorerPokemon>>
     fun observeNational(): Flow<List<IndexedSpecies>>
     fun observeVarieties(speciesId: Int): Flow<List<IndexedVariety>>
     fun observeIndexState(): Flow<PokemonIndexState?>

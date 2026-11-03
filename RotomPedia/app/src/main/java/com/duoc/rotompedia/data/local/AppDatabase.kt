@@ -15,9 +15,9 @@ import com.duoc.rotompedia.data.local.migrations.DatabaseMigrations
         EquipoPokemon::class,
         MiembroEquipo::class,
         IndexedSpecies::class, IndexedVariety::class, IndexedForm::class,
-        IndexedName::class, PokemonIndexState::class
+        IndexedName::class, PokemonIndexState::class, IndexedVarietyType::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

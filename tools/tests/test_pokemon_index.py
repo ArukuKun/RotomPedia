@@ -9,6 +9,33 @@ spec.loader.exec_module(generator)
 
 
 class IndexTests(unittest.TestCase):
+    def bundled(self):
+        path = Path(__file__).resolve().parents[2] / "RotomPedia/app/src/main/assets/pokemon-index.json"
+        return generator.verify(json.loads(path.read_text(encoding="utf-8")))
+
+    def test_bundled_explorer_covers_all_varieties_without_inventing_defaults(self):
+        payload = self.bundled()
+        self.assertTrue(payload["explorerComplete"])
+        self.assertEqual(1351, len(payload["varieties"]))
+        ids = {v["pokemonId"] for v in payload["varieties"]}
+        self.assertEqual(ids, {r["pokemonId"] for r in payload["varietyTypes"]})
+        self.assertEqual(ids, {r["pokemonId"] for r in payload["forms"]})
+        self.assertFalse(next(r for r in payload["forms"] if r["pokemonId"] == 10264)["isDefault"])
+
+    def test_missing_type_coverage_rejected(self):
+        payload = self.bundled()
+        payload["varietyTypes"] = [r for r in payload["varietyTypes"] if r["pokemonId"] != 10104]
+        with self.assertRaises(ValueError):
+            generator.validate_payload(payload)
+
+    def test_orphan_form_and_duplicate_type_slot_rejected(self):
+        for field, bad in (("forms", {"pokemonFormId": 99999, "pokemonId": 99999}),
+                           ("varietyTypes", None)):
+            payload = self.bundled()
+            payload[field].append(bad or dict(payload[field][0]))
+            with self.assertRaises(ValueError):
+                generator.validate_payload(payload)
+
     def payload(self):
         return {"source": generator.SOURCE, "speciesCount": 1, "varietyCount": 2,
                 "species": [{"speciesId": 3, "nationalNumber": 1, "slug": "venusaur", "generationId": 1,

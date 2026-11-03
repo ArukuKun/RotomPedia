@@ -36,6 +36,11 @@ class PokemonIndexImporter(private val db: AppDatabase, moshi: Moshi) {
             }
             dao.putSpecies(payload.species.map { IndexedSpecies(it.speciesId, it.nationalNumber, it.slug, it.generationId, it.evolutionChainUrl) })
             dao.putVarieties(payload.varieties.map { IndexedVariety(it.pokemonId, it.speciesId, it.slug, it.isDefault) })
+            dao.putForms(payload.forms.map { IndexedForm(it.pokemonFormId, it.pokemonId, it.slug, it.isMega, it.isBattleOnly, it.isDefault, it.formOrder) })
+            if (payload.explorerComplete) {
+                payload.varieties.forEach { dao.clearTypes(it.pokemonId) }
+                dao.putTypes(payload.varietyTypes.map { IndexedVarietyType(it.pokemonId, it.slot, it.typeName) })
+            }
             val names = payload.species.flatMap { species -> species.names.map {
                 IndexedName("species", species.speciesId, it.language, it.name, PokemonFormCatalog.normalize(it.name), "pokeapi")
             } } + payload.varieties.map { variety ->
@@ -45,7 +50,9 @@ class PokemonIndexImporter(private val db: AppDatabase, moshi: Moshi) {
                 IndexedName("variety", variety.pokemonId, if (metadata != null) "es" else "slug",
                     name, PokemonFormCatalog.normalize(name), if (metadata != null) "curated:$metadataRevision" else "pokeapi")
             }
-            dao.putNames(names.distinct())
+            dao.putNames((names + payload.formNames.map {
+                IndexedName("form", it.resourceId, it.language, it.name, PokemonFormCatalog.normalize(it.name), "pokeapi-csv")
+            }).distinct())
             dao.putState(PokemonIndexState(formatVersion = 1, contentSha256 = envelope.contentSha256, metadataRevision = metadataRevision,
                 generatedAt = envelope.generatedAt, speciesCount = payload.speciesCount,
                 varietyCount = payload.varietyCount, formsComplete = false, importedAt = System.currentTimeMillis()))

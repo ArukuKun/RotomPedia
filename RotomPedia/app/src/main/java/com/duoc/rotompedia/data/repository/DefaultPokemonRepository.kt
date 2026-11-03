@@ -14,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 
 class DefaultPokemonRepository(
     private val db: AppDatabase,
@@ -29,6 +31,9 @@ class DefaultPokemonRepository(
     override fun observeNational() = dao.observeNational()
     override fun observeVarieties(speciesId: Int) = dao.observeVarieties(speciesId)
     override fun observeIndexState() = dao.observeState()
+    override fun observeExplorer() = combine(dao.observeExplorer(), dao.observeFormNames()) { rows, names ->
+        com.duoc.rotompedia.data.explorer.PokemonExplorer.entries(rows, names)
+    }.flowOn(Dispatchers.Default)
     override suspend fun ensureIndex() { indexMutex.withLock { importer.importJson(bundledIndex()) } }
     override suspend fun importIndex(json: String): Boolean = indexMutex.withLock { importer.importJson(json) }
 
@@ -113,7 +118,9 @@ class DefaultPokemonRepository(
         db.withTransaction {
             requireNotNull(dao.variety(pokemonId)) { "Variedad no indexada" }
             dao.form(pokemonFormId)?.let { require(it.pokemonId == pokemonId && it.slug == response.name) }
-            dao.putForms(listOf(IndexedForm(pokemonFormId, pokemonId, response.name, response.isMega, response.isBattleOnly)))
+            val previous = dao.form(pokemonFormId)
+            dao.putForms(listOf(IndexedForm(pokemonFormId, pokemonId, response.name, response.isMega, response.isBattleOnly,
+                previous?.isDefault ?: false, previous?.formOrder ?: 0)))
         }
     }
 }

@@ -5,6 +5,8 @@ Candidate generation does not commit, merge, publish or update an installed app.
 """
 import argparse
 import concurrent.futures
+import csv
+import io
 import datetime as dt
 import hashlib
 import json
@@ -18,6 +20,7 @@ import urllib.request
 
 BASE = "https://pokeapi.co/api/v2/"
 SOURCE = BASE + "pokedex/national/"
+CSV_BASE = "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/"
 
 
 def resource_id(url, endpoint):
@@ -116,6 +119,41 @@ def build_payload(national, species_documents):
     return payload
 
 
+def enrich_payload(payload, downloader=None):
+    """Bulk reference files from the same upstream, never one HTTP call per search.
+
+    A single Git commit pins all CSVs to a consistent source revision.
+    """
+    if downloader is None:
+        def downloader(url):
+            request = urllib.request.Request(url, headers={"User-Agent": "RotomPedia-index-generator/2"})
+            with urllib.request.urlopen(request, timeout=60) as response:
+                return response.read().decode("utf-8")
+    revision = json.loads(downloader("https://api.github.com/repos/PokeAPI/pokeapi/commits?path=data/v2/csv&per_page=1"))[0]["sha"]
+    if not re.fullmatch(r"[a-f0-9]{40}", revision):
+        raise ValueError("Invalid upstream revision")
+    base = CSV_BASE.replace("/master/", f"/{revision}/")
+    def rows(name):
+        return list(csv.DictReader(io.StringIO(downloader(base + name))))
+    ids = {row["pokemonId"] for row in payload["varieties"]}
+    types = {int(row["id"]): row["identifier"] for row in rows("types.csv")}
+    payload["varietyTypes"] = [{"pokemonId": int(row["pokemon_id"]), "typeName": types[int(row["type_id"])], "slot": int(row["slot"])}
+                               for row in rows("pokemon_types.csv") if int(row["pokemon_id"]) in ids]
+    payload["forms"] = [{"pokemonFormId": int(row["id"]), "pokemonId": int(row["pokemon_id"]), "slug": row["identifier"],
+                         "isMega": row["is_mega"] == "1", "isBattleOnly": row["is_battle_only"] == "1",
+                         "isDefault": row["is_default"] == "1", "formOrder": int(row["form_order"] or "0")}
+                        for row in rows("pokemon_forms.csv") if int(row["pokemon_id"]) in ids]
+    form_ids = {row["pokemonFormId"] for row in payload["forms"]}
+    payload["formNames"] = [{"resourceId": int(row["pokemon_form_id"]), "language": "es",
+                             "name": row["pokemon_name"] or row["form_name"]}
+                            for row in rows("pokemon_form_names.csv") if int(row["pokemon_form_id"]) in form_ids
+                            and row["local_language_id"] == "7" and (row["pokemon_name"] or row["form_name"])]
+    payload["referenceRevision"] = revision
+    payload["explorerComplete"] = True
+    validate_payload(payload)
+    return payload
+
+
 def validate_payload(payload):
     species, varieties = payload["species"], payload["varieties"]
     if payload["source"] != SOURCE or not species:
@@ -134,6 +172,28 @@ def validate_payload(payload):
         raise ValueError("Orphan or invalid variety")
     if any(sum(row["isDefault"] for row in varieties if row["speciesId"] == sid) != 1 for sid in ids):
         raise ValueError("Each species needs exactly one default variety")
+    if payload.get("explorerComplete", False):
+        if not re.fullmatch(r"[a-f0-9]{40}", payload.get("referenceRevision", "")):
+            raise ValueError("Invalid upstream revision")
+        pokemon_ids = {row["pokemonId"] for row in varieties}
+        typed = payload["varietyTypes"]
+        if {row["pokemonId"] for row in typed} != pokemon_ids or any(row["slot"] not in (1, 2) or not row["typeName"] for row in typed):
+            raise ValueError("Incomplete type coverage")
+        if len({(row["pokemonId"], row["slot"]) for row in typed}) != len(typed):
+            raise ValueError("Duplicate type slot")
+        forms = payload["forms"]
+        if len({row["pokemonFormId"] for row in forms}) != len(forms) or any(row["pokemonId"] not in pokemon_ids for row in forms):
+            raise ValueError("Invalid form identity")
+        if {row["pokemonId"] for row in forms} != pokemon_ids:
+            raise ValueError("Incomplete form coverage")
+        defaults = [row["pokemonId"] for row in forms if row["isDefault"]]
+        if len(defaults) != len(set(defaults)):
+            raise ValueError("Duplicate default form")
+        if any(row["pokemonFormId"] <= 0 or not row["slug"] for row in forms):
+            raise ValueError("Invalid form")
+        form_ids = {row["pokemonFormId"] for row in forms}
+        if any(row["resourceId"] not in form_ids or not row["name"] for row in payload["formNames"]):
+            raise ValueError("Invalid form name")
 
 
 def envelope_for(payload):
@@ -184,12 +244,15 @@ def main():
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as executor:
             documents = list(executor.map(client.get, urls))
         payload = build_payload(national, documents)
+        payload = enrich_payload(payload)
         old_path = Path(args.previous or args.output)
         if old_path.exists():
             check_changes(verify(json.loads(old_path.read_text(encoding="utf-8"))), payload)
         envelope = envelope_for(payload)
         atomic_write(args.output, json.dumps(envelope, ensure_ascii=False, indent=2) + "\n")
-    print(f"Verified: {payload['speciesCount']} species; {payload['varietyCount']} varieties. Forms are on-demand, not complete.")
+    print(f"Verified: {payload['speciesCount']} species; {payload['varietyCount']} varieties; "
+          f"{len(payload.get('forms', []))} form identities. Explorer metadata: {payload.get('explorerComplete', False)}. "
+          "Selectable entries are Pokemon varieties, not every cosmetic form.")
 
 
 if __name__ == "__main__":

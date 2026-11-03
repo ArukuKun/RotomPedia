@@ -34,5 +34,13 @@ object DatabaseMigrations {
             db.execSQL("CREATE TABLE IF NOT EXISTS pokemon_index_state (id INTEGER NOT NULL PRIMARY KEY, formatVersion INTEGER NOT NULL, contentSha256 TEXT NOT NULL, metadataRevision TEXT NOT NULL, generatedAt TEXT NOT NULL, speciesCount INTEGER NOT NULL, varietyCount INTEGER NOT NULL, formsComplete INTEGER NOT NULL, importedAt INTEGER NOT NULL)")
         }
     }
-    val ALL = arrayOf(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+    val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE pokemon_forms ADD COLUMN isDefault INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE pokemon_forms ADD COLUMN formOrder INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("CREATE TABLE IF NOT EXISTS pokemon_variety_types (pokemonId INTEGER NOT NULL, slot INTEGER NOT NULL, typeName TEXT NOT NULL, PRIMARY KEY(pokemonId,slot), FOREIGN KEY(pokemonId) REFERENCES pokemon_varieties(pokemonId) ON UPDATE NO ACTION ON DELETE NO ACTION)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_pokemon_variety_types_typeName ON pokemon_variety_types(typeName)")
+        }
+    }
+    val ALL = arrayOf(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
 }

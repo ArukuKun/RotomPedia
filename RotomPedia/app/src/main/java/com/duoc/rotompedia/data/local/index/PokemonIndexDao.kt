@@ -3,10 +3,19 @@ package com.duoc.rotompedia.data.local.index
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PokemonIndexDao {
+    @Transaction
+    @Query("SELECT * FROM pokemon_species ORDER BY nationalNumber ASC")
+    fun observeExplorer(): Flow<List<ExplorerSpeciesRelation>>
+    @Query("SELECT * FROM pokemon_names WHERE resourceType = 'form'")
+    fun observeFormNames(): Flow<List<IndexedName>>
+    @Upsert suspend fun putTypes(rows: List<IndexedVarietyType>)
+    @Query("DELETE FROM pokemon_variety_types WHERE pokemonId = :id")
+    suspend fun clearTypes(id: Int)
     @Query("SELECT * FROM pokemon_species ORDER BY nationalNumber ASC")
     fun observeNational(): Flow<List<IndexedSpecies>>
     @Query("SELECT * FROM pokemon_species ORDER BY nationalNumber ASC")
