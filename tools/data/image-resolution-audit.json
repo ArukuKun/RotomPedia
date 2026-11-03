@@ -1,0 +1,481 @@
+{
+  "checkedAt": "2026-11-03T04:27:30.017116+00:00",
+  "snapshotSha256": "012d14d4a08454a70f5eadb6671f87ca10564aceb26c805753116f1aa792ccae",
+  "scope": "B missing standard sprites; exact Pokemon variety IDs; PNG signatures verified via GET",
+  "cases": [
+    {
+      "pokemonId": 10301,
+      "speciesId": 718,
+      "nationalNumber": 718,
+      "slug": "zygarde-mega",
+      "colours": {
+        "normal": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10301.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10301.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "801516f7409e2edfb7b783bdce52abb8aafdb41c9d544a0273a842ed1bee3dd3"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10301.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "1717bd7383e793820f57404503aed34ae4216b6b53ed1f4dfeb29539ff8de4bd"
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        },
+        "shiny": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10301.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/10301.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "bca9e5a5e5d5a730eeba8789766a45bcd02a3a64307afb2a197b5b1824e52480"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/10301.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "6d7ff1bf189e4f44abb2ce5cf1c609f0ffa59aa627d59c500e1b647da909b8fa"
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        }
+      }
+    },
+    {
+      "pokemonId": 10264,
+      "speciesId": 1007,
+      "nationalNumber": 1007,
+      "slug": "koraidon-limited-build",
+      "colours": {
+        "normal": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10264.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10264.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10264.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": null,
+          "placeholderExpected": true
+        },
+        "shiny": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10264.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/10264.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/10264.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": null,
+          "placeholderExpected": true
+        }
+      }
+    },
+    {
+      "pokemonId": 10265,
+      "speciesId": 1007,
+      "nationalNumber": 1007,
+      "slug": "koraidon-sprinting-build",
+      "colours": {
+        "normal": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10265.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10265.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "a7fe46345c45f615df31dcc4b5a26c805e5b089a9b61f4e08c7e30beff6881ac"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10265.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        },
+        "shiny": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10265.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/10265.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "e220355e572507b819d9668dff3d8cc99daf8f2a85a8dd50cd73250b34492edd"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/10265.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        }
+      }
+    },
+    {
+      "pokemonId": 10266,
+      "speciesId": 1007,
+      "nationalNumber": 1007,
+      "slug": "koraidon-swimming-build",
+      "colours": {
+        "normal": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10266.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10266.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10266.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": null,
+          "placeholderExpected": true
+        },
+        "shiny": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10266.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/10266.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/10266.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": null,
+          "placeholderExpected": true
+        }
+      }
+    },
+    {
+      "pokemonId": 10267,
+      "speciesId": 1007,
+      "nationalNumber": 1007,
+      "slug": "koraidon-gliding-build",
+      "colours": {
+        "normal": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10267.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10267.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "11d33f55310ef0ead2ed92266dcc6ebba1fd62518a73684f06382e35b99e1424"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10267.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        },
+        "shiny": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10267.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/10267.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "9d2c2e7fcadf8b61cf5f09af8ec0b95d13580884fc8ca74c825d115cc17945d8"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/10267.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        }
+      }
+    },
+    {
+      "pokemonId": 10268,
+      "speciesId": 1008,
+      "nationalNumber": 1008,
+      "slug": "miraidon-low-power-mode",
+      "colours": {
+        "normal": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10268.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10268.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10268.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": null,
+          "placeholderExpected": true
+        },
+        "shiny": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10268.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/10268.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/10268.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": null,
+          "placeholderExpected": true
+        }
+      }
+    },
+    {
+      "pokemonId": 10269,
+      "speciesId": 1008,
+      "nationalNumber": 1008,
+      "slug": "miraidon-drive-mode",
+      "colours": {
+        "normal": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10269.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10269.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "13718266041d913abf841c7e2d7f2f4ba1dcec0f14e199aa48edd8cefd5737ed"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10269.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        },
+        "shiny": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10269.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/10269.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "561d3e5982dd668e2b79ff84a024fc0820f524394a7e9776625a3ecc1e9c44da"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/10269.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        }
+      }
+    },
+    {
+      "pokemonId": 10270,
+      "speciesId": 1008,
+      "nationalNumber": 1008,
+      "slug": "miraidon-aquatic-mode",
+      "colours": {
+        "normal": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10270.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10270.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10270.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": null,
+          "placeholderExpected": true
+        },
+        "shiny": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10270.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/10270.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/10270.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": null,
+          "placeholderExpected": true
+        }
+      }
+    },
+    {
+      "pokemonId": 10271,
+      "speciesId": 1008,
+      "nationalNumber": 1008,
+      "slug": "miraidon-glide-mode",
+      "colours": {
+        "normal": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10271.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10271.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "f8a2e8758e8e12b8898a00bf8e3a502c37874fbbb62061a71c97752cd179b735"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10271.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        },
+        "shiny": {
+          "candidates": [
+            {
+              "source": "STANDARD",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10271.png",
+              "httpStatus": 404
+            },
+            {
+              "source": "ARTWORK",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/10271.png",
+              "httpStatus": 200,
+              "validPng": true,
+              "sha256": "6d87f06552beccb7a892923bf1753379965e19d4f2304aaa46023eb4d4879cbf"
+            },
+            {
+              "source": "HOME",
+              "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/10271.png",
+              "httpStatus": 404
+            }
+          ],
+          "spriteStyleResolvedSource": "ARTWORK",
+          "placeholderExpected": false
+        }
+      }
+    }
+  ]
+}
