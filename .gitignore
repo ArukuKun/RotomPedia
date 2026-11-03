@@ -14,3 +14,6 @@
 .cxx
 local.properties
 *.apk
+# Generated HTTP cache is not a source catalogue or user data.
+.cache/pokeapi-index/
+**/__pycache__/
