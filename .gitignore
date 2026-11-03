@@ -17,3 +17,4 @@ local.properties
 # Generated HTTP cache is not a source catalogue or user data.
 .cache/pokeapi-index/
 **/__pycache__/
+.kotlin/

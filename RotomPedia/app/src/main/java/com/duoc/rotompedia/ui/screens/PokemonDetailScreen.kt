@@ -104,9 +104,9 @@ fun PokemonDetailScreen(
                         text = when (detailState) {
                             is PokemonDetailState.Success -> {
                                 val pokemon = (detailState as PokemonDetailState.Success).pokemonData
-                                "#${pokemon.id} · ${PokemonFormCatalog.displayName(pokemon.name)}"
+                                "${nationalNumberLabel(pokemonViewModel, pokemon.id)} · ${PokemonFormCatalog.displayName(pokemon.name)}"
                             }
-                            else -> "Detalle #$pokemonId"
+                            else -> "Detalle Pokémon"
                         }
                     )
                 },
@@ -214,7 +214,9 @@ fun PokemonDetailContent(
         }
     }
 
-    val displayId = pokemon.id
+    val displayNumber = nationalNumberLabel(pokemonViewModel, pokemon.id)
+    val indexedEntries by pokemonViewModel.explorerEntries.collectAsState()
+    val selectedEntry = indexedEntries.firstOrNull { it.pokemonId == pokemon.id }
     val displayName = PokemonFormCatalog.displayName(pokemon.name)
     val displayTypes = pokemon.types.map { it.type.name }
 
@@ -355,7 +357,7 @@ fun PokemonDetailContent(
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = "#$displayId - $displayName",
+            text = "$displayNumber - $displayName",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
@@ -394,7 +396,7 @@ fun PokemonDetailContent(
         Spacer(modifier = Modifier.height(18.dp))
 
         Text(
-            text = "Descripción",
+            text = "Descripción de la especie (no específica de esta variedad)",
             fontSize = 22.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.fillMaxWidth(),
@@ -405,7 +407,8 @@ fun PokemonDetailContent(
         if (evolutionState is EvolutionState.Success) {
             Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                 Text(
-                    text = evolutionState.description,
+                    text = if (selectedEntry?.isDefault == true) evolutionState.description else
+                        "No hay una descripción verificada para esta variedad. PokeAPI ofrece textos de la especie, que pueden referirse a otra forma; por eso no se muestran aquí.",
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(16.dp)
@@ -690,7 +693,7 @@ fun EvolutionChainColumn(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "#$pokemonId ${evolutionStage.name}",
+                            text = "#${pokemonId.toString().padStart(3, '0')} ${evolutionStage.name}",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onBackground

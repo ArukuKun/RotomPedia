@@ -194,7 +194,7 @@ fun CatchRateCalculatorScreen(
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "#$selectedId - ${selectedName.replaceFirstChar { it.uppercase() }}",
+                                    text = "${nationalNumberLabel(pokemonViewModel, selectedId)} - ${selectedName.replaceFirstChar { it.uppercase() }}",
                                     fontSize = 19.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White

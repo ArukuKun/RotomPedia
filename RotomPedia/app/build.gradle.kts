@@ -108,6 +108,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("androidx.test:core:1.6.1")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
     testImplementation("androidx.room:room-testing:2.6.1")
     androidTestImplementation("androidx.room:room-testing:2.6.1")
     // Mockito 5 incluye mocks inline y soporta el JDK 21 del entorno local.

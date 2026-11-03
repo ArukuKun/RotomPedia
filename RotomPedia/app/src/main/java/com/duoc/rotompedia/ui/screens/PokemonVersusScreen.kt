@@ -88,6 +88,7 @@ fun PokemonVersusScreen(
                     Box(modifier = Modifier.weight(1f)) {
                         VersusPokemonCard(
                             pokemon = p1,
+                            numberLabel = p1?.let { nationalNumberLabel(pokemonViewModel, it.id) }.orEmpty(),
                             isLoading = isLoadingP1,
                             accentColor = Color(0xFF61DAF6),
                             onChangeClick = { selectingForSide = 1 }
@@ -119,6 +120,7 @@ fun PokemonVersusScreen(
                     Box(modifier = Modifier.weight(1f)) {
                         VersusPokemonCard(
                             pokemon = p2,
+                            numberLabel = p2?.let { nationalNumberLabel(pokemonViewModel, it.id) }.orEmpty(),
                             isLoading = isLoadingP2,
                             accentColor = Color(0xFFFF5252),
                             onChangeClick = { selectingForSide = 2 }
@@ -298,6 +300,7 @@ fun PokemonVersusScreen(
 
 @Composable
 fun VersusPokemonCard(
+    numberLabel: String,
     pokemon: PokemonData?,
     isLoading: Boolean,
     accentColor: Color,
@@ -335,7 +338,7 @@ fun VersusPokemonCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "#${pokemon.id.toString().padStart(3, '0')}",
+                    text = numberLabel,
                     fontSize = 11.sp,
                     color = Color.Gray,
                     fontWeight = FontWeight.Bold

@@ -191,7 +191,7 @@ fun StatCalculatorScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "#$selectedId $selectedName",
+                                    text = "${nationalNumberLabel(pokemonViewModel, selectedId)} $selectedName",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
