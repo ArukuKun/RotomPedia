@@ -1,0 +1,143 @@
+{
+  "checkedAt": "2026-11-03T04:13:58.485167+00:00",
+  "snapshotSha256": "012d14d4a08454a70f5eadb6671f87ca10564aceb26c805753116f1aa792ccae",
+  "checkedVarieties": 1351,
+  "scope": "conventional front_default exact-variety URL",
+  "apiVerification": "Python requests returned 403; all nine identities and sprite fields were independently verified via HTTP fetch (200). Alternative URLs below were HEAD-verified (200).",
+  "phaseC": [
+    "Resolve exact-variety artwork/HOME where standard sprites are unavailable",
+    "Preserve identity and shiny/source semantics; never replace with default species artwork",
+    "Define provenance for variety-specific descriptions; species flavor text is not form-specific",
+    "Cosmetic pokemon-form selection is not exhaustive in B (varieties only)"
+  ],
+  "missing": [
+    {
+      "isDefault": false,
+      "pokemonId": 10301,
+      "slug": "zygarde-mega",
+      "speciesId": 718,
+      "nationalNumber": 718,
+      "requestedUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10301.png",
+      "httpStatus": 404,
+      "cause": "standard-resource-unavailable",
+      "apiIdentityVerified": true,
+      "apiFrontDefault": null,
+      "exactVarietyAlternativeEvidence": [
+        {"url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10301.png", "httpStatus": 200},
+        {"url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10301.png", "httpStatus": 200}
+      ]
+    },
+    {
+      "isDefault": false,
+      "pokemonId": 10264,
+      "slug": "koraidon-limited-build",
+      "speciesId": 1007,
+      "nationalNumber": 1007,
+      "requestedUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10264.png",
+      "httpStatus": 404,
+      "cause": "standard-resource-unavailable",
+      "apiIdentityVerified": true,
+      "apiFrontDefault": null,
+      "exactVarietyAlternativeEvidence": []
+    },
+    {
+      "isDefault": false,
+      "pokemonId": 10265,
+      "slug": "koraidon-sprinting-build",
+      "speciesId": 1007,
+      "nationalNumber": 1007,
+      "requestedUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10265.png",
+      "httpStatus": 404,
+      "cause": "standard-resource-unavailable",
+      "apiIdentityVerified": true,
+      "apiFrontDefault": null,
+      "exactVarietyAlternativeEvidence": [
+        {"url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10265.png", "httpStatus": 200}
+      ]
+    },
+    {
+      "isDefault": false,
+      "pokemonId": 10266,
+      "slug": "koraidon-swimming-build",
+      "speciesId": 1007,
+      "nationalNumber": 1007,
+      "requestedUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10266.png",
+      "httpStatus": 404,
+      "cause": "standard-resource-unavailable",
+      "apiIdentityVerified": true,
+      "apiFrontDefault": null,
+      "exactVarietyAlternativeEvidence": []
+    },
+    {
+      "isDefault": false,
+      "pokemonId": 10267,
+      "slug": "koraidon-gliding-build",
+      "speciesId": 1007,
+      "nationalNumber": 1007,
+      "requestedUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10267.png",
+      "httpStatus": 404,
+      "cause": "standard-resource-unavailable",
+      "apiIdentityVerified": true,
+      "apiFrontDefault": null,
+      "exactVarietyAlternativeEvidence": [
+        {"url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10267.png", "httpStatus": 200}
+      ]
+    },
+    {
+      "isDefault": false,
+      "pokemonId": 10268,
+      "slug": "miraidon-low-power-mode",
+      "speciesId": 1008,
+      "nationalNumber": 1008,
+      "requestedUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10268.png",
+      "httpStatus": 404,
+      "cause": "standard-resource-unavailable",
+      "apiIdentityVerified": true,
+      "apiFrontDefault": null,
+      "exactVarietyAlternativeEvidence": []
+    },
+    {
+      "isDefault": false,
+      "pokemonId": 10269,
+      "slug": "miraidon-drive-mode",
+      "speciesId": 1008,
+      "nationalNumber": 1008,
+      "requestedUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10269.png",
+      "httpStatus": 404,
+      "cause": "standard-resource-unavailable",
+      "apiIdentityVerified": true,
+      "apiFrontDefault": null,
+      "exactVarietyAlternativeEvidence": [
+        {"url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10269.png", "httpStatus": 200}
+      ]
+    },
+    {
+      "isDefault": false,
+      "pokemonId": 10270,
+      "slug": "miraidon-aquatic-mode",
+      "speciesId": 1008,
+      "nationalNumber": 1008,
+      "requestedUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10270.png",
+      "httpStatus": 404,
+      "cause": "standard-resource-unavailable",
+      "apiIdentityVerified": true,
+      "apiFrontDefault": null,
+      "exactVarietyAlternativeEvidence": []
+    },
+    {
+      "isDefault": false,
+      "pokemonId": 10271,
+      "slug": "miraidon-glide-mode",
+      "speciesId": 1008,
+      "nationalNumber": 1008,
+      "requestedUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10271.png",
+      "httpStatus": 404,
+      "cause": "standard-resource-unavailable",
+      "apiIdentityVerified": true,
+      "apiFrontDefault": null,
+      "exactVarietyAlternativeEvidence": [
+        {"url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10271.png", "httpStatus": 200}
+      ]
+    }
+  ]
+}
