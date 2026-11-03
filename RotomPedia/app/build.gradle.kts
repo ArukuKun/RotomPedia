@@ -32,6 +32,7 @@ android {
     }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -43,9 +44,21 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions.unitTests.isIncludeAndroidResources = true
+    testOptions.unitTests.all {
+        it.systemProperty("rotompedia.schemaDir", "$projectDir/schemas")
+    }
+    sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    sourceSets.getByName("test").assets.srcDir("$projectDir/schemas")
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     // Biometric
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
 
@@ -93,6 +106,10 @@ dependencies {
 
     // --- TESTING UNITARIO (Carpeta test) ---
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.test:core:1.6.1")
+    testImplementation("androidx.room:room-testing:2.6.1")
+    androidTestImplementation("androidx.room:room-testing:2.6.1")
     // Mockito 5 incluye mocks inline y soporta el JDK 21 del entorno local.
     testImplementation("org.mockito:mockito-core:5.14.2")
 

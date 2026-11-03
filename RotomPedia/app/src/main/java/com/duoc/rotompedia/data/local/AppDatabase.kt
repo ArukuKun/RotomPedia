@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.duoc.rotompedia.data.local.index.*
+import com.duoc.rotompedia.data.local.migrations.DatabaseMigrations
 
 @Database(
     entities = [
@@ -11,9 +13,12 @@ import androidx.room.RoomDatabase
         PokemonFavorito::class,
         CachedPokemon::class,
         EquipoPokemon::class,
-        MiembroEquipo::class
+        MiembroEquipo::class,
+        IndexedSpecies::class, IndexedVariety::class, IndexedForm::class,
+        IndexedName::class, PokemonIndexState::class
     ],
-    version = 6
+    version = 7,
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -21,6 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun favoritoDao(): FavoritoDao
     abstract fun cachedPokemonDao(): CachedPokemonDao
     abstract fun equipoDao(): EquipoDao
+    abstract fun pokemonIndexDao(): PokemonIndexDao
 
 
 
@@ -35,7 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "rotompedia_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(*DatabaseMigrations.ALL)
                     .build()
                 INSTANCE = instance
                 instance
