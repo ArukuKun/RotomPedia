@@ -42,5 +42,13 @@ object DatabaseMigrations {
             db.execSQL("CREATE INDEX IF NOT EXISTS index_pokemon_variety_types_typeName ON pokemon_variety_types(typeName)")
         }
     }
-    val ALL = arrayOf(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+    val MIGRATION_8_9 = object : Migration(8, 9) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS item_index (itemId INTEGER NOT NULL PRIMARY KEY, slug TEXT NOT NULL, name TEXT NOT NULL, nameLanguage TEXT NOT NULL, category TEXT NOT NULL, attributes TEXT NOT NULL)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_item_index_slug ON item_index(slug)")
+            db.execSQL("CREATE TABLE IF NOT EXISTS item_detail_cache (itemId INTEGER NOT NULL PRIMARY KEY, json TEXT NOT NULL, fetchedAt INTEGER NOT NULL)")
+            db.execSQL("CREATE TABLE IF NOT EXISTS item_index_state (id INTEGER NOT NULL PRIMARY KEY, sha256 TEXT NOT NULL)")
+        }
+    }
+    val ALL = arrayOf(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
 }

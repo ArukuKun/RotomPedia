@@ -20,6 +20,10 @@ class AppContainer private constructor(context: Context) {
     val favorites = FavoritesRepository(database.favoritoDao(), sessions)
     val teams = TeamRepository(database.equipoDao(), sessions)
     private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+    val items: com.duoc.rotompedia.data.items.ItemRepository = com.duoc.rotompedia.data.items.DefaultItemRepository(
+        database, PokemonApi.service, moshi) {
+        withContext(Dispatchers.IO) { application.assets.open("item-index.json").bufferedReader().use { it.readText() } }
+    }
     val pokemon: PokemonRepository = DefaultPokemonRepository(database, PokemonApi.service,
         PokemonIndexImporter(database, moshi)) {
         withContext(Dispatchers.IO) { application.assets.open("pokemon-index.json").bufferedReader().use { it.readText() } }

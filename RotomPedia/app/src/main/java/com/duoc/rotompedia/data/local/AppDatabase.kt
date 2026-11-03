@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.duoc.rotompedia.data.local.index.*
 import com.duoc.rotompedia.data.local.migrations.DatabaseMigrations
+import com.duoc.rotompedia.data.items.*
 
 @Database(
     entities = [
@@ -15,12 +16,14 @@ import com.duoc.rotompedia.data.local.migrations.DatabaseMigrations
         EquipoPokemon::class,
         MiembroEquipo::class,
         IndexedSpecies::class, IndexedVariety::class, IndexedForm::class,
-        IndexedName::class, PokemonIndexState::class, IndexedVarietyType::class
+        IndexedName::class, PokemonIndexState::class, IndexedVarietyType::class,
+        IndexedItem::class, CachedItemDetail::class, ItemIndexState::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
+    abstract fun itemDao(): ItemDao
 
     abstract fun usuarioDao(): UsuarioDao
     abstract fun favoritoDao(): FavoritoDao
