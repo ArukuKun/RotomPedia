@@ -27,7 +27,21 @@ data class CriesData(
 data class SpritesData(
     //nombre de la propiedad en la Api es 'front_default'
     //se mapea en 'urlImagen' para que sea claro
-    @Json(name = "front_default") val urlImagen: String?
+    @Json(name = "front_default") val urlImagen: String?,
+    @Json(name = "front_shiny") val frontShiny: String? = null,
+    val other: OtherSprites? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class OtherSprites(
+    @Json(name = "official-artwork") val officialArtwork: SpritePair? = null,
+    val home: SpritePair? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SpritePair(
+    @Json(name = "front_default") val frontDefault: String? = null,
+    @Json(name = "front_shiny") val frontShiny: String? = null
 )
 
 //Clases anidadas para los tipos
