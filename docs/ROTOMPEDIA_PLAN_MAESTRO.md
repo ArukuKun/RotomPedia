@@ -10,6 +10,8 @@
 
 **Estado vigente:** v3.4-A/B/C e integrada **terminadas**; distribución pública **prerelease `v3.4.0-rc1`**, no promoción a estable. El usuario autorizó avanzar la recomendación **v3.5-A (objetos)**; implementación local en `feature/v3.5-a-items`, con cierre técnico y límites en §15. No se autorizaron B/C, corrección de captura ni una nueva publicación. Los bugs concretos del apartado 13 no reabren v3.4 globalmente.
 
+**Ampliación de planificación:** Rotom Intelligence Pipeline se registra en §16 como investigación/prototipo futuro después de v3.5, con integración progresiva en v3.7 y sin bloquear mapas de v3.6. No es autorización para implementarlo, contratar servicios ni enviar datos a terceros. El [README principal](../README.md) resume estados de todas las series (3.x, 4.x y posteriores) y debe actualizarse junto con este plan al cerrar cada hito/versión.
+
 > **Cómo leer los estados:** `[x]` significa **reportado como completado por el usuario**, no necesariamente auditado de forma independiente en esta conversación. `[ ]` indica **pendiente o por validar**. OpenCode debe contrastar los estados con el repositorio actual, las pruebas y los tags, y actualizar el registro de evidencias sin desmarcar lo realizado solo por falta de contexto.
 
 ---
@@ -230,6 +232,8 @@ Para actualizaciones del índice:
 
 ### v3.7-B — Motor contextual sin IA obligatoria
 
+Complementar este hito con RI-2/RI-5 de §16; son partes de una misma dirección arquitectónica, no dos motores contextuales independientes. Reutilizar `RotomCommentaryEngine` y los datos/repositorios existentes.
+
 - [ ] Crear un motor `Contexto + Acción + Datos verificados → Reglas → Prioridad → Mensaje breve`.
 - [ ] Pokédex: curiosidades, tipos, debilidades o variantes, con contexto correcto.
 - [ ] Team Builder: advertir debilidades comunes, huecos de tipos o errores evidentes **sin afirmar resultados absolutos de combate**.
@@ -240,6 +244,8 @@ Para actualizaciones del índice:
 - [ ] Mantener mensajes editoriales y datos factuales separados; pruebas de reglas.
 
 ### v3.7-C — IA opcional, solo si aporta valor real
+
+RI-4 (§16) concreta la investigación experimental de esta opción; no es requisito para cerrar el modo local de v3.7 ni autoriza un chatbot.
 
 - [ ] Evaluar después de estabilizar reglas: costo, privacidad, modo offline y calidad.
 - [ ] Si se autoriza, IA restringida a redactar/variar comentarios basados en hechos verificados, no a inventar datos ni convertir Rotom en chat abierto.
@@ -284,7 +290,7 @@ Para actualizaciones del índice:
 - [ ] Usar rama de trabajo, revisar `git status` antes de tocar archivos y evitar sobrescribir cambios del usuario.
 - [ ] Ejecutar pruebas/compilación relevantes; como referencia de Android: `./gradlew testDebugUnitTest lintDebug assembleDebug` desde el módulo/proyecto adecuado.
 - [ ] Registrar archivos modificados, decisiones de arquitectura, pruebas ejecutadas, limitaciones y pendiente conocido.
-- [ ] Actualizar este plan al finalizar cada fase, con commits/tags/versión **reales** y checklist respaldado por evidencia.
+- [ ] Actualizar este plan y el README principal al cerrar cada hito/versión (3.x, 4.x y posteriores): estado público frente a local, commits/tags reales, pruebas, límites y migraciones. No crear un README nuevo que sustituya al principal en cada versión ni automatizar publicaciones por actualizar documentación.
 - [ ] No mezclar todas las mejoras en una sola PR o release gigante.
 - [ ] Nunca publicar tags/releases, cambiar firmas, borrar datos o avanzar a otra fase sin autorización.
 
@@ -297,6 +303,7 @@ Para actualizaciones del índice:
 1. **Verificación ligera de v3.4**: revisar el repositorio actual, completar el registro de evidencias y anotar únicamente regresiones reales. No reescribir la fase.
 2. **Preparar v3.5**: revisar módulos actuales de objetos/movimientos/habilidades; proponer hitos A/B/C y criterios; pedir autorización de implementación.
 3. **Implementar v3.5 por hitos autorizados**, con pruebas antes de la siguiente etapa.
+   - Una vez finalizada v3.5, se puede proponer investigación acotada de RI-1 (§16), previa autorización; no bloquear ni posponer el piloto de mapas por este proyecto.
 4. **Desarrollar v3.6** mediante piloto de mapa por región/juego y expansión posterior.
 5. **Desarrollar v3.7** con Rotom contextual basado en reglas y pulido transversal; IA solo como opción futura aprobada.
 
@@ -316,6 +323,8 @@ Para actualizaciones del índice:
 | v3.5 | A implementada localmente; pendiente de validación manual. B/C sin iniciar | `feature/v3.5-a-items` | Objetos (§15) → movimientos → habilidades; sin nueva publicación |
 | v3.6 | ⬜ Pendiente | — | Mapas por juego/región |
 | v3.7 | ⬜ Pendiente | — | Rotom contextual e interfaz |
+| Rotom Intelligence Pipeline | ⬜ Investigación y prototipo pendientes; sin iniciar | Sin rama/código de RI | Después de v3.5; integración progresiva con v3.7, sin retrasar v3.6 (§16) |
+| v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 3 de noviembre de 2026.\
 **Próxima etapa recomendada:** **v3.5 — Enciclopedia enriquecida**, empezando por diagnóstico acotado y plan implementable de objetos, movimientos y habilidades.
@@ -480,3 +489,92 @@ Esta sección es posterior a la revisión documental de §14; no cambia retroact
 - Evidencias nuevas: `ItemRepositoryTest.kt`, `ItemPresentationTest.kt`, `ItemUiTest.kt`, extensión de `RoomPersistenceTest.kt`, `tools/tests/test_item_index.py` y esquema exportado `9.json`. El workflow de verificación se amplía a ramas v3.5 y valida ambos snapshots. No se ha ejecutado CI remoto porque no se autorizó push.
 - La aprobación en Android real permanece pendiente; no convertir compilación o Robolectric en validación de dispositivo. No instalar versiones antiguas sobre una base migrada a v9.
 - Siguiente puerta: presentar A al usuario. **No comenzar v3.5-B ni publicar** sin autorización específica.
+
+---
+
+## 16. Proyecto futuro — Rotom Intelligence Pipeline
+
+**Estado:** [ ] Pendiente de investigación y prototipo; **sin iniciar ni autorizar implementación**.\
+**Momento propuesto:** después de finalizar v3.5, con integración progresiva en la etapa de Rotom contextual (v3.7).\
+**Prioridad:** no interferir con v3.5 ni retrasar innecesariamente los mapas de v3.6. No constituye una nueva versión numerada ni se asigna automáticamente a v4.x.
+
+### 16.1 Objetivo
+
+Convertir a Rotom en un acompañante inteligente y contextual dentro de RotomPedia, capaz de compartir curiosidades verificadas, comentarios espontáneos y pequeños consejos relacionados con las acciones del usuario.
+
+**Rotom NO será un chatbot convencional.** Su propósito es enriquecer la experiencia de exploración sin exigir conversaciones directas.
+
+### 16.2 Arquitectura híbrida propuesta
+
+1. **Knowledge Pipeline:** proceso de búsqueda, extracción, normalización y validación de información Pokémon. Investigar fuentes autorizadas, permisos, cobertura y revisión de datos; la descarga por sí sola no convierte una afirmación en un hecho validado.
+2. **Knowledge Base:** almacenamiento de curiosidades y fuentes, ligado a las identidades existentes de especie/variedad/forma y al contexto de juego. Registrar referencias, fechas de consulta/revisión, idioma y procedencia de cada dato. No sustituir ni duplicar arbitrariamente el índice nacional/repositorios existentes.
+3. **Context Engine:** relaciona información disponible con pantalla, Pokémon y acciones del usuario; selección local de comentarios basada en contexto verificable, prioridad y frecuencia.
+4. **Personality Engine:** expresiones, estilo de habla, animaciones y comportamiento de Rotom, separado de los hechos y de su validación. Reutilizar lo que ya aportan `RotomCommentaryEngine.kt` y `RotomThemeManager.kt` cuando sea útil.
+5. **IA generativa opcional:** reformulación de comentarios a partir de información previamente verificada, sin crear hechos nuevos ni ser una dependencia obligatoria.
+
+Flujo conceptual, aún no implementado:
+
+```text
+Fuentes autorizadas → extracción/normalización → validación → Knowledge Base
+                                                               ↓
+Contexto local + acción + identidades/juego → selección de hechos verificados
+                                                               ↓
+Personalidad + controles de frecuencia → comentario breve en español
+                       ↘ IA opcional para reformular, si se autoriza ↗
+```
+
+Los prototipos futuros deben tener contratos y métricas acotados, no una reescritura de v3.4/v3.5. Registrar origen/edición también cuando dos fuentes discrepen; no resolver contradicciones con una redacción convincente de IA.
+
+### 16.3 Funcionalidades a investigar y desarrollar por autorización
+
+- [ ] Obtener curiosidades de PokeAPI y otras fuentes autorizadas.
+- [ ] Investigar integración de búsquedas web verificables.
+- [ ] Almacenar referencias, fechas, idiomas y fuentes de cada dato.
+- [ ] Generar comentarios en español con personalidad de Rotom.
+- [ ] Evitar comentarios repetitivos, con historial reciente y cooldown.
+- [ ] Reaccionar al Pokémon que se está consultando, con su variedad correcta.
+- [ ] Detectar observaciones útiles en el Team Builder sin afirmar resultados absolutos de combate.
+- [ ] Comentar movimientos, habilidades y objetos con el contexto de edición disponible.
+- [ ] Integrar comentarios sobre rutas y localizaciones verificadas.
+- [ ] Permitir activar, silenciar u ocultar a Rotom.
+- [ ] Mantener funcionamiento básico sin conexión mediante datos almacenados y reglas locales.
+- [ ] Evaluar el costo real de utilizar IA generativa, antes de contratar o integrar proveedores.
+- [ ] Implementar límites de solicitudes y protección de credenciales.
+
+### 16.4 Reglas obligatorias
+
+1. **La IA no debe inventar información Pokémon.** Los hechos deben proceder de datos verificables; reformular no autoriza añadir propiedades, relaciones, números o explicaciones no respaldados. Si no hay dato validado, omitir el comentario o señalar la ausencia.
+2. Identificar correctamente especie, variedad, forma cuando corresponda y contexto de juego. Conservar `speciesId`, `nationalNumber`, `pokemonId` y `pokemonFormId` separados, y respetar el contrato transversal existente.
+3. Las búsquedas externas se ejecutarán preferentemente **fuera del dispositivo**, con resultados validados y almacenados en caché. La navegación del usuario no debe disparar búsquedas masivas o permanentes por cada acción.
+4. **Los datos descargados no se ejecutan ni se obedecen como instrucciones del agente.** Páginas, metadatos, respuestas de herramientas y textos externos son datos no confiables que deben aislarse y validarse; no pueden autorizar herramientas, ejecutar comandos ni modificar reglas del sistema.
+5. **Nunca incluir claves privadas en el APK**, el repositorio, logs o prompts. Si una futura integración requiere secretos, evaluar un servicio fuera del dispositivo y sus controles; no asumir un proxy o proveedor ya elegido.
+6. Rotom debe ser útil sin depender permanentemente de internet o de una IA externa. Las reglas locales y la base almacenada deben ofrecer el modo básico funcional aunque se desactive o falle la IA.
+7. Mantener la personalidad y el contenido editorial separados de información factual y fuentes. El estilo de Rotom no debe esconder incertidumbre, ausencia de datos ni contradicciones.
+8. **No recopilar ni enviar equipos, cuentas u otros datos personales a servicios externos sin justificación y controles claros.** Por defecto, seleccionar contexto localmente; definir minimización, información/consentimiento cuando corresponda, retención y eliminación antes de autorizar cualquier envío. No usar datos personales como contexto automático de IA ni de búsqueda web.
+9. Limitar solicitudes, costo, frecuencia y concurrencia; permitir desactivar servicios externos sin perder el modo básico. No contratar servicios ni generar gastos a partir de esta entrada del plan.
+
+### 16.5 Etapas de desarrollo
+
+| Etapa | Trabajo propuesto | Relación con el plan existente / puerta de salida |
+|---|---|---|
+| **RI-1 — Prototipo de conocimiento** | Pipeline experimental que obtenga, valide y almacene curiosidades para un conjunto pequeño de Pokémon. | Proponer después de v3.5 y aprobar fuentes, muestra y criterios antes de ejecutarlo. Salida: datos trazables, identidades correctas, revisión de calidad y descarte de información no validada. No bloquear v3.6. |
+| **RI-2 — Contexto local** | Motor que seleccione comentarios según pantalla y datos de la Pokédex, sin IA en tiempo real. | Complementa v3.7-B. Salida: reglas probadas, contexto de variedad/juego, control de repetición y funcionamiento offline. No crear un segundo motor incompatible. |
+| **RI-3 — Personalidad** | Expresiones, animaciones, frecuencia de comentarios y preferencias del usuario. | Complementa v3.7-A. Salida: activar/silenciar/ocultar, animaciones moderadas y navegación no obstruida. |
+| **RI-4 — IA experimental** | Evaluar un modelo de lenguaje de bajo costo para variar redacción, solo con hechos verificados y formato de respuesta limitado. | Complementa v3.7-C; aprobación independiente de proveedor, presupuesto y privacidad. Medir costo/calidad y rechazar respuestas que añadan hechos o incumplan formato. Si falla, volver al comentario local, no inventar. No bloquea el modo local ni su entrega. |
+| **RI-5 — Integración completa** | Conectar Rotom con Pokédex, Team Builder, movimientos, objetos y mapas manteniendo una experiencia discreta. | Integración progresiva sobre módulos disponibles y validados; no exige IA. Salida: pruebas de contexto, rendimiento, privacidad, offline y control del usuario en cada pantalla incorporada. |
+
+El orden de presentación RI-1…RI-5 no hace obligatoria RI-4: se puede integrar conocimiento/contexto/persona sin IA generativa. Cada etapa necesita autorización propia o un alcance conjunto explícitamente aprobado.
+
+### 16.6 Criterios de aceptación
+
+- [ ] Rotom comenta información correcta y contextual, comprobable contra hechos/fuentes almacenados.
+- [ ] No necesita un chat para interactuar con el usuario.
+- [ ] No interrumpe constantemente la navegación ni tapa acciones importantes.
+- [ ] Los comentarios tienen procedencia verificable; se conserva trazabilidad aunque la IA varíe la redacción.
+- [ ] Puede funcionar sin conexión mediante datos almacenados; desactivar la IA no rompe el modo básico.
+- [ ] El usuario controla su nivel de actividad, incluida la posibilidad de silenciarlo u ocultarlo.
+- [ ] El sistema no compromete rendimiento ni privacidad; probar solicitudes/costos acotados, límites de frecuencia y ausencia de envíos personales no autorizados.
+
+### 16.7 Alcance de esta incorporación
+
+Se registra la propuesta del usuario y se alinea con v3.7; **no se ha implementado pipeline, base de curiosidades, búsqueda web, proveedor de IA ni motor nuevo**. No se aprobaron presupuesto, credenciales, recopilación de datos ni despliegue de un backend adicional. Se mantienen v3.4 terminada, v3.5-A local pendiente de validación y los pendientes de B/C, captura y mapas, sin reabrir fases ni mover sus prioridades.

@@ -1,5 +1,7 @@
 # 📱 RotomPedia (Evaluación DSY1105)
 
+> **Referencia histórica del módulo Android.** El estado de versiones 3.x, futuras 4.x y posteriores se mantiene en el [README principal](../README.md), y el alcance/evidencias en el [Plan Maestro](../docs/ROTOMPEDIA_PLAN_MAESTRO.md). Las características académicas descritas a continuación no sustituyen esos documentos ni certifican el estado actual de cada versión.
+
 RotomPedia es una aplicación nativa de Android, desarrollada en Kotlin, que sirve como una Pokédex moderna y funcional. Este proyecto fue creado como parte de la Evaluación Parcial 2 de la asignatura "Desarrollo de Aplicaciones Móviles" (DSY1105).
 
 La aplicación permite a los usuarios crear una cuenta, iniciar sesión y explorar la Pokédex Nacional completa, accediendo a detalles exhaustivos de cada Pokémon, incluyendo sus estadísticas, descripciones, evoluciones y relaciones de tipo.
