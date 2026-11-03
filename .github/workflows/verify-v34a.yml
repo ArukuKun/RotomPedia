@@ -1,7 +1,7 @@
-name: Verify v3.4-A
+name: Verify v3.4
 on:
   push:
-    branches: ['feature/v3.4-a*']
+    branches: ['feature/v3.4-*']
   pull_request:
     branches: [Main]
   workflow_dispatch:
@@ -29,11 +29,11 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v3.4-A-test-reports
+          name: v3.4-test-reports
           path: |
             RotomPedia/app/build/reports/tests/
             RotomPedia/app/build/reports/lint-results-debug.*
       - uses: actions/upload-artifact@v4
         with:
-          name: RotomPedia-v3.4-A-validation-only
+          name: RotomPedia-v3.4-validation-only
           path: RotomPedia/app/build/outputs/apk/debug/app-debug.apk

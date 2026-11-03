@@ -32,6 +32,9 @@ jobs:
         run: ./gradlew testDebugUnitTest lintDebug assembleDebug --stacktrace
 
       - name: Prepare APK Asset for Release
+        # RC assets are published explicitly after local verification. A runner's
+        # ephemeral debug key must not replace the APK users install as an update.
+        if: ${{ !contains(github.ref_name, '-rc') }}
         run: |
           VERSION_TAG="${{ github.ref_name }}"
           echo "Preparing release APK for tag: ${VERSION_TAG}"
@@ -40,6 +43,7 @@ jobs:
           cp ./RotomPedia/app/build/outputs/apk/debug/app-debug.apk "./RotomPedia-latest.apk"
 
       - name: Create GitHub Release and Upload APK
+        if: ${{ !contains(github.ref_name, '-rc') }}
         uses: softprops/action-gh-release@v2
         with:
           name: "RotomPedia ${{ github.ref_name }}"
@@ -52,10 +56,10 @@ jobs:
           prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
           body: |
-            Entrega de validación v3.4-A: persistencia Room v7 sin migraciones destructivas, aislamiento por usuario, repositorio compartido e índice nacional generado desde PokeAPI.
+            RotomPedia v3.4: índice nacional compartido, Pokédex y selector agrupados por especie, filtros locales combinables y resolución de imágenes por variedad.
 
-            Incluye únicamente el hito A. No incorpora la interfaz, filtros ni sprites previstos para B/C. Pendiente de validación del usuario en Android.
+            Incluye los hitos A, B y C. Pendiente de validación del usuario en Android real.
 
-            APK debug firmado con clave de desarrollo. Si Android indica firma incompatible, no desinstales la aplicación para forzar la instalación sin respaldar antes los datos. Tras migrar a Room v7, no vuelvas a instalar una versión anterior sobre esos datos.
+            APK debug firmado con clave de desarrollo. Si Android indica firma incompatible, no desinstales la aplicación para forzar la instalación sin respaldar antes los datos. Tras migrar a Room v8, no vuelvas a instalar una versión anterior sobre esos datos.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
