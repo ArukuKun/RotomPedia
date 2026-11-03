@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil.compose.AsyncImage
 import com.duoc.rotompedia.data.MoveCategory
 import com.duoc.rotompedia.data.PokemonMove
 import com.duoc.rotompedia.data.PokemonMoveData
@@ -143,8 +142,8 @@ fun MemberStatEditorDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        AsyncImage(
-                            model = miembro.spriteUrl,
+                        PokemonImage(
+                            pokemonId = miembro.pokemonId, savedUrl = miembro.spriteUrl,
                             contentDescription = miembro.nombre,
                             modifier = Modifier.size(44.dp),
                             contentScale = ContentScale.Fit

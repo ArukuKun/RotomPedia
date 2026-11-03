@@ -25,7 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.duoc.rotompedia.data.model.PokemonData
 import com.duoc.rotompedia.util.getTipoColor
 import com.duoc.rotompedia.util.traducirTipo
@@ -329,9 +328,10 @@ fun VersusPokemonCard(
                     CircularProgressIndicator(color = accentColor, modifier = Modifier.size(28.dp))
                 }
             } else if (pokemon != null) {
-                val officialArt = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png"
-                AsyncImage(
-                    model = officialArt,
+                PokemonImage(
+                    pokemonId = pokemon.id,
+                    sprites = pokemon.sprites,
+                    style = com.duoc.rotompedia.data.images.PokemonImageStyle.ARTWORK,
                     contentDescription = pokemon.name,
                     modifier = Modifier.size(90.dp),
                     contentScale = ContentScale.Fit

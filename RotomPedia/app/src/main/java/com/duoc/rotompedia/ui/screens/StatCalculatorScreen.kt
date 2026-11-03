@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.duoc.rotompedia.data.local.CachedPokemon
 import com.duoc.rotompedia.util.RotomThemeManager
 import com.duoc.rotompedia.util.StatCalculator
@@ -178,8 +177,8 @@ fun StatCalculatorScreen(
                                 .background(Color(0xFF262626)),
                             contentAlignment = Alignment.Center
                         ) {
-                            AsyncImage(
-                                model = selectedSprite,
+                            PokemonImage(
+                                pokemonId = selectedId, savedUrl = selectedSprite,
                                 contentDescription = selectedName,
                                 modifier = Modifier.fillMaxSize(0.9f),
                                 contentScale = ContentScale.Fit

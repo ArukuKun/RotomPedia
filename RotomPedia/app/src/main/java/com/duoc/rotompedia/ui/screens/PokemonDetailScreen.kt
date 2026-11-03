@@ -44,8 +44,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.duoc.rotompedia.viewmodel.EvolutionState
 import com.duoc.rotompedia.data.PokemonFormCatalog
 import com.duoc.rotompedia.viewmodel.PokemonFormsState
@@ -220,12 +218,6 @@ fun PokemonDetailContent(
     val displayName = PokemonFormCatalog.displayName(pokemon.name)
     val displayTypes = pokemon.types.map { it.type.name }
 
-    val artworkUrl = if (isShiny) {
-        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${pokemon.id}.png"
-    } else {
-        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png"
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -237,11 +229,11 @@ fun PokemonDetailContent(
             modifier = Modifier.size(260.dp),
             contentAlignment = Alignment.Center
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(artworkUrl)
-                    .crossfade(true)
-                    .build(),
+            PokemonImage(
+                pokemonId = pokemon.id,
+                shiny = isShiny,
+                style = com.duoc.rotompedia.data.images.PokemonImageStyle.ARTWORK,
+                sprites = pokemon.sprites,
                 contentDescription = "Imagen de $displayName",
                 modifier = Modifier.fillMaxSize()
             )
@@ -518,7 +510,7 @@ fun PokemonDetailContent(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            AsyncImage(model = form.spriteUrl, contentDescription = form.formDisplayName,
+                            PokemonImage(pokemonId = form.id, savedUrl = form.spriteUrl, contentDescription = form.formDisplayName,
                                 modifier = Modifier.size(96.dp))
                             Text(form.formDisplayName, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                             Text(if (selected) "✓ Seleccionada" else if (form.isDefault) "Predeterminada" else
@@ -671,11 +663,8 @@ fun EvolutionChainColumn(
                     Spacer(modifier = Modifier.width(32.dp))
                 }
 
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokemonId.png")
-                        .crossfade(true)
-                        .build(),
+                PokemonImage(
+                    pokemonId = pokemonId.toIntOrNull() ?: 0,
                     contentDescription = "Imagen de ${evolutionStage.name}",
                     modifier = Modifier
                         .size(64.dp)

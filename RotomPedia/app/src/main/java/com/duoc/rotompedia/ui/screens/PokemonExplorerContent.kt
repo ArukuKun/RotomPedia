@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.duoc.rotompedia.data.explorer.*
 import com.duoc.rotompedia.util.traducirTipo
 import com.duoc.rotompedia.viewmodel.*
@@ -115,13 +114,8 @@ private fun ExplorerRow(pokemon: ExplorerPokemon, selectable: Boolean, favorites
 
 @Composable
 private fun ExplorerSprite(pokemon: ExplorerPokemon) {
-    // Full source selection is deliberately reserved for C. Only the exact variety is requested.
-    val url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.pokemonId}.png"
-    var failed by remember(url) { mutableStateOf(false) }
     Box(Modifier.size(48.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-        if (failed) Text("Sin\nimagen", fontSize = 9.sp)
-        else AsyncImage(model = url, contentDescription = pokemon.displayName, modifier = Modifier.size(44.dp),
-            onError = { failed = true; com.duoc.rotompedia.data.explorer.MissingSpriteRegistry.record(pokemon, url, it.result.throwable) })
+        PokemonImage(pokemonId = pokemon.pokemonId, contentDescription = pokemon.displayName, modifier = Modifier.size(44.dp))
     }
 }
 

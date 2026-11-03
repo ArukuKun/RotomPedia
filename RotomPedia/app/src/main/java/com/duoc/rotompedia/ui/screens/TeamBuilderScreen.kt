@@ -38,8 +38,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.duoc.rotompedia.data.PokemonFormCatalog
 import com.duoc.rotompedia.data.PokemonMoveData
 import com.duoc.rotompedia.data.local.EquipoConMiembros
@@ -348,8 +346,8 @@ fun TeamListItemCard(
                         contentAlignment = Alignment.Center
                     ) {
                         if (miembro != null) {
-                            AsyncImage(
-                                model = miembro.spriteUrl,
+                            PokemonImage(
+                                pokemonId = miembro.pokemonId, savedUrl = miembro.spriteUrl,
                                 contentDescription = miembro.nombre,
                                 modifier = Modifier.fillMaxSize(0.9f),
                                 contentScale = ContentScale.Fit
@@ -599,8 +597,8 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                             .border(1.dp, getTipoColor(m.tipo1), CircleShape),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        AsyncImage(
-                                            model = m.spriteUrl,
+                                        PokemonImage(
+                                            pokemonId = m.pokemonId, savedUrl = m.spriteUrl,
                                             contentDescription = m.nombre,
                                             modifier = Modifier.size(30.dp),
                                             contentScale = ContentScale.Fit
@@ -1120,8 +1118,8 @@ fun TeamBaseStatsTab(members: List<MiembroEquipo>) {
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    AsyncImage(
-                        model = m.spriteUrl,
+                    PokemonImage(
+                        pokemonId = m.pokemonId, savedUrl = m.spriteUrl,
                         contentDescription = m.nombre,
                         modifier = Modifier.size(36.dp),
                         contentScale = ContentScale.Fit
@@ -1220,8 +1218,8 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            AsyncImage(
-                                model = m.spriteUrl,
+                            PokemonImage(
+                                pokemonId = m.pokemonId, savedUrl = m.spriteUrl,
                                 contentDescription = m.nombre,
                                 modifier = Modifier.size(28.dp),
                                 contentScale = ContentScale.Fit
@@ -1400,8 +1398,8 @@ fun TeamSlotCard(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    AsyncImage(
-                        model = miembro.spriteUrl,
+                    PokemonImage(
+                        pokemonId = miembro.pokemonId, savedUrl = miembro.spriteUrl,
                         contentDescription = miembro.nombre,
                         modifier = Modifier.size(42.dp),
                         contentScale = ContentScale.Fit

@@ -24,7 +24,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.duoc.rotompedia.data.RouteLocation
 import com.duoc.rotompedia.data.WildEncounter
 import com.duoc.rotompedia.util.RotomThemeManager
@@ -211,8 +210,8 @@ fun EncounterRowCard(
                     .background(Color(0xFF2A2A2A)),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = encounter.spriteUrl,
+                PokemonImage(
+                    pokemonId = encounter.pokemonId, savedUrl = encounter.spriteUrl,
                     contentDescription = encounter.pokemonName,
                     modifier = Modifier.fillMaxSize(0.9f),
                     contentScale = ContentScale.Fit

@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.duoc.rotompedia.data.local.CachedPokemon
 import com.duoc.rotompedia.util.CatchRateCalculator
 import com.duoc.rotompedia.util.CatchRateCalculator.PokeBall
@@ -182,8 +181,8 @@ fun CatchRateCalculatorScreen(
                                     .background(Color(0xFF262A36)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                AsyncImage(
-                                    model = selectedSprite,
+                                PokemonImage(
+                                    pokemonId = selectedId, savedUrl = selectedSprite,
                                     contentDescription = selectedName,
                                     modifier = Modifier.size(68.dp),
                                     contentScale = ContentScale.Fit
