@@ -51,6 +51,11 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
-          body_path: docs/v3.3-release-notes.md
+          body: |
+            Entrega de validación v3.4-A: persistencia Room v7 sin migraciones destructivas, aislamiento por usuario, repositorio compartido e índice nacional generado desde PokeAPI.
+
+            Incluye únicamente el hito A. No incorpora la interfaz, filtros ni sprites previstos para B/C. Pendiente de validación del usuario en Android.
+
+            APK debug firmado con clave de desarrollo. Si Android indica firma incompatible, no desinstales la aplicación para forzar la instalación sin respaldar antes los datos. Tras migrar a Room v7, no vuelvas a instalar una versión anterior sobre esos datos.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
