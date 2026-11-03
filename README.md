@@ -6,15 +6,21 @@ El proyecto simula una Pokédex moderna que permite gestionar usuarios, guardar 
 
 ## ✨ Características Principales
 
-### Candidata 3.3.0-rc1: Pokédex-first
+### Continuidad: v3.4 terminada; siguiente etapa v3.5
 
-Formas integradas después de Evoluciones, búsqueda de variantes en español y datos
-de selección desde PokeAPI. Incluye consulta de movimientos y localizaciones.
-Consulta el [diagnóstico y checklist de validación](docs/v3.3-validacion.md).
-**[Leer la guía completa de cambios, especificaciones y próximos pasos](docs/README-v3.3.md).**
+Los hitos v3.4-A/B/C están completados e integrados en la
+[prerelease `v3.4.0-rc1`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.4.0-rc1).
+Incluye índice nacional compartido, Pokédex/picker agrupados, filtros locales e
+imágenes de la variedad correcta. No se ha promovido a versión estable.
 
-La validación manual fue reportada como completada por el usuario. La distribución
-publicada sigue siendo `3.3.0-rc1`; no se ha promovido automáticamente a estable.
+**Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
+Registra evidencias, bugs residuales de captura/textos y el alcance propuesto de
+v3.5 (objetos, movimientos y habilidades), pendiente de aprobación. Después siguen
+v3.6 (mapas por edición) y v3.7 (Rotom contextual e interfaz).
+
+La [guía v3.3](docs/README-v3.3.md) y su
+[validación](docs/v3.3-validacion.md) se conservan como documentación histórica,
+no como el plan vigente.
 
 El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en módulos:
 

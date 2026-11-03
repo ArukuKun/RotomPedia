@@ -1,0 +1,445 @@
+# RotomPedia — Plan maestro de desarrollo
+
+**Marca / proyecto:** RotomPedia\
+**Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
+**Versión base actual:** **v3.4 completada**, según confirmación del propietario del proyecto.\
+**Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
+**Regla de alcance:** este documento no autoriza por sí solo a desarrollar o publicar las fases pendientes. Implementar la fase que el usuario autorice expresamente; no modificar versiones publicadas sin autorización.
+
+**Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
+
+**Estado vigente:** v3.4-A/B/C e integrada **terminadas**; distribución pública **prerelease `v3.4.0-rc1`**, no promoción a estable. Siguiente etapa: **definir y aprobar v3.5**, sin implementación autorizada todavía. Los bugs concretos se registran en el apartado 13 y no reabren v3.4 globalmente.
+
+> **Cómo leer los estados:** `[x]` significa **reportado como completado por el usuario**, no necesariamente auditado de forma independiente en esta conversación. `[ ]` indica **pendiente o por validar**. OpenCode debe contrastar los estados con el repositorio actual, las pruebas y los tags, y actualizar el registro de evidencias sin desmarcar lo realizado solo por falta de contexto.
+
+---
+
+## 1. Visión del producto y principios
+
+RotomPedia no es una Pokédex aislada más un conjunto de herramientas independientes. Es **una enciclopedia conectada**: la Pokédex nacional organiza la información; Team Builder, calculadoras, movimientos, objetos, localizaciones, mapas y Rotom consumen las mismas identidades y relaciones de Pokémon.
+
+**Principios de diseño y desarrollo**
+
+1. **Pokédex-first:** el orden nacional y las relaciones correctas de especie/variedad/forma/evolución son la base de todo.
+2. **Experiencia PokeInfo, identidad RotomPedia:** recuperar la navegación fácil, las fichas completas y los mapas útiles de la aplicación de referencia; no copiar literalmente su diseño ni recursos privados.
+3. **Español primero:** nombres, etiquetas, filtros, explicaciones y mensajes claros; preservar nombre técnico/API solo internamente o como información secundaria.
+4. **Fuente compartida:** no crear catálogos paralelos por pantalla; consumir repositorios comunes con estado de interfaz independiente.
+5. **Datos verificables:** PokeAPI y otras fuentes autorizadas para hechos; metadata local curada para traducciones, alias, categorías y textos editoriales, no para duplicar arbitrariamente IDs/estadísticas.
+6. **Preservación:** nunca perder o reescribir silenciosamente cuentas, equipos, EV/IV, movimientos, favoritos ni preferencias.
+7. **Rendimiento y usabilidad:** listas lazy, carga progresiva, caché, búsqueda local y estados correctos de carga/error/offline; no descargar cientos de fichas por cada pulsación.
+8. **Cambios acotados:** iterar por fases, ejecutar pruebas y validar en móvil antes de publicar.
+9. **Honestidad de cobertura:** si PokeAPI o un recurso no contiene un dato, informarlo sin inventarlo; distinguir juego/edición y procedencia.
+10. **Seguridad de sesión:** repositorios personales filtran por usuario activo y validan propiedad en lectura y escritura.
+
+### Identidad Pokémon — contrato transversal
+
+- `speciesId`: identifica la especie de PokeAPI.
+- `nationalNumber`: número visible en la Pokédex nacional; se obtiene de la relación oficial de Pokédex, no del ID de una variedad.
+- `pokemonId`: ID técnico de la variedad, necesario para estadísticas, tipos, sprites, etc.
+- `pokemonFormId`: identidad del recurso `pokemon-form` cuando existe.
+- `slug`: identificador técnico para consultar APIs.
+- `displayNameEs`: nombre mostrado en español, con alias de búsqueda.
+- Especies evolucionadas (Vaporeon, Jolteon, Flareon) tienen números nacionales propios.
+- Variedades de una misma especie (Lycanroc Mediodía, Medianoche, Crepúsculo) comparten número nacional; no se convierten en especies distintas ni se etiquetan indiscriminadamente como transformaciones especiales.
+- Regionales (Ninetales de Alola), Megas (Mega Charizard X/Y) y formas de combate (Aegislash Filo) se clasifican de forma diferenciada y admiten etiquetas secundarias.
+- IDs técnicos superiores a 10000 **no** se interpretan como número nacional ni como clasificación universal.
+
+**Casos de referencia de numeración:** Ninetales de Alola `#038`, Mega Charizard X `#006`, Aegislash Filo `#681`, Lycanroc Medianoche `#745`, Mega Zygarde `#718`.
+
+---
+
+## 2. Historial y checklist de versiones
+
+### v3.3.0-rc1 — Refactor inicial de formas y estabilidad
+
+- [x] Estabilizar el selector respecto a claves/IDs inconsistentes y búsquedas de formas.
+- [x] Mantener búsqueda parcial con nombres en español y alias.
+- [x] Sustituir la dependencia anterior de `PokemonFormsData.kt` por catálogo de metadata más índice API en el proyecto de esa versión.
+- [x] Mover la sección de formas al detalle inferior, después de la línea evolutiva.
+- [x] Incorporar o mejorar movimientos y encuentros bajo demanda.
+- [x] Publicar la pre-release v3.3.0-rc1 (referencia histórica).
+- [x] Identificar deuda posterior: orden nacional, IDs visibles, clasificación e imágenes.
+
+### v3.4-A — Persistencia, sesión e índice compartido
+
+**Estado: COMPLETADA, según el usuario.**
+
+- [x] Avanzar la migración de Room de esquema v6 a v7 de forma aditiva.
+- [x] Establecer protecciones frente a migraciones destructivas.
+- [x] Introducir repositorios compartidos y dependencias de aplicación (`AppContainer` / `PokemonRepository`, según implementación real).
+- [x] Implementar o integrar índice nacional persistente de especies y variedades.
+- [x] Preparar generación y validación de snapshot desde relaciones de PokeAPI.
+- [x] Corregir acceso a favoritos/equipos entre usuarios y unificar contexto de sesión.
+- [x] Mantener datos de equipos históricos: el usuario observó que volvieron a aparecer equipos creados en v2.5.
+- [x] **Auditoría de código y evidencias automatizadas:** migraciones registradas, pruebas v6→v7→v8, aislamiento y esquemas exportados; véase apartado 11. No implica validación exhaustiva de todos los dispositivos.
+
+### v3.4-B — Pokédex nacional, picker e identidades
+
+**Estado: COMPLETADA, según el usuario.**
+
+- [x] Integrar la Pokédex y el selector con el índice/repositorio compartido.
+- [x] Ordenar especies por número nacional en lugar de mostrar Megas en bloque al inicio.
+- [x] Relacionar formas y variedades con sus especies nacionales.
+- [x] Separar número nacional visible de IDs internos de PokeAPI.
+- [x] Mejorar clasificación entre evolución, variedades estables, regionales, Megas y combate.
+- [x] Mantener búsqueda parcial por nombre, número, alias y formas.
+- [x] Habilitar filtros que combinen región, tipo y categoría sin exclusiones arbitrarias.
+- [x] **Auditoría de código y pruebas:** casos obligatorios, normalización, orden nacional y conservación de equipos respaldados por tests; véase apartado 11. El informe manual del usuario no detalla todos esos escenarios individualmente.
+
+### v3.4-C — Recursos gráficos y pulido de formas
+
+**Estado: COMPLETADA, según el usuario.**
+
+- [x] Resolver imágenes de la variedad seleccionada mediante `pokemonId`, con metadata API validada y candidatos de sprite/artwork/HOME. `speciesId`, número nacional y `pokemonFormId` no se usan como sustitutos del ID de imagen. No implica selección exhaustiva de formas cosméticas.
+- [x] Incorporar alternativas/fallbacks para sprites o artworks ausentes.
+- [x] Trabajar el caso de Mega Zygarde, manteniendo la imagen correspondiente a su propia forma.
+- [x] Mejorar imágenes del detalle y del picker sin cargar recursos pesados innecesariamente.
+- [x] Evitar sustituir una forma por la imagen incorrecta de otra.
+- [x] **Auditoría de código, HTTP y pruebas automatizadas:** identidad de los casos de referencia, Mega Zygarde, normal/shiny, recuperación y placeholder; registros en apartado 11.
+- [ ] **Validación manual específica de imágenes:** completar en Android los escenarios de error/offline, normal/shiny y placeholders. Las pruebas del usuario no incluyen una matriz completa de estos casos; no se reabre C por ello.
+
+### v3.4 integrada — Base completada
+
+**Estado informado por el usuario: v3.4 terminada.**
+
+- [x] Hitos A, B y C realizados.
+- [x] El proyecto ya tiene una base de arquitectura, Pokédex nacional y recursos gráficos mejorada respecto a v3.3.
+- [x] Registrar tag/commit/release exactos, versión, pruebas y límites de validación manual; véase apartado 11. RC1 está publicada como prerelease.
+- [x] Registrar bugs residuales como incidencias específicas, sin reabrir A/B/C; véase apartado 13.
+
+---
+
+## 3. Arquitectura objetivo que debe mantenerse
+
+```text
+PokeAPI + metadata española/alias curados + recursos gráficos autorizados
+                             |
+                     Repositorios comunes
+                             |
+           +-----------------+-----------------+
+           |                 |                 |
+        Room/índice        Cachés        Sesión/propiedad
+           |                 |                 |
+    +------+---------+-------+--------+--------+-------+
+    |                |                |                |
+  Pokédex        Team Builder     Calculadoras      Favoritos
+    |                |                |                |
+ Detalles        Movimientos        Captura       Otros módulos
+    |
+ Objetos / Habilidades / Localizaciones / Mapas / Rotom contextual
+```
+
+Cada pantalla mantiene su navegación, filtros y estado visual; el repositorio administra identidades y datos compartidos. No duplicar DTOs de PokeAPI como modelos de negocio visibles ni usar `PokedexScreen.kt` como backend de otras pantallas.
+
+Para actualizaciones del índice:
+
+- Generador de mantenimiento independiente (por ejemplo `tools/generate_pokemon_index.py`) que consulta relaciones reales de especies y variedades.
+- Snapshot inicial versionado, validado y empaquetado; no hace falta red para abrir el índice ya incluido.
+- Comprobaciones de IDs/relaciones duplicadas, faltantes, integridad, hash, cobertura y formato.
+- Detalles pesados se consultan bajo demanda y se cachean.
+- Un nuevo snapshot se revisa antes de integrarlo; no hacer merge/release automático por el mero hecho de cambiar PokeAPI.
+
+---
+
+## 4. v3.5 — Enciclopedia enriquecida (PENDIENTE)
+
+**Objetivo:** que objetos, movimientos y habilidades sean fichas útiles e interconectadas, no catálogos de emojis o nombres incompletos.
+
+### v3.5-A — Objetos / Items
+
+- [ ] Auditar `CompetitiveItemData` y pantallas existentes para distinguir información factual de consejos editoriales.
+- [ ] Construir/adaptar `ItemRepository` que use PokeAPI (`item`, `item-category`, `item-attribute` y relaciones disponibles).
+- [ ] Mostrar sprite real mediante `item.sprites.default` cuando exista; fallback/placeholder claro si no existe.
+- [ ] Presentar nombre español, categoría, descripción, efecto, precio contextual y edición/versión cuando corresponda.
+- [ ] Evitar errores de nombres, tipos y efectos de bayas/objetos: comprobar casos como `shuca-berry`.
+- [ ] Separar usos: equipable, consumible, evolutivo, MT/MO, objeto en mapa, objeto llevado por Pokémon, etc., cuando los datos lo respalden.
+- [ ] Crear búsqueda, filtros y navegación desde equipo/evolución/movimiento hacia su ficha.
+- [ ] Cachear y evitar consultas masivas para cada apertura o búsqueda.
+- [ ] Pruebas de traducción, identidad, categorías y fallback gráfico.
+
+### v3.5-B — Movimientos completos
+
+- [ ] Crear/adaptar `MoveRepository` reutilizable en Pokédex, editor de miembros y enciclopedia.
+- [ ] Nombre español, tipo, categoría física/especial/estado, PP, potencia, precisión, prioridad y efecto.
+- [ ] Mostrar nivel, método y edición/grupo de versiones de aprendizaje; no mezclar juegos de forma engañosa.
+- [ ] Preservar varias vías de aprendizaje de un mismo movimiento (nivel, MT/MO, huevo, tutor).
+- [ ] Evaluar paginación/carga progresiva para sustituir topes fijos que oculten datos.
+- [ ] No suponer que PokeAPI tiene sprites individuales de movimientos: usar iconos por tipo y categoría.
+- [ ] Conservar movesets antiguos guardados como texto y resolver alias gradualmente, sin borrado silencioso.
+- [ ] Si se ofrece legalidad competitiva, especificar juego, reglas y origen; no atribuir legalidad a mezclas de generaciones.
+
+### v3.5-C — Habilidades y relaciones enciclopédicas
+
+- [ ] Crear/adaptar `AbilityRepository` con nombres/efectos y fuentes por idioma.
+- [ ] Mostrar habilidades normales y ocultas, y Pokémon que pueden tenerlas.
+- [ ] Permitir navegación cruzada Pokémon ↔ habilidad ↔ movimiento ↔ objeto cuando haya relación verificable.
+- [ ] Revisar descripción por especie y por variedad: si la descripción es solo de especie, etiquetarla correctamente para no atribuir a una variante un texto engañoso.
+- [ ] Considerar selector de juego/edición cuando afecta estadísticas, objetos, movimientos o habilidades.
+
+**Criterio de salida v3.5:** pantallas en español con recursos correctos, datos de procedencia clara, búsqueda/reutilización compartida, tests de regresión y ninguna pérdida de equipos.
+
+---
+
+## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
+
+**Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
+
+### v3.6-A — Investigación y piloto
+
+- [ ] Revisar videos/capturas del **PokeInfo original de Bruno Sousa**, paquete `com.brunosousa.pokeinfo`. No confundirlo con aplicaciones homónimas.
+- [ ] Documentar navegación real: elegir región/juego → explorar mapa → tocar ruta/zona → consultar Pokémon, objetos, condiciones y acceder a ficha.
+- [ ] Elegir **una región y un conjunto concreto de ediciones** como piloto. Hoenn puede ser candidata por contar ya con mapa, pero no imponerla sin evaluar datos y recursos.
+- [ ] Verificar origen, permisos y calidad de los mapas; no copiar recursos privados de otra aplicación.
+- [ ] Separar cartografía (imagen, dimensiones, puntos/polígonos normalizados), ubicaciones (región/juego/área) y encuentros (método, nivel, versión, horario, probabilidades, condiciones).
+- [ ] Definir fuente y cobertura de objetos de cada zona; PokeAPI por sí sola no garantiza datos cartográficos completos ni objetos localizados.
+
+### v3.6-B — Experiencia de mapa
+
+- [ ] Zoom y pan suaves; imagen, marcadores y áreas táctiles usan la misma transformación de coordenadas.
+- [ ] Puntos e hitboxes fieles a la ubicación, sin marcadores flotando al hacer zoom.
+- [ ] Seleccionar región, juego/edición, ciudad, ruta, cueva y otras áreas disponibles.
+- [ ] Ficha de área con Pokémon, nivel, método (hierba, agua, pesca, etc.), horario/clima/condición cuando estén documentados.
+- [ ] Mostrar objetos y formas de obtención cuando haya datos verificables.
+- [ ] Enlazar mapa ↔ localización ↔ Pokédex, manteniendo filtro de edición.
+- [ ] Buscar áreas/ubicaciones; mostrar cobertura y faltantes explícitamente.
+- [ ] Optimizar recursos gráficos para teléfonos modestos y ofrecer caché adecuada.
+
+### v3.6-C — Expansión progresiva
+
+- [ ] Validar el piloto manualmente en dispositivo: precisión de pines, legibilidad, zoom, datos por edición.
+- [ ] Añadir más regiones y juegos por paquetes de datos verificados, sin prometer cobertura inexistente.
+- [ ] Incluir pruebas de coordenadas, filtros de versión, integridad de enlaces y modo offline.
+
+**Criterio de salida v3.6:** el usuario puede encontrar un Pokémon en una zona comprobada, conocer contexto de edición y pasar a su ficha; no solo ver un mapa decorativo.
+
+---
+
+## 6. v3.7 — Rotom interactivo contextual y coherencia UI (PENDIENTE)
+
+**Objetivo:** convertir Rotom en un acompañante discreto con personalidad que aporte consejos basados en la pantalla y en datos reales. **No un chatbot genérico.**
+
+### v3.7-A — Rotom como personaje/interacción
+
+- [ ] Diseñar una identidad visual propia y coherente con RotomPedia (expresiones/estados, tamaños y animaciones moderadas).
+- [ ] Definir cuándo aparece, cómo se activa y cómo se oculta; no tapar botones o información importante.
+- [ ] Permitir silenciar, reducir frecuencia y desactivar animaciones/comentarios.
+- [ ] Mejorar coherencia de navegación, jerarquía visual, colores, tipografía y accesibilidad sin borrar la personalidad de la app.
+
+### v3.7-B — Motor contextual sin IA obligatoria
+
+- [ ] Crear un motor `Contexto + Acción + Datos verificados → Reglas → Prioridad → Mensaje breve`.
+- [ ] Pokédex: curiosidades, tipos, debilidades o variantes, con contexto correcto.
+- [ ] Team Builder: advertir debilidades comunes, huecos de tipos o errores evidentes **sin afirmar resultados absolutos de combate**.
+- [ ] Movimientos: explicar valores, categorías o mecánicas con reglas de edición cuando aplique.
+- [ ] Mapas: comentar rutas, encuentros o datos disponibles, sin inventar información.
+- [ ] Calculadoras: explicar resultados en frases breves.
+- [ ] Limitar repeticiones, interrupciones y frecuencia; incluir cooldown e historial reciente.
+- [ ] Mantener mensajes editoriales y datos factuales separados; pruebas de reglas.
+
+### v3.7-C — IA opcional, solo si aporta valor real
+
+- [ ] Evaluar después de estabilizar reglas: costo, privacidad, modo offline y calidad.
+- [ ] Si se autoriza, IA restringida a redactar/variar comentarios basados en hechos verificados, no a inventar datos ni convertir Rotom en chat abierto.
+- [ ] Debe existir un modo completamente funcional sin servicios externos de IA.
+
+**Criterio de salida v3.7:** Rotom añade utilidad y encanto sin distraer, consumir excesivos recursos ni reemplazar herramientas existentes.
+
+---
+
+## 7. Investigación transversal de PokeInfo (ABIERTA)
+
+- [x] Tomar PokeInfo de Bruno Sousa (`com.brunosousa.pokeinfo`) como referencia conceptual y revisar las capturas/videos aportados en conversaciones previas.
+- [ ] Consolidar una ficha de investigación con **evidencias visuales concretas** sobre orden nacional, evoluciones ramificadas, formas, objetos, movimientos y mapas.
+- [ ] Comparar flujos PokeInfo ↔ RotomPedia: pasos, información accesible, claridad, navegación y descubrimiento.
+- [ ] Separar hechos verificados de ideas nuevas para RotomPedia; no atribuirle a PokeInfo comportamientos no observados.
+- [ ] Registrar mejoras propias que no tenía PokeInfo: equipo más completo, calculadoras integradas, filtros, Rotom contextual, etc.
+- [ ] Usar fuentes y activos con licencia compatible; no copiar APK, código ni gráficos privados sin permiso.
+
+---
+
+## 8. Calidad, compatibilidad y reglas de entrega (TODAS LAS VERSIONES)
+
+### Datos y seguridad
+
+- [ ] Probar migraciones Room desde esquemas realmente disponibles; nunca recuperar una excepción borrando la base.
+- [ ] Pruebas de dos usuarios: favoritos/equipos aislados, propiedad validada también por ID, sesiones pendientes y cambio de cuenta.
+- [ ] Preservar identidades técnicas y nombres originales de equipos guardados cuando haya conflictos de ID; no transformar un Pokémon en otro.
+- [ ] Distinguir «sin datos», «aún no consultado», «sin red» y «resultado vacío».
+- [ ] No exponer información personal ni secretos en logs; asegurar credenciales y firma fuera del repositorio.
+
+### Experiencia y regresión
+
+- [ ] Orden nacional en Pokédex, picker, calculadoras y búsqueda cuando corresponda.
+- [ ] Todas las variedades mantienen su número nacional visible y su identidad interna de API.
+- [ ] Pruebas de ejemplo: Venusaur/Mega, Charizard X/Y, Ninetales de Alola, Lycanroc, Aegislash, Zygarde/Mega Zygarde, `mega`, `hisui`, `#038`.
+- [ ] Probar scroll, búsqueda rápida, cancelación de peticiones, imágenes faltantes, red lenta, offline, pantallas pequeñas y cambios de configuración.
+- [ ] Textos en español y etiquetas de origen/versión para datos que cambian entre juegos.
+- [ ] No declarar estabilidad exclusivamente por compilación o tests unitarios; completar pruebas manuales/instrumentadas disponibles.
+
+### Disciplina de desarrollo
+
+- [ ] Usar rama de trabajo, revisar `git status` antes de tocar archivos y evitar sobrescribir cambios del usuario.
+- [ ] Ejecutar pruebas/compilación relevantes; como referencia de Android: `./gradlew testDebugUnitTest lintDebug assembleDebug` desde el módulo/proyecto adecuado.
+- [ ] Registrar archivos modificados, decisiones de arquitectura, pruebas ejecutadas, limitaciones y pendiente conocido.
+- [ ] Actualizar este plan al finalizar cada fase, con commits/tags/versión **reales** y checklist respaldado por evidencia.
+- [ ] No mezclar todas las mejoras en una sola PR o release gigante.
+- [ ] Nunca publicar tags/releases, cambiar firmas, borrar datos o avanzar a otra fase sin autorización.
+
+---
+
+## 9. Orden recomendado desde hoy
+
+**Punto de partida:** v3.4 (A+B+C) **terminada según el usuario**. No volver a ejecutarlas como proyectos nuevos.
+
+1. **Verificación ligera de v3.4**: revisar el repositorio actual, completar el registro de evidencias y anotar únicamente regresiones reales. No reescribir la fase.
+2. **Preparar v3.5**: revisar módulos actuales de objetos/movimientos/habilidades; proponer hitos A/B/C y criterios; pedir autorización de implementación.
+3. **Implementar v3.5 por hitos autorizados**, con pruebas antes de la siguiente etapa.
+4. **Desarrollar v3.6** mediante piloto de mapa por región/juego y expansión posterior.
+5. **Desarrollar v3.7** con Rotom contextual basado en reglas y pulido transversal; IA solo como opción futura aprobada.
+
+**Instrucción a OpenCode:** utilizar este documento como el contexto maestro de continuidad. No hacer una nueva auditoría extensa para reabrir v3.4 salvo que existan fallos concretos o falte evidencia imprescindible; concentrarse en **lo siguiente pendiente**. Cuando se autorice una fase, disponer de libertad para programar, investigar, refactorizar y probar dentro de ella, sin solicitar aprobación para cada archivo. Detenerse al llegar a cambios de alcance, publicación o tareas destructivas.
+
+---
+
+## 10. Registro de control (completar con evidencias del repositorio)
+
+| Versión / hito | Estado comunicado | Rama / commit / tag | Evidencia pendiente |
+|---|---|---|---|
+| v3.3.0-rc1 | Completada y pre-release publicada | `v3.3.0-rc1` (histórico) | Referencia histórica |
+| v3.4-A | ✅ Completada | `feature/v3.4-a-implementation`, tag `v3.4.0-a1`, `0a67ea4` | Evidencias registradas en §11 |
+| v3.4-B | ✅ Completada | `feature/v3.4-b-implementation`, `4c4e9c3`, `248c922`, `c5ccc77` | Evidencias registradas en §11 |
+| v3.4-C | ✅ Completada | `feature/v3.4-c-implementation`, `e41bda3`, `6c8e9c2`, `6a0f2ac` | Evidencias registradas; matriz manual de imágenes pendiente |
+| v3.4 integrada | ✅ Terminada; prerelease publicada | tag `v3.4.0-rc1`, commit `5d67ea0` | Bugs concretos en §13; no promoción a estable |
+| v3.5 | ⬜ Alcance propuesto, pendiente de aprobación | Sin implementación; documentación en `docs/plan-maestro-v3.5` | Objetos → movimientos → habilidades (§12) |
+| v3.6 | ⬜ Pendiente | — | Mapas por juego/región |
+| v3.7 | ⬜ Pendiente | — | Rotom contextual e interfaz |
+
+**Última actualización del plan:** 3 de noviembre de 2026.\
+**Próxima etapa recomendada:** **v3.5 — Enciclopedia enriquecida**, empezando por diagnóstico acotado y plan implementable de objetos, movimientos y habilidades.
+
+---
+
+## 11. Evidencias de continuidad de v3.4
+
+### 11.1 Entrega exacta y validación
+
+- Base revisada: `5d67ea046d9ef56c5bd94ebe64150b2e8f0567ab`, tag anotado `v3.4.0-rc1`.
+- [Release pública](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.4.0-rc1), comprobada mediante API: `draft=false`, `prerelease=true`, APK y `.sha256` subidos.
+- `RotomPedia/app/build.gradle.kts`: `versionName=3.4.0-rc1`, `versionCode=30402`, `applicationId=com.duoc.rotompedia`, mínimo API 25.
+- APK: `RotomPedia-v3.4.0-rc1.apk`; SHA-256 `66c192cda3f64d4e696ced4c16cd176442bce1b2a7c6731ca062b843b27f9ac0`, coincidente con el digest publicado.
+- Firma de depuración, no de producción. Durante la entrega se verificó el mismo certificado que A1; no afirmar compatibilidad de firma con todas las versiones históricas.
+- Evidencia local existente de la preparación de RC1: **39 pruebas Kotlin, 0 fallos, 0 errores; lint sin errores**, con advertencias. Se ensamblaron APK de aplicación y de instrumentación. Ensamblar el APK de pruebas no equivale a ejecutar instrumentación en un móvil.
+- CI del mismo commit, comprobada como `success`: [Verify v3.4](https://github.com/ArukuKun/RotomPedia/actions/runs/41579334890) y [Release APK](https://github.com/ArukuKun/RotomPedia/actions/runs/41579356963).
+- En esta revisión documental se reejecutaron **12 pruebas Python** y `tools/generate_pokemon_index.py --verify-only`, correctas. No se volvió a ejecutar Gradle ni se modificó código de aplicación.
+- El usuario instaló y probó la entrega: reportó movimientos asociados al Pokémon, descripciones en inglés y cálculo de captura incorrecto. Las capturas muestran Virizion y el editor de Typhlosion de Hisui. No se deducen modelo de móvil, versión Android, condiciones de Ocaso Ball ni validación exhaustiva de A/B/C.
+
+### 11.2 Matriz de implementación comprobada
+
+Las rutas abreviadas `data/`, `ui/`, `viewmodel/`, `di/` y `util/` de las tablas parten de `RotomPedia/app/src/main/java/com/duoc/rotompedia/`. Las pruebas citadas están en `RotomPedia/app/src/test/java/com/duoc/rotompedia/`.
+
+| Área | Código/artefacto real | Evidencia y límite |
+|---|---|---|
+| Room y preservación (A/B) | `data/local/AppDatabase.kt`, `data/local/migrations/DatabaseMigrations.kt`; esquemas `RotomPedia/app/schemas/com.duoc.rotompedia.data.local.AppDatabase/{6,7,8}.json` | Versión actual 8; migraciones 4→5→6→7→8 registradas, sin fallback destructivo. `RoomPersistenceTest.kt` cubre datos personales, IDs contradictorios, versiones sin soporte y propiedad de equipos. No prometer migración desde esquemas anteriores no verificados. |
+| Sesión y repositorios (A) | `di/AppContainer.kt`; `data/repository/{SessionRepository,FavoritesRepository,TeamRepository,PokemonRepository,DefaultPokemonRepository}.kt` | Dependencias compartidas y capturas de sesión/propiedad. `SessionRepositoryTest.kt` y `RoomPersistenceTest.kt`: cambio de cuenta, cierre de sesión y operaciones pendientes. |
+| Índice local (A/B) | `data/index/{PokemonIndexSnapshot,PokemonIndexImporter}.kt`; `tools/generate_pokemon_index.py`; `RotomPedia/app/src/main/assets/pokemon-index.json` | Snapshot con hash y revisión upstream: **1025 especies, 1351 variedades, 1579 identidades de forma**, tipos y nombres. `PokemonRepositoryTest.kt` prueba importación, reapertura offline, rollback y conflictos sin reescribir IDs. Las 1579 formas no son 1579 entradas seleccionables. |
+| Explorador compartido (B) | `data/explorer/PokemonExplorer.kt`; `viewmodel/PokemonExplorerController.kt`; `ui/screens/{PokedexScreen,PokemonPickerDialog,PokemonExplorerContent}.kt` | Una fuente para Pokédex y picker; filtros por pantalla. `PokemonExplorerTest.kt` usa el snapshot real y verifica ausencia de llamadas API al explorar. |
+| Orden, identidad y búsquedas (B) | `PokemonExplorerTest.kt`, `PokemonExplorerUiTest.kt`, `PokemonFormCatalogTest.kt` | Bulbasaur primero; `mega`, `hisui`, `lycanroc`, `sceptile`, `#038`; normalización de tildes/guiones; cinco numeraciones de referencia; filtros intersectados y favoritos. Seleccionar Alola conserva `10104`, no lo cambia por `38`. |
+| Imágenes (C) | `data/images/{PokemonImageResolver,ImageDiagnostics}.kt`; `ui/screens/PokemonImage.kt` | `pokemonId` exacto, fuentes STANDARD/ARTWORK/HOME; URLs API/guardadas se aceptan si coinciden con identidad/fuente/color. Prioriza fuentes declaradas válidas; aún construye candidatos convencionales seguros. Coil carga progresivamente y cachea; 404/410 tienen caché negativa temporal, no los errores transitorios. No es un resolutor arbitrario de todos los recursos `pokemon-form`. |
+| Pruebas y auditoría gráfica (C) | `PokemonImageResolverTest.kt`, `PokemonImageUiTest.kt`; `tools/data/{explorer-sprite-audit,image-resolution-audit}.json` | Identidad sin fallback a especie; normal/shiny; placeholder/reintento. La auditoría B comprobó 1351 URLs estándar y halló nueve ausentes; C comprobó por GET seis candidatos por cada uno de esos nueve casos, incluida firma PNG. Cinco recuperan artwork normal y shiny, incluido Mega Zygarde. |
+| Cobertura gráfica restante | `tools/data/image-resolution-audit.json` | Sin imagen en las tres fuentes comprobadas: `koraidon-limited-build`, `koraidon-swimming-build`, `miraidon-low-power-mode`, `miraidon-aquatic-mode`. Son faltantes de recursos, no un motivo para sustituirlos por otro Pokémon o reabrir C globalmente. |
+| Descripciones por variedad | `ui/screens/PokemonDetailScreen.kt` | Los textos de especie se etiquetan; para variedades no predeterminadas no se muestra una descripción sin especificidad verificada. No se ha creado una base nueva de textos específicos para todas las formas. |
+
+---
+
+## 12. v3.5: diagnóstico acotado y alcance propuesto para aprobación
+
+**Estado: propuesta, NO implementación autorizada.** Se mantienen v3.5-A/B/C del apartado 4; no se rehace la Pokédex ni se crea un catálogo paralelo de Pokémon.
+
+### 12.1 Qué existe y qué falta
+
+| Módulo | Base aprovechable | Carencia concreta para v3.5 |
+|---|---|---|
+| Objetos | `data/CompetitiveItemData.kt`: objetos, categorías tácticas, nombres y consejos; `ui/screens/CompetitiveItemsScreen.kt`: búsqueda, filtros y tarjetas | Es catálogo local de enfoque competitivo con emojis, no una enciclopedia de PokeAPI con sprites, identidad y procedencia. `PokeApiService.kt` no declara endpoints de objetos/categorías/atributos; `AppContainer.kt` no ofrece `ItemRepository`. Se mezclan hechos y consejos editoriales. |
+| Movimientos | `getPokemonWithMoves`, `getMoveDetail` en `data/remote/PokeApiService.kt`; DTOs de `data/model/PokemonData.kt`; `viewmodel/PokemonViewModel.kt::loadPokemonMoves`; `data/PokemonMoveData.kt`; `MovePickerDialog` en `ui/screens/MemberStatEditorDialog.kt` | No hay `MoveRepository`. Hay caché en memoria por ViewModel y catálogo estático/dinámico. Los detalles no incluyen prioridad, flavor text ni cambios históricos. La carga conserva varios métodos pero aplana edición/nivel; escoge el detalle con mayor ID de grupo, no un juego elegido. Topes de 60 por método y 30 de tutor; no es un learnset exhaustivo. |
+| Texto de movimientos | `PokemonMoveData.fromMoveDetail`, líneas 48–74 | Busca efecto español y, si falta, inglés. Los nombres pueden estar en español mientras la descripción queda en inglés. No modela `flavor_text_entries` y elimina `$effect_chance%` en vez de resolver esa información. Reutilizar nombres/alias útiles sin conservar una descripción engañosa. |
+| Habilidades | Repositorios e interfaz API actuales; campo opcional `ability` en exportador de `util/StatCalculator.kt` | No se encontró `AbilityRepository`, endpoint/DTO de habilidad ni relación de habilidades en `PokemonData`; tampoco una ficha enciclopédica implementada. El texto opcional de exportación no constituye ese sistema. |
+| Equipos | `data/local/MiembroEquipo.kt` conserva EV/IV/naturaleza/nivel y `move1`–`move4` como texto | No contiene un campo persistido de objeto equipado ni de habilidad. Añadir esos campos sería una ampliación funcional a aprobar, no algo ya implementado ni una migración automática de textos antiguos. |
+
+### 12.2 Comprobación de fuentes (3 de noviembre de 2026)
+
+Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
+
+- [`item/shuca-berry`](https://pokeapi.co/api/v2/item/shuca-berry/): ID `168`, slug `shuca-berry`, nombre español **Baya Acardo**, categoría `type-protection`, sprite `sprites.default`; efecto inglés: reduce daño supereficaz de **Tierra**. El flavor text español de `sun-moon` también indica Tierra. El catálogo actual (`CompetitiveItemData.kt:296–303`) dice «Baya Pasio» y Agua: discrepancia factual confirmada, pendiente de v3.5-A, no corregida en esta revisión.
+- [`move/flamethrower`](https://pokeapi.co/api/v2/move/flamethrower/): ID `53`, nombre **Lanzallamas**, `priority=0`; efectos consultados en francés/inglés, pero flavor text español por `version_group`. Confirma que «efecto detallado español ausente» no significa «todo texto español ausente».
+- [`ability/blaze`](https://pokeapi.co/api/v2/ability/blaze/): ID `66`, **Mar Llamas**; efectos consultados en francés/alemán/inglés, flavor text español por grupo de versiones y relación `pokemon`. Las habilidades ocultas se deben leer de la relación de la variedad, no inferirlas del nombre.
+- Son tres muestras de esquema/cobertura, no una auditoría de todos los objetos, movimientos o habilidades. `flavor_text` es una descripción de juego, no siempre un efecto mecánico completo ni libre de errores históricos. Guardar idioma, procedencia y edición; no elegir simplemente el primer texto disponible.
+
+### 12.3 Contratos comunes propuestos (sin crear código todavía)
+
+1. `ItemRepository`, `MoveRepository`, `AbilityRepository` como dependencias compartidas en el `AppContainer` existente. Mantener `PokemonRepository` como autoridad de identidad Pokémon, sin convertirlo en un repositorio monolítico de todo.
+2. Identidad factual por ID/slug de cada recurso; presentación española, alias y notas editoriales separados. Categorías oficiales de objetos separadas de etiquetas tácticas propias.
+3. Índices ligeros locales para explorar/buscar; detalles y relaciones con carga progresiva, caché y cancelación. Evaluar snapshots de mantenimiento al estilo del índice actual para disponer de nombres españoles sin descargar cientos de fichas al escribir. No alterar el snapshot Pokémon innecesariamente.
+4. Definir para cada ficha estados «no consultado», «cargando», «sin datos», «offline», «error» y «vacío». Distinguir «índice disponible offline» de «detalle aún no descargado»; no prometer toda la enciclopedia offline de inicio.
+5. Política editorial de español: mostrar descripción oficial española de la edición seleccionada cuando exista; ofrecer efecto español curado solo si está verificado y etiquetado como tal. Si falta traducción, aviso explícito y original identificado como inglés, no mezcla silenciosa ni traducción automática presentada como dato oficial.
+6. `versionGroup`/juego explícito en aprendizaje y textos; conservar `(pokemonId, moveId, versionGroup, método, nivel)`. Un `moveId` puede tener varios métodos y niveles; no colapsar esas relaciones en una sola entrada ni usar orden numérico de IDs como sustituto de edición.
+7. Mantener sin cambios los cuatro textos de movimientos guardados. Resolver referencias/alias de forma no destructiva; conflictos o textos desconocidos siguen visibles. Cualquier futura migración Room deberá ser aditiva, probada desde v8 y sin pérdida de cuentas/equipos.
+8. Los sprites de objetos requieren un cargador propio por identidad de objeto y `item.sprites.default`; no pasar un `itemId` al resolutor de imágenes Pokémon ni inventar sprites individuales para movimientos/habilidades. Reutilizar la estrategia de estados/caché/placeholder, no mezclar identidades.
+
+### 12.4 Hitos y puertas de salida propuestos
+
+**v3.5-A — Objetos (primera implementación recomendada, pendiente de aprobación)**
+
+- Extender el acceso API y crear repositorio/modelo/índice/caché de objetos, categorías y atributos según datos disponibles; definir la revisión de datos antes de actualizar un snapshot.
+- Adaptar la pantalla actual a listado y ficha con sprite, nombre español, categoría oficial, atributos/usos, descripción y efecto con fuente/idioma. Mantener los consejos competitivos como bloque editorial identificable, revisado y no «estrategia oficial».
+- Registrar precio/obtención únicamente cuando la fuente y edición lo sostengan; si faltan, mostrarlo. No inventar ubicaciones para completar la ficha ni confundir categoría/atributo con prueba de que se puede equipar o consumir en cualquier juego.
+- Búsqueda local con normalización; filtros coherentes; navegación desde el catálogo y desde objetos de evolución ya identificados. Enlaces desde movimientos/equipo cuando exista una relación real, sin agregar automáticamente persistencia de objetos equipados.
+- **Aceptación:** `shuca-berry` no puede aparecer como Agua/Baya Pasio; comprobar bayas de protección, objetos de elección, evolutivos, consumibles y MT/MO con fixtures revisadas. Probar sprite ausente, sin traducción, sin precio, filtros, caché/reapertura offline y enlace que conserva identidad Pokémon/equipos.
+- **Salida:** revisión del usuario en móvil + pruebas de repositorio/UI y regresión de datos. Detenerse antes de B si solo se autoriza A.
+
+**v3.5-B — Movimientos completos**
+
+- Extraer la carga actual a `MoveRepository` común para enciclopedia, detalle y editor; incorporar prioridad, textos localizados, efectos y contexto histórico disponible.
+- Preservar métodos/nivel/edición; elegir un grupo de versiones para consultar aprendizaje, sin exigir que un equipo histórico adopte ese contexto ni afirmar legalidad competitiva por ello.
+- Reemplazar los límites invisibles por carga progresiva con conteo/estado de cobertura explícitos; conservar todos los métodos de un mismo movimiento. No anunciar «todos» si la descarga es parcial o falló.
+- Integrar nombres y texto español con su procedencia; resolver o informar placeholders como `$effect_chance`, respetar potencia/precisión no aplicables y usar iconos de tipo/categoría.
+- **Aceptación:** Typhlosion de Hisui conserva su `pokemonId`; Lanzallamas, Bola Sombra y Nitrocarga muestran texto con política de idioma definida; un movimiento con nivel y MT conserva ambas relaciones; cambiar edición cambia el learnset, no los textos guardados del equipo. Pruebas de paginación, fallos parciales, alias y texto legado desconocido.
+
+**v3.5-C — Habilidades y enlaces**
+
+- Crear acceso API/repositorio/modelos de habilidad y relación por variedad (`slot`, `is_hidden`, identidad), con índice/caché y ficha propia.
+- Pokémon → habilidades normales/ocultas → Pokémon asociados; conectar movimientos/objetos únicamente por relaciones verificables y con cobertura explícita. No inferir sinergias como si fueran enlaces factuales del API.
+- Revisar la política ya existente de descripción de especie/variedad; conservarla si no se dispone de textos específicos, sin iniciar de nuevo el hito v3.4-C.
+- **Aceptación:** Mar Llamas y casos de habilidad oculta/regional muestran nombres/relaciones/textos correctos; efectos sin español se identifican; retorno a Pokémon conserva variedad; ninguna pérdida de movesets ni datos personales.
+
+**Fuera del alcance propuesto de v3.5:** mapas/polígonos y cobertura cartográfica (v3.6), Rotom contextual transversal/IA (v3.7), simulador de combate o certificación de legalidad, selección exhaustiva de cosméticos, nuevo sistema de equipar objetos/habilidades sin aprobación adicional, reescritura de v3.4, corrección inmediata de captura y publicación automática.
+
+**Decisiones que requieren aprobación antes de programar:** autorizar primero A o toda v3.5 por entregas; confirmar política de idiomas/fallback; definir grupo(s) de versiones inicial(es) para aprendizaje/textos sin imponer Hoenn/Kanto ni un juego de mapa; aceptar qué detalles estarán disponibles offline. Recomendación: aprobar primero A y validar antes de B; el juego de aprendizaje puede concretarse al preparar B. No bloquear la investigación de A por una decisión exclusiva de B.
+
+---
+
+## 13. Backlog residual: incidencias específicas, no reapertura de v3.4
+
+| ID / destino propuesto | Evidencia | Trabajo pendiente / criterio de cierre |
+|---|---|---|
+| `CAP-001` — mantenimiento futuro de captura; diferido por el usuario | Captura de Virizion `#640`, ratio 3, salud 1%, Ocaso Ball: 0.1%, ~99.0 bolas y acumuladas redondeadas a 0%. El usuario sospecha que no cambia según la bola. | Reproducir por juego con mismos PS/estado/entorno/turno, comparando Poké/Súper/Ultra/Ocaso activa e inactiva y Master; validar contra fórmulas/fuentes independientes y añadir tests. No dar por confirmada una causa con una sola captura. |
+| `CAP-002` — coherencia numérica y condiciones, mismo mantenimiento | `CatchRateCalculatorScreen.kt:89–105` incluye `selectedBall` en `remember` y la pasa a `calculate`; `CatchRateCalculator.kt:83–124` sí aplica multiplicadores, pero limita probabilidad visible a ≥0.1% y esperadas a ≤99. Usa potencia 0.75 y luego cuatro comprobaciones. `DIVE_BALL` aplica 3.5 sin condición y `HEAVY_BALL` no tiene entrada de peso. | Auditar fórmula/condiciones por edición antes de prometer «oficial Gen 8/9»; separar cálculo real de presentación/redondeo, eliminar mensajes engañosos y verificar monotonicidad/acumuladas. Los límites explican parte de la presentación, no prueban por sí solos la causa completa. |
+| `CAP-003` — datos de captura y PS, mismo mantenimiento | La pantalla usa `resolveBaseCatchRate` local; además existe `CatchRateCalculator.getDefaultCatchRate`, otra tabla. Se pasa `maxHp=100` y porcentaje redondeado como PS; el botón «1 PS» representa 1%, no 1 PS real. | Obtener tasa por especie del repositorio/datos verificables y distinguir porcentaje/PS reales; probar variedades, tasas ausentes y estimaciones. No mezclar esta corrección funcional con el repositorio enciclopédico de objetos sin ampliar alcance. |
+| `MOV-001` — traducción/procedencia, v3.5-B | Captura del editor de Typhlosion de Hisui: nombres españoles y efectos ingleses. Código y muestra de PokeAPI confirmados en §12.1–12.2. | Incorporar fuentes españolas por edición y fallback explícito; no inventar un efecto detallado cuando solo existe flavor text. Diferido a B, no hotfix ahora. |
+| `UI-001` — pantallas estrechas / texto grande | En las capturas se parte verticalmente «255 (Común)» y «Estado»; hay controles horizontales parcialmente visibles. | Revisar anchuras mínimas, wrapping, scroll y accesibilidad sin borrar filtros; decidir en su hito funcional o pulido v3.7, y probar con tamaños de fuente grandes. Observación visual, no causa confirmada de `CAP-001`. |
+| `ITEM-001` — datos de bayas, v3.5-A | `shuca_berry` en código contradice nombre/elemento de PokeAPI; muestra verificada en §12.2. | Sustituir hecho erróneo por dato con identidad/procedencia verificadas; revisar otras bayas, no limitarse a cambiar una cadena aislada. |
+
+Las incidencias están registradas localmente en este plan; **no se han creado issues públicos ni aplicado correcciones**. Conservar las capturas de esta conversación como evidencia aportada por el usuario; no afirmar que se archivaron sus archivos en el repositorio.
+
+---
+
+## 14. Continuación y límites de esta revisión
+
+- [x] Adoptar el adjunto como plan principal y conservar A/B/C terminadas.
+- [x] Vincular entrega y evidencias reales de v3.4, sin una auditoría extensa para rehacerla.
+- [x] Diagnóstico acotado de objetos, movimientos y habilidades; registrar reporte manual y deudas concretas.
+- [x] Preparar propuesta de v3.5 con fuentes, reutilización, aceptación y exclusiones.
+- [ ] Obtener aprobación del alcance antes de crear código de v3.5 o arreglar los bugs diferidos.
+- [ ] Implementar y validar únicamente los hitos autorizados; actualizar este mismo documento al cerrarlos.
+- [ ] v3.6: reutilizar `MapScreen.kt` (ya tiene zoom/pan y pines en un mismo contenedor transformado), `RegionLocationData.kt` y `LocationDetailBottomSheet.kt`; no empezar de cero. Falta contexto de edición en el modelo local de encuentros, cobertura cartográfica comprobada y validación de hitboxes. Elegir piloto y permisos de activos antes de expandir.
+- [ ] v3.7: reutilizar `RotomCommentaryEngine.kt` y `RotomThemeManager.kt`; ya existen comentarios en detalle y temas. Falta el motor contextual transversal, prioridades/cooldown, controles de frecuencia y accesibilidad. No describirlo como inexistente ni como completo. IA opcional sigue sin autorizar.
+- Cambios de esta revisión: **solo este plan y el enlace/estado de continuidad del README**. Sin cambios a Kotlin/Room/build, sin modificar versión/tag/firma, sin push/release y sin iniciar implementación de v3.5.
