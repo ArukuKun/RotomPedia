@@ -1,7 +1,7 @@
-name: Verify v3.4
+name: Verify RotomPedia
 on:
   push:
-    branches: ['feature/v3.4-*']
+    branches: ['feature/v3.4-*', 'feature/v3.5-*']
   pull_request:
     branches: [Main]
   workflow_dispatch:
@@ -17,6 +17,7 @@ jobs:
           python-version: '3.12'
       - run: python -m unittest discover -s tools/tests -v
       - run: python tools/generate_pokemon_index.py --verify-only
+      - run: python tools/generate_item_index.py --verify-only
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -29,11 +30,11 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v3.4-test-reports
+          name: RotomPedia-test-reports
           path: |
             RotomPedia/app/build/reports/tests/
             RotomPedia/app/build/reports/lint-results-debug.*
       - uses: actions/upload-artifact@v4
         with:
-          name: RotomPedia-v3.4-validation-only
+          name: RotomPedia-validation-only
           path: RotomPedia/app/build/outputs/apk/debug/app-debug.apk

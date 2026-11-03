@@ -14,8 +14,9 @@ Incluye índice nacional compartido, Pokédex/picker agrupados, filtros locales 
 imágenes de la variedad correcta. No se ha promovido a versión estable.
 
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
-Registra evidencias, bugs residuales de captura/textos y el alcance propuesto de
-v3.5 (objetos, movimientos y habilidades), pendiente de aprobación. Después siguen
+Registra evidencias, bugs residuales de captura/textos y el alcance de
+v3.5. **v3.5-A (objetos) está implementada localmente y pendiente de validación en Android**, sin nueva release;
+v3.5-B (movimientos) y C (habilidades) siguen pendientes de autorización. Después siguen
 v3.6 (mapas por edición) y v3.7 (Rotom contextual e interfaz).
 
 La [guía v3.3](docs/README-v3.3.md) y su

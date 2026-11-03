@@ -8,7 +8,7 @@
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
-**Estado vigente:** v3.4-A/B/C e integrada **terminadas**; distribución pública **prerelease `v3.4.0-rc1`**, no promoción a estable. Siguiente etapa: **definir y aprobar v3.5**, sin implementación autorizada todavía. Los bugs concretos se registran en el apartado 13 y no reabren v3.4 globalmente.
+**Estado vigente:** v3.4-A/B/C e integrada **terminadas**; distribución pública **prerelease `v3.4.0-rc1`**, no promoción a estable. El usuario autorizó avanzar la recomendación **v3.5-A (objetos)**; implementación local en `feature/v3.5-a-items`, con cierre técnico y límites en §15. No se autorizaron B/C, corrección de captura ni una nueva publicación. Los bugs concretos del apartado 13 no reabren v3.4 globalmente.
 
 > **Cómo leer los estados:** `[x]` significa **reportado como completado por el usuario**, no necesariamente auditado de forma independiente en esta conversación. `[ ]` indica **pendiente o por validar**. OpenCode debe contrastar los estados con el repositorio actual, las pruebas y los tags, y actualizar el registro de evidencias sin desmarcar lo realizado solo por falta de contexto.
 
@@ -147,15 +147,18 @@ Para actualizaciones del índice:
 
 ### v3.5-A — Objetos / Items
 
-- [ ] Auditar `CompetitiveItemData` y pantallas existentes para distinguir información factual de consejos editoriales.
-- [ ] Construir/adaptar `ItemRepository` que use PokeAPI (`item`, `item-category`, `item-attribute` y relaciones disponibles).
-- [ ] Mostrar sprite real mediante `item.sprites.default` cuando exista; fallback/placeholder claro si no existe.
-- [ ] Presentar nombre español, categoría, descripción, efecto, precio contextual y edición/versión cuando corresponda.
-- [ ] Evitar errores de nombres, tipos y efectos de bayas/objetos: comprobar casos como `shuca-berry`.
-- [ ] Separar usos: equipable, consumible, evolutivo, MT/MO, objeto en mapa, objeto llevado por Pokémon, etc., cuando los datos lo respalden.
-- [ ] Crear búsqueda, filtros y navegación desde equipo/evolución/movimiento hacia su ficha.
-- [ ] Cachear y evitar consultas masivas para cada apertura o búsqueda.
-- [ ] Pruebas de traducción, identidad, categorías y fallback gráfico.
+**Implementada localmente; validación del usuario en Android pendiente.** Evidencias y límites en §15. No se ha publicado una versión de este hito.
+
+- [x] Auditar `CompetitiveItemData` y separar información factual de consejos editoriales (§15).
+- [x] `ItemRepository` compartido: detalle REST `item`; identidades/categorías/atributos desde CSV oficiales fijados a revisión, sin consultas REST por cada filtro.
+- [x] Sprite real mediante `item.sprites.default` cuando existe; candidatos de objetos y placeholder, sin imágenes Pokémon. Admite iconos compartidos declarados por API (p. ej. MT).
+- [x] Nombre español cuando existe, categoría, descripción/efecto con idioma/procedencia y precio por edición cuando está documentado; ausencias explícitas.
+- [x] Comprobar bayas e identidad; `shuca-berry` corregida a Baya Acardo / Tierra, con efecto revisado y origen identificado.
+- [x] Usos separados por categoría/atributos documentados y portadores con contexto de juego; sin inventar disponibilidad/objetos de mapa.
+- [x] Búsqueda y filtros locales; enlaces de evolución hacia la ficha y de portadores hacia Pokémon. Equipo sin campo de objeto y movimientos futuros no reciben enlaces ficticios ni nueva persistencia.
+- [x] Caché persistente y detalles bajo demanda; sin descarga masiva en búsquedas.
+- [x] Pruebas de traducción, identidad, categorías, sprite y conservación de datos (§15).
+- [ ] Validación y aprobación del usuario en Android real antes de cerrar la puerta manual de A.
 
 ### v3.5-B — Movimientos completos
 
@@ -310,7 +313,7 @@ Para actualizaciones del índice:
 | v3.4-B | ✅ Completada | `feature/v3.4-b-implementation`, `4c4e9c3`, `248c922`, `c5ccc77` | Evidencias registradas en §11 |
 | v3.4-C | ✅ Completada | `feature/v3.4-c-implementation`, `e41bda3`, `6c8e9c2`, `6a0f2ac` | Evidencias registradas; matriz manual de imágenes pendiente |
 | v3.4 integrada | ✅ Terminada; prerelease publicada | tag `v3.4.0-rc1`, commit `5d67ea0` | Bugs concretos en §13; no promoción a estable |
-| v3.5 | ⬜ Alcance propuesto, pendiente de aprobación | Sin implementación; documentación en `docs/plan-maestro-v3.5` | Objetos → movimientos → habilidades (§12) |
+| v3.5 | A implementada localmente; pendiente de validación manual. B/C sin iniciar | `feature/v3.5-a-items` | Objetos (§15) → movimientos → habilidades; sin nueva publicación |
 | v3.6 | ⬜ Pendiente | — | Mapas por juego/región |
 | v3.7 | ⬜ Pendiente | — | Rotom contextual e interfaz |
 
@@ -354,6 +357,8 @@ Las rutas abreviadas `data/`, `ui/`, `viewmodel/`, `di/` y `util/` de las tablas
 ## 12. v3.5: diagnóstico acotado y alcance propuesto para aprobación
 
 **Estado: propuesta, NO implementación autorizada.** Se mantienen v3.5-A/B/C del apartado 4; no se rehace la Pokédex ni se crea un catálogo paralelo de Pokémon.
+
+> Esta sección conserva el diagnóstico y la propuesta originales. Posteriormente se autorizó **solo A** mediante «avanzalo», tras recomendar empezar por objetos. Estado actualizado y cambios reales en §15; B/C continúan pendientes.
 
 ### 12.1 Qué existe y qué falta
 
@@ -426,7 +431,7 @@ Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
 | `CAP-003` — datos de captura y PS, mismo mantenimiento | La pantalla usa `resolveBaseCatchRate` local; además existe `CatchRateCalculator.getDefaultCatchRate`, otra tabla. Se pasa `maxHp=100` y porcentaje redondeado como PS; el botón «1 PS» representa 1%, no 1 PS real. | Obtener tasa por especie del repositorio/datos verificables y distinguir porcentaje/PS reales; probar variedades, tasas ausentes y estimaciones. No mezclar esta corrección funcional con el repositorio enciclopédico de objetos sin ampliar alcance. |
 | `MOV-001` — traducción/procedencia, v3.5-B | Captura del editor de Typhlosion de Hisui: nombres españoles y efectos ingleses. Código y muestra de PokeAPI confirmados en §12.1–12.2. | Incorporar fuentes españolas por edición y fallback explícito; no inventar un efecto detallado cuando solo existe flavor text. Diferido a B, no hotfix ahora. |
 | `UI-001` — pantallas estrechas / texto grande | En las capturas se parte verticalmente «255 (Común)» y «Estado»; hay controles horizontales parcialmente visibles. | Revisar anchuras mínimas, wrapping, scroll y accesibilidad sin borrar filtros; decidir en su hito funcional o pulido v3.7, y probar con tamaños de fuente grandes. Observación visual, no causa confirmada de `CAP-001`. |
-| `ITEM-001` — datos de bayas, v3.5-A | `shuca_berry` en código contradice nombre/elemento de PokeAPI; muestra verificada en §12.2. | Sustituir hecho erróneo por dato con identidad/procedencia verificadas; revisar otras bayas, no limitarse a cambiar una cadena aislada. |
+| `ITEM-001` — datos de bayas, v3.5-A | Discrepancia histórica de `shuca_berry`, verificada en §12.2. | Corregida en la implementación local de A: índice oficial, Baya Acardo/Tierra y efecto revisado con fuente. Pruebas de bayas/identidad; pendiente de validación manual. |
 
 Las incidencias están registradas localmente en este plan; **no se han creado issues públicos ni aplicado correcciones**. Conservar las capturas de esta conversación como evidencia aportada por el usuario; no afirmar que se archivaron sus archivos en el repositorio.
 
@@ -438,8 +443,40 @@ Las incidencias están registradas localmente en este plan; **no se han creado i
 - [x] Vincular entrega y evidencias reales de v3.4, sin una auditoría extensa para rehacerla.
 - [x] Diagnóstico acotado de objetos, movimientos y habilidades; registrar reporte manual y deudas concretas.
 - [x] Preparar propuesta de v3.5 con fuentes, reutilización, aceptación y exclusiones.
-- [ ] Obtener aprobación del alcance antes de crear código de v3.5 o arreglar los bugs diferidos.
+- [x] Obtener aprobación para A antes de crear su código. B/C y bugs diferidos requieren autorización adicional.
 - [ ] Implementar y validar únicamente los hitos autorizados; actualizar este mismo documento al cerrarlos.
 - [ ] v3.6: reutilizar `MapScreen.kt` (ya tiene zoom/pan y pines en un mismo contenedor transformado), `RegionLocationData.kt` y `LocationDetailBottomSheet.kt`; no empezar de cero. Falta contexto de edición en el modelo local de encuentros, cobertura cartográfica comprobada y validación de hitboxes. Elegir piloto y permisos de activos antes de expandir.
 - [ ] v3.7: reutilizar `RotomCommentaryEngine.kt` y `RotomThemeManager.kt`; ya existen comentarios en detalle y temas. Falta el motor contextual transversal, prioridades/cooldown, controles de frecuencia y accesibilidad. No describirlo como inexistente ni como completo. IA opcional sigue sin autorizar.
 - Cambios de esta revisión: **solo este plan y el enlace/estado de continuidad del README**. Sin cambios a Kotlin/Room/build, sin modificar versión/tag/firma, sin push/release y sin iniciar implementación de v3.5.
+
+---
+
+## 15. Ejecución autorizada: v3.5-A — Objetos
+
+Esta sección es posterior a la revisión documental de §14; no cambia retroactivamente su alcance ni el código/tag publicado de v3.4.
+
+**Rama:** `feature/v3.5-a-items`. **Distribución:** solo desarrollo local, sin push/tag/release ni incremento de versión de publicación. No se modificaron movimientos, habilidades ni cálculo de captura; los cambios en detalle/evoluciones son enlaces a objetos oficiales.
+
+**Commits de implementación:** `66f6c95` (índice, repositorio, caché y migración), `3f589cd` (enciclopedia, enlaces y pruebas de interfaz). Esta rama también conserva el commit documental previo `47df886`; la release pública sigue apuntando a `5d67ea0`.
+
+### Entrega de A
+
+- Índice de **2223 objetos**, **2218 con nombre español**, generado por `tools/generate_item_index.py` desde CSV oficiales fijados a revisión Git `e2710d30d14b3f4dc6a02a4a71e8619cd835b7ff`; cinco nombres sin español tienen fallback identificado. Las 54 categorías oficiales tienen etiquetas españolas de UX; sin duplicar IDs o estadísticas.
+- `data/items/{ItemModels,ItemDao,ItemRepository,ItemPresentation}.kt` (rutas base de §11): `ItemRepository` compartido en `AppContainer`, búsqueda/filtros locales, detalles PokeAPI bajo demanda con validación de identidad y caché persistente. Fichas frescas se reutilizan durante 24 h; actualización manual y copia guardada cuando falla la consulta. Detalles nunca descargados requieren red.
+- Room **8→9** añade únicamente `item_index`, `item_detail_cache`, `item_index_state`. Todas las definiciones de tablas existentes de v8 son idénticas en v9; no se agrega equipamiento o habilidad a miembros, ni se reescriben `move1`–`move4`, usuarios/favoritos/EV/IV.
+- Se adapta `CompetitiveItemsScreen.kt`, conservando la ruta de entrada, a enciclopedia con listado lazy y ficha: sprite del objeto (no del Pokémon), nombre/categoría, atributos, texto con idioma/grupo de versiones, efecto y precio por edición cuando la API los proporciona. Ausencias no equivalen a precio cero, incompatibilidad para llevarlo o ausencia total de uso.
+- Nuevo enlace desde objetos de evolución y retorno desde Pokémon que llevan objetos en encuentros. Las identidades/nombres nacionales se obtienen del `PokemonRepository` existente; los porcentajes de portadores son por juego y no una lista de compatibilidad para equipar.
+- `CompetitiveItemData.kt` se sustituye por el índice factual y `ItemEditorial`: se conservan cuatro consejos revisados y etiquetados (Cinta/Gafas Elección, Restos, Baya Acardo). No se trasladan como hechos oficiales los efectos y recomendaciones antiguas sin revisión. El resto del catálogo anterior permanece en el historial Git, no como catálogo paralelo activo.
+- Corrección de `ITEM-001`: Baya Acardo es `shuca-berry`, ID 168, protección ante Tierra. Efecto español traducido y revisado, con procedencia explícita; no se presenta como texto oficial español del efecto. Se oculta el flavor text español inconsistente de X/Y, manteniendo el aviso de por qué falta.
+- Upstream contiene dos IDs con slug `roseli-berry` (723 y 2279), verificados mediante API. Se conservan ambos en el índice; enlaces por slug ambiguo se resuelven contra el recurso canónico, no el primer ID arbitrario. Sin resolución disponible se informa y se permite buscar por ID.
+- La API actual usa `prices` con compra/venta/moneda/grupo de versiones; puede estar vacío. No se transforma el `cost` genérico del CSV o de esquemas antiguos en precio universal. Los textos sin español tienen fallback inglés identificado; no se promete traducción integral de todos los efectos.
+
+### Verificación y cierre
+
+- Snapshot verificado: 2223 objetos; **15 pruebas Python correctas** (12 anteriores + 3 de objetos).
+- Comparación automática de esquemas: todas las tablas de v8 sin cambios, solo tres tablas nuevas.
+- Pruebas nuevas: índice/búsquedas sin API, bayas y categorías, caché/reapertura offline, concurrencia, identidades erróneas, snapshot reasignado, slugs duplicados, idioma/edición/precio, sprite, migración v8 y navegación de objetos.
+- Validación: **52 pruebas Kotlin correctas** (39 previas + 13 nuevas, incluidas tres de interfaz); `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest` correcto, lint sin errores y con advertencias. Se probó además el paso carga→detalle de la ficha asíncrona, evitando que la ventana quedase mostrando carga tras recibir los datos.
+- Evidencias nuevas: `ItemRepositoryTest.kt`, `ItemPresentationTest.kt`, `ItemUiTest.kt`, extensión de `RoomPersistenceTest.kt`, `tools/tests/test_item_index.py` y esquema exportado `9.json`. El workflow de verificación se amplía a ramas v3.5 y valida ambos snapshots. No se ha ejecutado CI remoto porque no se autorizó push.
+- La aprobación en Android real permanece pendiente; no convertir compilación o Robolectric en validación de dispositivo. No instalar versiones antiguas sobre una base migrada a v9.
+- Siguiente puerta: presentar A al usuario. **No comenzar v3.5-B ni publicar** sin autorización específica.
