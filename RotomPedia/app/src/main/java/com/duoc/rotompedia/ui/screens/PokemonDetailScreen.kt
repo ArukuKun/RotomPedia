@@ -74,6 +74,7 @@ fun PokemonDetailScreen(
     pokemonId: String,
     onNavigateBack: () -> Unit,
     viewModelFactory: PokemonViewModelFactory,
+    onItemClick: (String) -> Unit = {},
     onPokemonClick: (String) -> Unit = {},
     onCatchRateClick: (Int) -> Unit = {}
 ) {
@@ -165,6 +166,7 @@ fun PokemonDetailScreen(
                         pokemonViewModel = pokemonViewModel,
                         onFormClick = { selectedPokemonId = it.toString() },
                         onPokemonClick = onPokemonClick,
+                        onItemClick = onItemClick,
                         onCatchRateClick = onCatchRateClick
                     )
                 }
@@ -187,6 +189,7 @@ fun PokemonDetailContent(
     evolutionState: EvolutionState,
     typeRelationsState: TypeRelationsState,
     pokemonViewModel: PokemonViewModel,
+    onItemClick: (String) -> Unit = {},
     onFormClick: (Int) -> Unit = {},
     onPokemonClick: (String) -> Unit = {},
     onCatchRateClick: (Int) -> Unit = {}
@@ -476,7 +479,8 @@ fun PokemonDetailContent(
                 EvolutionChainColumn(
                     chain = evolutionState.evolutionChain,
                     currentPokemonId = speciesId.toString(),
-                    onPokemonClick = onPokemonClick
+                    onPokemonClick = onPokemonClick,
+                    onItemClick = onItemClick
                 )
             }
             is EvolutionState.Error -> {
@@ -615,6 +619,7 @@ fun StatRow(statInfo: StatInfo) {
 @Composable
 fun EvolutionChainColumn(
     chain: List<EvolutionStage>,
+    onItemClick: (String) -> Unit = {},
     currentPokemonId: String = "",
     onPokemonClick: (String) -> Unit = {}
 ) {
@@ -698,6 +703,9 @@ fun EvolutionChainColumn(
                         }
                     }
 
+                    evolutionStage.itemSlugs.forEach { slug ->
+                        TextButton(onClick = { onItemClick(slug) }) { Text("Consultar objeto de evolución · $slug", fontSize = 12.sp) }
+                    }
                     if (!evolutionStage.isBaseForm) {
                         Text(
                             text = "Desde ${chain.firstOrNull { it.id == evolutionStage.evolvesFromId }?.name ?: "etapa anterior"}: ${evolutionStage.evolutionRequirement}",

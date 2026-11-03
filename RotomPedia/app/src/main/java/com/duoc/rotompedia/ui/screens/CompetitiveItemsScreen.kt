@@ -1,351 +1,217 @@
 package com.duoc.rotompedia.ui.screens
 
-import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.duoc.rotompedia.data.CompetitiveItem
-import com.duoc.rotompedia.data.CompetitiveItemData
-import com.duoc.rotompedia.data.ItemCategory
-import com.duoc.rotompedia.util.RotomThemeManager
+import coil.compose.AsyncImage
+import com.duoc.rotompedia.data.items.*
+import com.duoc.rotompedia.di.AppContainer
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CompetitiveItemsScreen(
-    onNavigateBack: () -> Unit
-) {
-    val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
-    val rotomForm by RotomThemeManager.currentForm.collectAsState()
-
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf(ItemCategory.ALL) }
-
-    val filteredItems = remember(searchQuery, selectedCategory) {
-        CompetitiveItemData.items.filter { item ->
-            val matchesCategory = selectedCategory == ItemCategory.ALL || item.category == selectedCategory
-            val matchesQuery = searchQuery.isBlank() ||
-                    item.nameEs.contains(searchQuery, ignoreCase = true) ||
-                    item.nameEn.contains(searchQuery, ignoreCase = true) ||
-                    item.effectDescription.contains(searchQuery, ignoreCase = true) ||
-                    item.competitiveUsage.contains(searchQuery, ignoreCase = true)
-
-            matchesCategory && matchesQuery
-        }
+fun CompetitiveItemsScreen(onNavigateBack: () -> Unit, onPokemonClick: (String) -> Unit = {}, initialSlug: String? = null,
+    itemRepository: ItemRepository? = null) {
+    val repository = itemRepository ?: AppContainer.get(LocalContext.current).items
+    var loading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var retry by remember { mutableIntStateOf(0) }
+    var filter by remember { mutableStateOf(ItemFilter()) }
+    var selected by remember { mutableStateOf<IndexedItem?>(null) }
+    LaunchedEffect(repository, retry, initialSlug) {
+        loading = true; error = null
+        try {
+            repository.ensureIndex()
+            if (initialSlug != null) {
+                selected = repository.resolve(initialSlug)
+                if (selected == null) error = "No se pudo resolver el objeto solicitado. Puedes buscarlo en el catálogo."
+            }
+        } catch (e: Exception) { if (e is CancellationException) throw e; error = "No se pudo preparar el índice de objetos." }
+        finally { loading = false }
     }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text("Objetos Competitivos", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        Text(
-                            "Meta VGC & Singles • Gen IX",
-                            fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.8f)
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFD11527),
-                    titleContentColor = Color.White
-                )
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color(0xFF0F1115))
-        ) {
-            // Buscador
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                placeholder = { Text("Buscar objeto, efecto o estrategia...", fontSize = 13.sp) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Buscar",
-                        tint = rotomForm.primaryColor
-                    )
-                },
-                shape = RoundedCornerShape(16.dp),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = rotomForm.primaryColor,
-                    unfocusedBorderColor = Color(0xFF2E3342),
-                    focusedContainerColor = Color(0xFF191D26),
-                    unfocusedContainerColor = Color(0xFF191D26),
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
-                )
-            )
-
-            // Selector horizontal de categorías
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(ItemCategory.values()) { category ->
-                    val isSelected = selectedCategory == category
-                    Surface(
-                        onClick = { selectedCategory = category },
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (isSelected) rotomForm.primaryColor else Color(0xFF1E222D),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isSelected) rotomForm.primaryColor else Color(0xFF2C3240)
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(category.emoji, fontSize = 13.sp)
-                            Text(
-                                text = category.displayName,
-                                fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else Color.LightGray
-                            )
+    val itemsFlow = remember(repository) { repository.observeItems() }
+    val all by itemsFlow.collectAsState(initial = emptyList())
+    val context = LocalContext.current
+    val pokemonFlow = remember(itemRepository) {
+        if (itemRepository == null) AppContainer.get(context).pokemon.observeExplorer() else flowOf(emptyList())
+    }
+    val pokemon by pokemonFlow.collectAsState(initial = emptyList())
+    val pokemonLabels = remember(pokemon) { pokemon.associate { it.pokemonId to "${it.numberLabel} · ${it.displayName}" } }
+    val filteredFlow = remember(repository) { MutableStateFlow(ItemFilter()) }
+    LaunchedEffect(filter) { filteredFlow.value = filter }
+    val result by remember(repository) {
+        combine(repository.observeItems(), filteredFlow) { rows, filters -> ItemPresentation.filter(rows, filters) }
+            .flowOn(Dispatchers.Default)
+    }.collectAsState(initial = emptyList())
+    Scaffold(topBar = {
+        TopAppBar(title = { Text("Enciclopedia de objetos") }, navigationIcon = {
+            IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver") }
+        })
+    }) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
+            OutlinedTextField(filter.query, { filter = filter.copy(query = it) }, modifier = Modifier.fillMaxWidth(),
+                label = { Text("Nombre, categoría o ID del objeto") }, singleLine = true)
+            ItemChoice("Categoría oficial", filter.category, all.map { it.category }.distinct().sorted(), ItemLabels::category) {
+                filter = filter.copy(category = it)
+            }
+            ItemChoice("Atributo documentado", filter.attribute, all.flatMap { it.attributeList }.distinct().sorted(), ItemLabels::attribute) {
+                filter = filter.copy(attribute = it)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(filter.editorialOnly, { filter = filter.copy(editorialOnly = it) })
+                Text("Con consejo editorial revisado", fontSize = 12.sp)
+                TextButton({ filter = ItemFilter() }) { Text("Limpiar") }
+            }
+            Text("${result.size} / ${all.size} objetos · índice local", fontSize = 12.sp)
+            Text("Categorías y atributos no garantizan disponibilidad o uso en todos los juegos.", fontSize = 11.sp)
+            if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+            error?.let { Text(it, color = MaterialTheme.colorScheme.error); TextButton({ retry++ }) { Text("Reintentar índice") } }
+            if (!loading && result.isEmpty() && error == null) Text("Sin objetos con estos filtros.")
+            LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
+                items(result, key = { it.itemId }) { item ->
+                    Card(Modifier.fillMaxWidth().clickable { selected = item }) {
+                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            ItemSprite(item.slug, modifier = Modifier.size(48.dp))
+                            Column(Modifier.padding(start = 12.dp).weight(1f)) {
+                                Text(item.name, style = MaterialTheme.typography.titleMedium)
+                                Text("${ItemLabels.category(item.category)} · ID objeto ${item.itemId}", fontSize = 12.sp)
+                                if (item.nameLanguage != "es") Text("Nombre español no disponible (${item.nameLanguage})", fontSize = 11.sp)
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+    selected?.let { item ->
+        ItemDetailSheet(item, repository, onDismiss = { selected = null }, onPokemonClick = onPokemonClick, pokemonLabels = pokemonLabels)
+    }
+}
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Contador de resultados
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${filteredItems.size} objetos encontrados",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    fontWeight = FontWeight.SemiBold
-                )
-                if (selectedCategory != ItemCategory.ALL || searchQuery.isNotBlank()) {
-                    TextButton(
-                        onClick = {
-                            selectedCategory = ItemCategory.ALL
-                            searchQuery = ""
-                        },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("Limpiar filtros", fontSize = 11.sp, color = rotomForm.primaryColor)
-                    }
-                }
-            }
-
-            // Lista de objetos
-            if (filteredItems.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(filteredItems, key = { it.id }) { item ->
-                        CompetitiveItemCard(
-                            item = item,
-                            onCopy = {
-                                val textToCopy = "${item.nameEs} (${item.nameEn}): ${item.effectDescription}\nUso: ${item.competitiveUsage}"
-                                clipboardManager.setText(AnnotatedString(textToCopy))
-                                Toast.makeText(context, "Copiado: ${item.nameEs}", Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    }
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🎒", fontSize = 48.sp)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "No se encontraron objetos",
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Intenta buscar por otro término o cambiar de categoría.",
-                            color = Color.Gray,
-                            fontSize = 13.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
+@Composable
+internal fun ItemChoice(label: String, selected: String?, choices: List<String>, display: (String) -> String, onChoose: (String?) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        TextButton({ open = true }) { Text("$label: ${selected?.let(display) ?: "Sin seleccionar"}") }
+        DropdownMenu(open, { open = false }, modifier = Modifier.heightIn(max = 300.dp)) {
+            DropdownMenuItem(text = { Text("Sin seleccionar") }, onClick = { onChoose(null); open = false })
+            choices.forEach { choice -> DropdownMenuItem(text = { Text(display(choice)) }, onClick = { onChoose(choice); open = false }) }
         }
     }
 }
 
 @Composable
-private fun CompetitiveItemCard(
-    item: CompetitiveItem,
-    onCopy: () -> Unit
-) {
-    val rotomForm by RotomThemeManager.currentForm.collectAsState()
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF171A22)),
-        border = BorderStroke(1.dp, getCategoryColor(item.category).copy(alpha = 0.5f))
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Cabecera: Icono, Nombres y Categoría
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(getCategoryColor(item.category).copy(alpha = 0.18f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(item.emoji, fontSize = 24.sp)
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = item.nameEs,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "${item.nameEn} • Gen ${item.generation}",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                }
-
-                IconButton(onClick = onCopy) {
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copiar",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Chip de categoría
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = getCategoryColor(item.category).copy(alpha = 0.16f)
-            ) {
-                Text(
-                    text = "${item.category.emoji} ${item.category.displayName}",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = getCategoryColor(item.category),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Descripción del efecto
-            Text(
-                text = item.effectDescription,
-                fontSize = 13.sp,
-                color = Color.White.copy(alpha = 0.92f),
-                lineHeight = 18.sp
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Estrategia competitiva / Rotom Tip
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp),
-                color = Color(0xFF222633),
-                border = BorderStroke(1.dp, Color(0xFF33384A))
-            ) {
-                Row(
-                    modifier = Modifier.padding(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("💡", fontSize = 14.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = item.competitiveUsage,
-                        fontSize = 11.sp,
-                        color = Color(0xFF61DAF6),
-                        lineHeight = 15.sp
-                    )
-                }
-            }
-        }
+internal fun ItemSprite(slug: String, modifier: Modifier = Modifier, declared: String? = null) {
+    val url = ItemPresentation.sprite(slug, declared)
+    var failed by remember(url) { mutableStateOf(false) }
+    var retry by remember(url) { mutableIntStateOf(0) }
+    Box(modifier.clickable(enabled = failed) { failed = false; retry++ }, contentAlignment = Alignment.Center) {
+        if (url == null || failed) Text("Sin\nsprite", fontSize = 10.sp)
+        else key(url, retry) { AsyncImage(url, "Sprite del objeto $slug", modifier = Modifier.fillMaxSize(), onError = { failed = true }) }
     }
 }
 
-private fun getCategoryColor(category: ItemCategory): Color {
-    return when (category) {
-        ItemCategory.CHOICE -> Color(0xFFE53935)
-        ItemCategory.DEFENSIVE -> Color(0xFF1E88E5)
-        ItemCategory.OFFENSIVE -> Color(0xFFFF9800)
-        ItemCategory.UTILITY -> Color(0xFF8E24AA)
-        ItemCategory.BERRY -> Color(0xFF4CAF50)
-        ItemCategory.WEATHER -> Color(0xFF00ACC1)
-        ItemCategory.ALL -> Color(0xFF61DAF6)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun ItemDetailSheet(item: IndexedItem, repository: ItemRepository, onDismiss: () -> Unit, onPokemonClick: (String) -> Unit,
+    pokemonLabels: Map<Int, String> = emptyMap()) {
+    var data by remember(item.itemId) { mutableStateOf<ItemDetailResult?>(null) }
+    var loading by remember(item.itemId) { mutableStateOf(true) }
+    var error by remember(item.itemId) { mutableStateOf<String?>(null) }
+    var retry by remember(item.itemId) { mutableIntStateOf(0) }
+    var group by remember(item.itemId) { mutableStateOf<String?>(null) }
+    val clipboard = LocalClipboardManager.current
+    LaunchedEffect(item.itemId, retry) {
+        loading = true; error = null
+        try { data = repository.detail(item.itemId, refresh = retry > 0) }
+        catch (e: Exception) { if (e is CancellationException) throw e; error = "Detalle no disponible. No hay una ficha guardada utilizable; comprueba la conexión y reintenta." }
+        finally { loading = false }
+    }
+    // Read loading/detail state in the owning composition before the sheet's
+    // separate window, so asynchronous completion also updates its content.
+    val currentData = data
+    val isLoading = loading
+    val currentError = error
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.fillMaxWidth().fillMaxHeight(0.9f).verticalScroll(rememberScrollState()).padding(20.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ItemSprite(item.slug, modifier = Modifier.size(64.dp), declared = currentData?.detail?.sprites?.default)
+                Column(Modifier.weight(1f)) { Text(item.name, style = MaterialTheme.typography.titleLarge); Text("${item.slug} · ID objeto ${item.itemId}", fontSize = 12.sp) }
+                TextButton(onDismiss) { Text("Cerrar") }
+            }
+            Text(ItemLabels.category(item.category))
+            if (isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
+            currentError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            TextButton({ retry++ }) { Text("Actualizar / reintentar ficha") }
+            currentData?.let { loaded ->
+                val detail = loaded.detail
+                Text(if (loaded.offline) "No se pudo actualizar: mostrando copia guardada." else "Ficha disponible en caché local.", fontSize = 12.sp)
+                Text("Fuente: PokeAPI · item/${detail.id} · guardado ${java.time.Instant.ofEpochMilli(loaded.fetchedAt)}", fontSize = 11.sp)
+                val groups = (detail.descriptions.map { it.versionGroup.name } + detail.prices.map { it.versionGroup.name }).distinct().sorted()
+                ItemChoice("Edición de descripción / precio", group, groups, ItemLabels::version) { group = it }
+                val description = ItemPresentation.description(detail, group)
+                Text("Descripción de juego", style = MaterialTheme.typography.titleMedium)
+                Text(when {
+                    group == null -> "Selecciona una edición para consultar su texto y precio."
+                    detail.name == "shuca-berry" && group == "x-y" -> "Texto original de X/Y conocido como inconsistente: se oculta para no atribuir un efecto incorrecto. Consulta el efecto revisado o una edición diferente."
+                    description == null -> "Sin descripción española o inglesa para esta edición."
+                    description.language == "es" -> description.text
+                    else -> "Sin traducción española para esta edición. Original en inglés: ${description.text}"
+                })
+                val effect = ItemPresentation.effect(detail)
+                Text("Efecto mecánico · fuente sin edición específica", style = MaterialTheme.typography.titleMedium)
+                if (detail.name == "shuca-berry") {
+                    Text(ItemEditorial.shucaEffect)
+                    Text(ItemEditorial.shucaSource, fontSize = 11.sp)
+                } else Text(when (effect?.language) {
+                    "es" -> effect.text
+                    "en" -> "Sin efecto español verificado. Original en inglés: ${effect.text}"
+                    else -> "Sin efecto documentado en español o inglés."
+                })
+                Text("Atributos documentados", style = MaterialTheme.typography.titleMedium)
+                Text(detail.attributes.map { ItemLabels.attribute(it.name) }.joinToString(" · ").ifBlank { "Sin atributos documentados; no implica que no se pueda usar o llevar." })
+                Text("Precio por edición", style = MaterialTheme.typography.titleMedium)
+                val prices = detail.prices.filter { it.versionGroup.name == group }
+                Text(if (prices.isEmpty()) "Sin precio contextual documentado para la edición seleccionada. No se asume que sea gratis." else prices.joinToString("\n") {
+                    "Compra: ${it.purchasePrice?.toString() ?: "sin dato"} · venta: ${it.sellPrice?.toString() ?: "sin dato"} · moneda: ${it.currency.name}"
+                })
+                ItemEditorial.notes[item.slug]?.let {
+                    Text("Consejo editorial de RotomPedia · no oficial", style = MaterialTheme.typography.titleMedium)
+                    Text(it)
+                }
+                TextButton({
+                    val text = "${item.name} (${item.slug})\nFuente: PokeAPI item/${item.itemId}\nEdición: ${group?.let(ItemLabels::version) ?: "no seleccionada"}\n" +
+                        (description?.let { "Texto (${it.language}): ${it.text}" } ?: "Sin descripción seleccionada")
+                    clipboard.setText(AnnotatedString(text))
+                }) { Text("Copiar ficha con procedencia") }
+                if (detail.holders.isNotEmpty()) {
+                    Text("Pokémon que pueden llevarlo en encuentros", style = MaterialTheme.typography.titleMedium)
+                    Text("No es una lista de Pokémon compatibles para equiparlo. Condiciones registradas por juego.", fontSize = 12.sp)
+                    detail.holders.forEach { holder ->
+                        val id = Regex("https://pokeapi.co/api/v2/pokemon/([1-9][0-9]*)/?").matchEntire(holder.pokemon.url)?.groupValues?.get(1)
+                        if (id != null) TextButton({ onPokemonClick(id) }) {
+                            Text(pokemonLabels[id.toInt()] ?: "ID técnico $id · ${holder.pokemon.name}")
+                        }
+                        Text(holder.versions.joinToString(" · ") { "${it.version.name}: ${it.rarity}%" }, fontSize = 11.sp)
+                    }
+                }
+            }
+        }
     }
 }

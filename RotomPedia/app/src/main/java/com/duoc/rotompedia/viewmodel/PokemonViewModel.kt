@@ -79,7 +79,8 @@ data class EvolutionStage(
     val name: String,
     val evolutionRequirement: String,
     val isBaseForm: Boolean = false,
-    val evolvesFromId: String? = null
+    val evolvesFromId: String? = null,
+    val itemSlugs: List<String> = emptyList()
 )
 
 // Estado para movimientos de un Pokémon
@@ -353,7 +354,8 @@ class PokemonViewModel(
                 name = currentName,
                 evolutionRequirement = evolutionRequirement,
                 isBaseForm = isBaseForm,
-                evolvesFromId = evolvesFromId
+                evolvesFromId = evolvesFromId,
+                itemSlugs = chainLink.evolutionDetails.flatMap { listOfNotNull(it.item?.name, it.heldItem?.name) }.distinct()
             )
         )
 

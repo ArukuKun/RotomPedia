@@ -472,6 +472,7 @@ fun AppNavigationController() {
                     pokemonId = pokemonId,
                     onNavigateBack = { navController.popBackStack() },
                     viewModelFactory = pokemonViewModelFactory,
+                    onItemClick = { slug -> navController.navigate("competitive_items?slug=${android.net.Uri.encode(slug)}") },
                     onPokemonClick = { newPokemonId ->
                         navController.navigate("pokemon_detail/$newPokemonId")
                     },
@@ -534,9 +535,13 @@ fun AppNavigationController() {
             )
         }
 
-        composable("competitive_items") {
+        composable("competitive_items?slug={slug}", arguments = listOf(navArgument("slug") {
+            type = NavType.StringType; nullable = true; defaultValue = null
+        })) { entry ->
             CompetitiveItemsScreen(
-                onNavigateBack = { navController.navigateUp() }
+                onNavigateBack = { navController.navigateUp() },
+                initialSlug = entry.arguments?.getString("slug"),
+                onPokemonClick = { navController.navigate("pokemon_detail/$it") }
             )
         }
 
