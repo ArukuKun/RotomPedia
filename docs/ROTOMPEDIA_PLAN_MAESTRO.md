@@ -168,6 +168,8 @@ Para actualizaciones del índice:
 
 **Implementada y verificada técnicamente; validación manual pendiente (§17).** Aprendizaje por edición; valores base actuales, no históricos. Sin certificación de legalidad; tipos/categorías en texto, sin sprites individuales inventados. La lista original siguiente conserva los criterios de alcance; §17 registra su cumplimiento y límites.
 
+**Pulido futuro P3:** la propuesta de pantalla dedicada de aprendizaje y presentación compacta se amplía en §13.1, sobre `MoveRepository` ya implementado. Está **pendiente y sin autorización de implementación inmediata**; no reabre v3.5-B ni cambia la siguiente tarea vigente.
+
 - [x] Crear/adaptar `MoveRepository` reutilizable en Pokédex, editor de miembros y enciclopedia.
 - [x] Nombre español, tipo, categoría física/especial/estado, PP, potencia, precisión, prioridad y efecto con idioma identificado.
 - [x] Mostrar nivel, método y edición/grupo de versiones de aprendizaje; no mezclar juegos de forma engañosa.
@@ -608,8 +610,9 @@ Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
 | `DEX-007` — categoría alternativa y Tótem; autorizado post-RC2 | Se cuestiona el cajón «Variedades estables» y Raticate Tótem duplicado. | §4.2: retirar chip general, ocultar Tótem en Pokédex sin borrar datos; conservar formas de Lycanroc, genios y Origen en fichas/picker y preservar equipos/favoritos por ID. |
 | `BIO-001` — ficha biológica compacta; pendiente de autorización | Usuario solicita reorganizar bajo imagen/descripción; habilidades ya tienen repositorio/fichas. | Especie/categoría, altura y peso con unidades y procedencia; habilidades normales y `(oculta)` en bloque compacto, conservando fichas detalladas. No atribuir descripción de especie a variedad sin especificidad verificada. |
 | `ABIL-001` — contadores y traducciones; pendiente de autorización | Ya existe habilidad → variedades asociadas en v3.5-C. Se reportan traducciones incorrectas sin aportar aún la lista exacta de nombres. | Añadir contadores **de variedades distintas (`pokemonId`)** normales y ocultas; deduplicar cada rol, indicar que una variedad podría pertenecer a ambos si la fuente lo registra. Si se ofrecen especies, conteo separado por `speciesId`, nunca mezclar unidades. Revisar muestras/traducciones con fuentes españolas verificables, sin reemplazos inventados ni reimplementar el enlace existente. |
-| `MOV-002` — símbolos y presentación; pendiente de autorización | v3.5 ya expone tipo/categoría en texto y filtros por ambos en el catálogo; no son funciones inexistentes. | Pulir tipo elemental y símbolo Física/Especial/Estado, conservar y validar filtros actuales, fichas, métodos/niveles/ediciones y repositorio. No reconstruir el catálogo desde cero. |
-| `MOV-003` — movimientos Z; pendiente de autorización e investigación de cobertura | Solicitud de filtro adicional, no nueva categoría de daño. | Relación/marcador de movimiento Z desde fuente verificable y contexto de juego; intersectar con tipo/categoría. Física, Especial y Estado siguen siendo las tres categorías de daño; no clasificar Z como cuarta. |
+| `MOV-002` — P3, símbolos y presentación; pendiente de autorización | v3.5 ya expone tipo/categoría en texto y filtros por ambos en el catálogo; no son funciones inexistentes. | Ampliación P3 en §13.1: tipo con color y símbolo Física/Especial/Estado; filas compactas responsivas, sin rehacer catálogo, fichas ni repositorio. Filtros del catálogo general separados de métodos de aprendizaje. |
+| `MOV-003` — P3, movimientos Z; pendiente de autorización e investigación de cobertura | Solicitud de filtro adicional, no nueva categoría de daño. | §13.1: conservar filtro general Z solo con relación/marcador verificable y contexto de juego; intersectar con tipo/categoría. Física, Especial y Estado siguen siendo las tres categorías de daño; Z no es una cuarta ni una pestaña de aprendizaje. |
+| `MOV-004` — P3, pantalla de aprendizaje por Pokémon; **propuesta para después** | El usuario considera poco cómoda la consulta dentro del detalle y describe como referencia un video de Incineroar en PokeInfo. | §13.1: «Consultar movimientos» abre pantalla dedicada con Nivel/Huevo/MT-MO/Tutor, edición, variedad exacta y acceso a fichas. Reutilizar aprendizaje/caché/traducciones existentes, sin límites arbitrarios ni regresión del editor. No implementar ahora. |
 | `ITEM-002` — mochila por bolsillos; pendiente de autorización | `ItemRepository`, sprites y categorías oficiales ya existen. | Explorar Poké Balls, Medicina, Bayas, MT/MO, clave, equipables y otros bolsillos documentados. Usar relaciones de fuente/edición, no una organización universal inventada ni equipabilidad inferida solo del bolsillo; declarar cobertura. |
 | `TRAIN-001` — líderes, Alto Mando, Campeón y revanchas; pendiente de autorización | Módulo de líderes y backend Spring Boot existentes, no sistema completo de entrenadores por edición. | Investigar/reutilizar backend y contratos; filtro principal **juego/edición**, región secundaria. No mezclar Rubí/Zafiro, Esmeralda y RO/ZA; verificar personajes, orden, equipos, estadísticas y revanchas por fuente/edición. No inventar ni asumir que PokeAPI cubre todo. Los filtros regionales de Pokédex no se reemplazan por este criterio. |
 | `CAP-004` — selector visual de Poké Balls; pendiente de autorización | Tarjetas de Balls actuales; solicitud de botón → diálogo/bottom sheet. No prueba una causa matemática. | Reutilizar `ItemRepository`: sprite real, nombre español, buscador y listado con condiciones documentadas. Balls menos comunes solo con datos/mecánicas compatibles por edición; no hacer una tabla duplicada ni atribuirle `CAP-001`–003. |
@@ -620,6 +623,52 @@ Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
 **Orden y límites del backlog:** DEX-001–003 se entregaron en RC2; ahora solo DEX-004–007, autorizadas por las observaciones manuales, y su nueva validación. Después seleccionar otra tarea con el usuario. BIO/ABIL/MOV/ITEM/TEAM siguen pendientes; CAP matemático y selector son independientes; TRAIN exige investigación de datos/backend; SEC/VER no permiten cambios de firma/numeración por inferencia. No implementar toda la tabla ni sustituir v3.6, v3.7 o RI.
 
 Las incidencias se registran en este único plan; **no se han creado issues públicos**. ITEM-001 y MOV-001 están incluidos en la RC1 publicada, aún pendientes de aprobación manual. CAP-001–004 y las mejoras no DEX siguen pendientes, sin implementación autorizada ahora. Conservar las capturas de la conversación como evidencia del usuario; no afirmar que sus archivos se archivaron en el repositorio.
+
+### 13.1 P3 — Interfaz de movimientos inspirada en PokeInfo (PARA DESPUÉS)
+
+**Estado:** pendiente de implementación, **sin autorización para comenzar ahora**. P3 identifica el pulido de movimientos previsto en MOV-002/MOV-003 y ampliado con MOV-004; no es otra versión, otro catálogo ni una hoja de ruta paralela. Esta incorporación es solo documental. Se mantiene el trabajo vigente de validación/estabilización de Pokédex RC3 (§4.2); no adelantar P3, mapas ni RI por registrar esta propuesta.
+
+**Referencia indicada por el usuario:** video de PokeInfo mostrando la consulta de movimientos de Incineroar. Registrar el flujo descrito sin afirmar que se inspeccionó o archivó el video en esta intervención; cotejar el recurso al preparar el diseño. Recuperar la navegación conceptual, conservando identidad visual de RotomPedia, sin copiar una tabla que resulte ilegible en Android.
+
+#### Pantalla dedicada y métodos de aprendizaje
+
+- Desde «Consultar movimientos» en la ficha Pokémon, abrir una pantalla independiente para el **mismo `pokemonId`/variedad**, no un catálogo general ni la especie base por sustitución.
+- Cuatro pestañas principales: **Por nivel**, **Por huevo**, **MT/MO** y **Tutor**. Nivel muestra el nivel aprendido; crianza/tutores solo donde estén documentados; máquinas muestran su identificación real en la edición seleccionada cuando exista. No derivar números MT/MO de IDs internos.
+- Selector de edición/grupo de versiones explícito para no mezclar aprendizaje de juegos distintos. Cambiar de pestaña mantiene Pokémon y edición, sin regresar al detalle.
+- Desplazamiento vertical por todos los resultados y acceso a la ficha completa al tocar un movimiento. Al volver, mantener contexto; regreso al Pokémon original con su identidad intacta.
+- Un movimiento aprendido por nivel y por MT debe aparecer en ambos métodos de esa edición; conservar los niveles y relaciones originales. Los métodos adicionales de la fuente no se eliminan: concretar su presentación/cobertura al preparar P3, sin ocultar datos ni imponer un máximo arbitrario de resultados.
+
+#### Presentación compacta y adaptada a Android
+
+- Fila/tarjeta compacta con **nombre español verificado**, tipo elemental identificado por color, **icono de categoría Física/Especial/Estado**, potencia y precisión.
+- Añadir nivel o referencia MT/MO cuando corresponda; mantener PP y otros datos extensos en la ficha individual, sin borrarlos del modelo/repositorio.
+- Valores no aplicables como **«—»**, no como cero. Distinguir ausencias de datos de valores reales; no inventar traducciones, efectos ni referencias de máquinas.
+- Encabezados y distribución responsiva para pantallas estrechas/texto grande, sin columnas cortadas, tipografía diminuta ni scroll horizontal obligatorio para entender cada fila. Inspiración conceptual de la tabla del video, no copia literal.
+- La selección de edición filtra aprendizaje y textos. No presentar los valores base actuales como estadísticas históricas reconstruidas si la fuente no las sostiene; conservar procedencia y límites existentes de v3.5.
+
+#### Arquitectura y catálogo general
+
+- Reutilizar **`MoveRepository`**, índice de referencia, caché de aprendizaje, alias/traducciones, fichas y relaciones de v3.5-B. No crear otro catálogo ni duplicar las peticiones por movimiento.
+- Preservar el Team Builder, el editor existente y sus cuatro textos de movimientos guardados; referencias ambiguas/desconocidas siguen visibles sin reescritura silenciosa.
+- El catálogo general conserva/mejora filtros por **tipo elemental**, **categoría de daño** e iconos de categoría (MOV-002), y filtro de **movimientos Z cuando haya cobertura verificable** (MOV-003).
+- Esos filtros son distintos de las cuatro pestañas de aprendizaje de un Pokémon. **Z no es una cuarta categoría de daño** ni certifica que el Pokémon lo aprende en cualquier edición.
+
+#### Criterios de aceptación de P3 — todos pendientes
+
+- [ ] Pantalla dedicada a movimientos por Pokémon y variedad exactos.
+- [ ] Pestañas Nivel, Huevo, MT/MO y Tutor, conservando varios métodos del mismo movimiento.
+- [ ] Tipo con color y categoría con icono visualmente identificables.
+- [ ] Potencia y precisión visibles; no aplicables como «—».
+- [ ] Nivel y referencia de máquina cuando estén documentados para esa edición.
+- [ ] Aprendizaje/textos diferenciados por edición, sin mezcla de juegos ni valores históricos inventados.
+- [ ] Nombres españoles cuando exista traducción verificada; fallback identificado donde falte.
+- [ ] Acceso a ficha completa con PP y otros datos; regreso conserva Pokémon, pestaña y edición.
+- [ ] Diseño cómodo en diferentes tamaños de pantalla y texto, con scroll por todos los resultados.
+- [ ] Integración con `MoveRepository`, cachés y relaciones existentes, sin segundo catálogo ni topes arbitrarios.
+- [ ] Filtros generales de tipo/categoría/Z e iconos preservados/mejorados, separados de los métodos de aprendizaje.
+- [ ] Sin regresiones en Team Builder, usuario activo, identidades ni los cuatro movimientos guardados; pruebas de navegación, métodos/edición y persistencia.
+
+**Puerta de inicio:** esperar una autorización posterior expresa para implementar P3. No crear código, rama de implementación, nuevo tag ni pre-release de P3 a partir de esta propuesta pendiente.
 
 ---
 
