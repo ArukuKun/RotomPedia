@@ -6,11 +6,11 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 ## Estado actual y versiones
 
-**Referencia pública:** [prerelease `v3.4.0-rc1`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.4.0-rc1), hitos A+B+C terminados. No se ha promovido a estable.
+**Prueba pública actual:** [pre-release `v3.5.0-rc1`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc1), con v3.5-A/B/C integradas. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc1/RotomPedia-v3.5.0-rc1.apk). No es la versión base estable `3.5.0`; v3.4 queda como referencia histórica.
 
-**Desarrollo local:** v3.5-A/B/C implementadas en `feature/v3.5-bc-encyclopedia`, con verificación técnica correcta y validación del usuario en Android pendiente. Sin nueva release.
+**Código publicado:** rama `feature/v3.5-bc-encyclopedia`, tag `v3.5.0-rc1` en `a857f7e`; verificación local y CI correctas, validación del usuario en Android pendiente.
 
-**Política de publicación autorizada:** subir las entregas de prueba a GitHub como **pre-release** (hitos A/B/C, RC y otras pruebas); publicar las versiones base `X.Y.0` como **release normal**, solo cuando se decida cerrar esa versión. No convertir una prueba en estable automáticamente. Cada entrega incluirá APK con la firma de actualización comprobada, versión Android creciente y SHA-256. Se prepara `v3.5.0-rc1` con A/B/C integradas para la prueba en teléfono.
+**Política de publicación autorizada:** subir las entregas de prueba a GitHub como **pre-release** (hitos A/B/C, RC y otras pruebas); publicar las versiones base `X.Y.0` como **release normal**, solo cuando se decida cerrar esa versión. No convertir una prueba en estable automáticamente. Cada entrega incluirá APK con la firma de actualización comprobada, versión Android creciente y SHA-256. `v3.5.0-rc1` ya está disponible para probar desde el teléfono.
 
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
@@ -21,9 +21,9 @@ Contiene alcance, autorización, evidencias, incidencias residuales y criterios 
 |---|---|---|
 | v3.3.0-rc1 | Prerelease histórica | Refactor inicial de formas; [guía](docs/README-v3.3.md) y [validación](docs/v3.3-validacion.md). |
 | v3.4-A/B/C integrada | Terminada y publicada como prerelease | Índice y repositorios compartidos, Pokédex/picker nacional, filtros e imágenes por variedad. [Release RC1](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.4.0-rc1). |
-| v3.5-A — Objetos | Implementada localmente; validación manual pendiente | 2223 objetos, búsqueda local, fichas con procedencia, sprites y caché. Sin publicación. |
-| v3.5-B — Movimientos | Implementada localmente; validación manual pendiente | 937 movimientos, repositorio común, textos españoles con procedencia y aprendizaje por edición. |
-| v3.5-C — Habilidades | Implementada localmente; validación manual pendiente | 374 habilidades, relaciones normales/ocultas por variedad/slot y enlaces verificados. |
+| v3.5-A — Objetos | En pre-release integrada; validación manual pendiente | 2223 objetos, búsqueda local, fichas con procedencia, sprites y caché. |
+| v3.5-B — Movimientos | En pre-release integrada; validación manual pendiente | 937 movimientos, repositorio común, textos españoles con procedencia y aprendizaje por edición. |
+| v3.5-C — Habilidades | En pre-release integrada; validación manual pendiente | 374 habilidades, relaciones normales/ocultas por variedad/slot y enlaces verificados. |
 | v3.6 — Mapas interactivos | Planificada; sin iniciar | Piloto por región/juego, datos y activos verificados; navegación inspirada en PokeInfo. |
 | v3.7 — Rotom contextual e interfaz | Planificada; sin iniciar | Contexto local, personalidad, control de frecuencia y accesibilidad; IA opcional. |
 
@@ -66,13 +66,13 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 * **Detalle y variedades:** Estadísticas, tipos en español, evoluciones, imágenes de la variedad seleccionada y placeholders cuando no existen recursos válidos. No se presenta un texto de especie como descripción específica de otra variedad.
 * **Exploración:** Orden nacional, grupos desplegables y búsqueda local por nombre, número y alias; filtros combinables de generación, origen regional, categoría y tipo.
 
-### 3. 🎒 Enciclopedia de objetos — desarrollo local v3.5-A
+### 3. 🎒 Enciclopedia de objetos — v3.5-A incluida en RC1
 * **Catálogo:** 2223 objetos, 2218 con nombre español; categorías y atributos con búsqueda local.
 * **Fichas:** Sprites, descripciones y efectos con procedencia/idioma; precio por edición solo cuando hay datos. Caché persistente, error y reintento.
 * **Conexiones:** Evolución → objeto y objeto → Pokémon portadores; sin añadir equipamiento persistido ni inferir legalidad de uso.
 * **Cobertura:** Los efectos sin traducción española se identifican; no se promete traducción integral ni detalle completo offline antes de descargarlo.
 
-### Movimientos y habilidades — desarrollo local v3.5-B/C
+### Movimientos y habilidades — v3.5-B/C incluidas en RC1
 * **Referencia compartida:** Snapshot local con hash y revisión fijada: 937 movimientos, 374 habilidades (311 nombres españoles), 2943 relaciones de habilidad por variedad y 2372 relaciones MT/MO–movimiento–objeto. Sin una petición por ficha o pulsación ni sprites inventados.
 * **Aprendizaje:** Completo bajo demanda por variedad, edición, método y nivel; caché persistente para reapertura offline. Páginas de 40 sin topes ocultos; catálogo general separado del aprendizaje.
 * **Editor:** Alias españoles/ingleses/slugs sin reescribir textos guardados; nombres desconocidos siguen visibles, no se muestran como vacíos.
@@ -99,7 +99,7 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 - Datos personales e IDs técnicos se conservan; no se usa borrado destructivo como recuperación de una migración fallida.
 - Los APK publicados de esta etapa son de validación con firma de depuración, no firma privada de producción. Consultar las notas de la release antes de actualizar; no desinstalar para forzar una actualización sin respaldo.
 - No instalar una versión antigua sobre una base ya migrada a un esquema más reciente. El código local puede adelantarse al APK público; el nombre de una versión Android no demuestra por sí solo qué hitos están publicados.
-- La entrega de prueba en preparación usa `3.5.0-rc1` / `30501`; no es la versión base estable `3.5.0`.
+- La pre-release publicada usa `3.5.0-rc1` / `30501`, con el mismo certificado comprobado que el APK público de v3.4.0-rc1. Incluye SHA-256; no es la versión base estable `3.5.0`. No desinstales para forzar una actualización si Android muestra un conflicto de firma.
 - Pendientes concretos: captura (`CAP-001`–`CAP-003`), validación manual del español de movimientos (`MOV-001`, implementado localmente), textos en pantallas estrechas (`UI-001`) y recursos gráficos aún ausentes. Véase el Plan Maestro, sin reabrir v3.4 completa.
 
 ## 🛠️ Stack Tecnológico

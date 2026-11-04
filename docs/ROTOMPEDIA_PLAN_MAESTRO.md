@@ -8,7 +8,7 @@
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
-**Estado vigente:** v3.4-A/B/C e integrada **terminadas**; distribución pública **prerelease `v3.4.0-rc1`**, no promoción a estable. v3.5-A/B/C autorizadas e implementadas localmente en `feature/v3.5-bc-encyclopedia`; cierre técnico y límites en §15 y §17, validación del usuario en Android pendiente. No se autorizaron corrección de captura ni nueva publicación. Los bugs concretos del apartado 13 no reabren v3.4 globalmente.
+**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc1`** con A/B/C integradas, rama `feature/v3.5-bc-encyclopedia`, tag en `a857f7e`; pruebas locales y CI correctas, validación del usuario en Android pendiente (§17). Política autorizada: pruebas/hitos como pre-release; base `X.Y.0` como release normal al cerrar la versión. No se autorizaron corrección de captura ni implementación de mapas/RI. Los bugs del apartado 13 no reabren v3.4 globalmente.
 
 **Ampliación de planificación:** Rotom Intelligence Pipeline se registra en §16 como investigación/prototipo futuro después de v3.5, con integración progresiva en v3.7 y sin bloquear mapas de v3.6. No es autorización para implementarlo, contratar servicios ni enviar datos a terceros. El [README principal](../README.md) resume estados de todas las series (3.x, 4.x y posteriores) y debe actualizarse junto con este plan al cerrar cada hito/versión.
 
@@ -324,7 +324,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v3.4-B | ✅ Completada | `feature/v3.4-b-implementation`, `4c4e9c3`, `248c922`, `c5ccc77` | Evidencias registradas en §11 |
 | v3.4-C | ✅ Completada | `feature/v3.4-c-implementation`, `e41bda3`, `6c8e9c2`, `6a0f2ac` | Evidencias registradas; matriz manual de imágenes pendiente |
 | v3.4 integrada | ✅ Terminada; prerelease publicada | tag `v3.4.0-rc1`, commit `5d67ea0` | Bugs concretos en §13; no promoción a estable |
-| v3.5 | A/B/C implementadas localmente; verificación técnica correcta | `feature/v3.5-bc-encyclopedia` | Validación manual Android pendiente (§15 y §17); sin nueva publicación |
+| v3.5 | A/B/C publicadas como pre-release integrada; verificación local y CI correctas | `feature/v3.5-bc-encyclopedia`, `v3.5.0-rc1`, `a857f7e` | Validación manual Android pendiente (§17); base 3.5.0 aún no publicada |
 | v3.6 | ⬜ Pendiente | — | Mapas por juego/región |
 | v3.7 | ⬜ Pendiente | — | Rotom contextual e interfaz |
 | Rotom Intelligence Pipeline | ⬜ Investigación y prototipo pendientes; sin iniciar | Sin rama/código de RI | Después de v3.5; integración progresiva con v3.7, sin retrasar v3.6 (§16) |
@@ -620,4 +620,16 @@ Se registra la propuesta del usuario y se alinea con v3.7; **no se ha implementa
 - [ ] Reabrir offline tras descargar aprendizaje/detalles; verificar error/reintento donde no exista copia y texto grande/pantalla estrecha.
 - [ ] Comprobar cuentas, equipos, favoritos, EV/IV y cuatro textos de movimientos preexistentes tras actualización. No desinstalar ni instalar APK antiguo sobre Room v10.
 
-No hay dispositivo/emulador conectado para esta validación. **Cierre técnico local, no cierre manual ni publicación de v3.5.** CAP-001–003, v3.6, v3.7 y RI continúan pendientes; no se han implementado en este trabajo.
+No hay dispositivo/emulador conectado para esta validación. **Cierre técnico, no cierre manual ni versión base estable de v3.5.** CAP-001–003, v3.6, v3.7 y RI continúan pendientes; no se han implementado en este trabajo.
+
+### Publicación posterior autorizada — v3.5.0-rc1
+
+- Publicada el 4 de noviembre de 2026 como **pre-release**, `draft=false`, `prerelease=true`, sin marcarla Latest: [descarga y notas](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc1). Incluye A/B/C; no se fabrican entregas retrospectivas A/B separadas.
+- Rama subida y tag anotado `v3.5.0-rc1` en `a857f7e681c290c71a9aa5605bf3e00d507d9cc3`. El commit documental posterior no cambia el APK/tag.
+- APK `RotomPedia-v3.5.0-rc1.apk`, 23857077 bytes, SHA-256 **`5335f6413d3a0045eb01a28bb1e002d5668b5574fcdd1dccf75ac15227b59e25`**, coincidente con el digest del asset GitHub; archivo `.apk.sha256` incluido.
+- `versionName=3.5.0-rc1`, `versionCode=30501`, aplicación `com.duoc.rotompedia`, mínimo API 25. Firma debug verificada por `apksigner`, mismo certificado que el APK publicado v3.4.0-rc1 (certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`). El APK anterior se contrastó con su digest público antes de comparar firmas.
+- Migraciones v8→9→10 aditivas; no desinstalar ni volver a un APK con esquema menor. Compatibilidad de firma comprobada con RC1 anterior, no con todas las versiones históricas.
+- Reejecutado `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest`: correcto. CI del tag/commit: [Verify RotomPedia](https://github.com/ArukuKun/RotomPedia/actions/runs/41773940435) y [Release APK](https://github.com/ArukuKun/RotomPedia/actions/runs/41773940114), ambos **success**.
+- Workflow de tags verifica y conserva artefacto CI, pero no reemplaza assets instalables con APK de clave efímera. Publicación explícita del APK comprobado; pruebas futuras van como pre-release y bases `X.Y.0` como release normal una vez cerradas, conforme a la instrucción permanente del usuario.
+
+Las menciones anteriores de «sin push/tag/release» describen el cierre técnico previo a esta autorización y publicación; no son el estado actual. La puerta manual sigue pendiente para que el usuario pruebe esta descarga en su teléfono.
