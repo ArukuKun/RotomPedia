@@ -2,13 +2,20 @@ package com.duoc.rotompedia.data.index
 
 import androidx.room.withTransaction
 import com.duoc.rotompedia.data.PokemonFormCatalog
+import com.duoc.rotompedia.data.explorer.ExplorerEggGroup
 import com.duoc.rotompedia.data.local.AppDatabase
 import com.duoc.rotompedia.data.local.index.*
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class PokemonIndexImporter(private val db: AppDatabase, moshi: Moshi) {
+    // Immutable metadata from the validated bundled index, not personal Room data.
+    // Rehydrated even when Room already contains this snapshot (offline reopening).
+    private val eggs = MutableStateFlow<Map<Int, List<ExplorerEggGroup>>>(emptyMap())
+    val eggGroups: StateFlow<Map<Int, List<ExplorerEggGroup>>> = eggs
     private val envelopeAdapter = moshi.adapter(IndexEnvelope::class.java)
     private val payloadAdapter = moshi.adapter(IndexPayload::class.java)
 
@@ -19,7 +26,7 @@ class PokemonIndexImporter(private val db: AppDatabase, moshi: Moshi) {
         val metadataRevision = IndexValidator.sha256(PokemonFormCatalog.allForms.joinToString("\n") {
             "${it.nameEn}|${it.speciesId}|${it.displayName}|${it.formTag}"
         })
-        db.withTransaction {
+        val imported = db.withTransaction {
             val dao = db.pokemonIndexDao()
             val previous = dao.state()
             if (previous?.contentSha256 == envelope.contentSha256 && previous.metadataRevision == metadataRevision) return@withTransaction false
@@ -58,5 +65,11 @@ class PokemonIndexImporter(private val db: AppDatabase, moshi: Moshi) {
                 varietyCount = payload.varietyCount, formsComplete = false, importedAt = System.currentTimeMillis()))
             true
         }
+        val groups = payload.eggGroups.associateBy { it.id }
+        eggs.value = payload.speciesEggGroups.groupBy { it.speciesId }.mapValues { (_, links) -> links.map { link ->
+            val group = groups.getValue(link.eggGroupId)
+            ExplorerEggGroup(group.slug, group.nameEs ?: "${group.slug} (sin nombre español)")
+        } }
+        imported
     }
 }

@@ -17,7 +17,7 @@ import com.duoc.rotompedia.viewmodel.PokemonViewModelFactory
 fun PokedexScreen(onPokemonClick: (String) -> Unit, onNavigateBack: () -> Unit, viewModelFactory: PokemonViewModelFactory) {
     val pokemonViewModel: PokemonViewModel = viewModel(factory = viewModelFactory)
     val scope = rememberCoroutineScope()
-    val explorer = remember(pokemonViewModel) { pokemonViewModel.createExplorer(scope) }
+    val explorer = remember(pokemonViewModel) { pokemonViewModel.createExplorer(scope, nationalOnly = true) }
     val favorites by pokemonViewModel.favoritePokemonIds.collectAsState()
     Scaffold(topBar = {
         TopAppBar(title = { Text("Pokédex") }, navigationIcon = {

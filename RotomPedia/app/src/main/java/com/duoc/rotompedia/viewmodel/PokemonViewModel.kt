@@ -174,8 +174,8 @@ class PokemonViewModel(
     // Índice compartido de Pokédex, selector y etiquetas nacionales.
     val explorerEntries = pokemonRepository.observeExplorer()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    fun createExplorer(scope: kotlinx.coroutines.CoroutineScope) =
-        PokemonExplorerController(scope, pokemonRepository, favoritePokemonIds)
+    fun createExplorer(scope: kotlinx.coroutines.CoroutineScope, nationalOnly: Boolean = false) =
+        PokemonExplorerController(scope, pokemonRepository, favoritePokemonIds, nationalOnly)
 
     fun toggleFavorite(pokemonId: Int, pokemonName: String, isCurrentlyFavorite: Boolean) {
         val owner = sessions.capture()

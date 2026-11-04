@@ -28,6 +28,28 @@ class IndexTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             generator.validate_payload(payload)
 
+    def test_egg_groups_cover_all_species_with_pinned_relationships(self):
+        payload = self.bundled()
+        self.assertTrue(payload["eggGroupsComplete"])
+        self.assertEqual(15, len(payload["eggGroups"]))
+        self.assertEqual(1304, len(payload["speciesEggGroups"]))
+        self.assertEqual({1, 7}, {r["eggGroupId"] for r in payload["speciesEggGroups"] if r["speciesId"] == 1})
+        self.assertEqual("Campo", next(r["nameEs"] for r in payload["eggGroups"] if r["slug"] == "ground"))
+
+    def test_orphan_duplicate_or_missing_egg_group_is_rejected(self):
+        for kind in ("orphan", "duplicate", "missing", "unflagged"):
+            payload = self.bundled()
+            if kind in ("orphan", "unflagged"):
+                payload["speciesEggGroups"][0]["eggGroupId"] = 999
+                if kind == "unflagged":
+                    payload["eggGroupsComplete"] = False
+            elif kind == "duplicate":
+                payload["speciesEggGroups"].append(dict(payload["speciesEggGroups"][0]))
+            else:
+                payload["speciesEggGroups"] = [r for r in payload["speciesEggGroups"] if r["speciesId"] != 1]
+            with self.assertRaises(ValueError):
+                generator.validate_payload(payload)
+
     def test_orphan_form_and_duplicate_type_slot_rejected(self):
         for field, bad in (("forms", {"pokemonFormId": 99999, "pokemonId": 99999}),
                            ("varietyTypes", None)):

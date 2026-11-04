@@ -11,7 +11,12 @@ data class IndexPayload(val source: String, val speciesCount: Int, val varietyCo
     val species: List<SpeciesRecord>, val varieties: List<VarietyRecord>,
     val varietyTypes: List<VarietyTypeRecord> = emptyList(), val forms: List<FormRecord> = emptyList(),
     val formNames: List<FormNameRecord> = emptyList(), val referenceRevision: String? = null,
-    val explorerComplete: Boolean = false)
+    val explorerComplete: Boolean = false, val eggGroups: List<EggGroupRecord> = emptyList(),
+    val speciesEggGroups: List<SpeciesEggGroupRecord> = emptyList(), val eggGroupsComplete: Boolean = false)
+@JsonClass(generateAdapter = true)
+data class EggGroupRecord(val id: Int, val slug: String, val nameEs: String?)
+@JsonClass(generateAdapter = true)
+data class SpeciesEggGroupRecord(val speciesId: Int, val eggGroupId: Int)
 @JsonClass(generateAdapter = true)
 data class VarietyTypeRecord(val pokemonId: Int, val typeName: String, val slot: Int)
 @JsonClass(generateAdapter = true)
@@ -48,6 +53,17 @@ object IndexValidator {
         require(payload.varieties.all { it.pokemonId > 0 && it.speciesId in ids && it.slug.isNotBlank() })
         require(payload.varieties.groupBy { it.speciesId }.keys == ids)
         require(payload.varieties.groupBy { it.speciesId }.values.all { list -> list.count { it.isDefault } == 1 })
+        if (payload.eggGroupsComplete || payload.eggGroups.isNotEmpty() || payload.speciesEggGroups.isNotEmpty()) {
+            val groups = payload.eggGroups
+            val links = payload.speciesEggGroups
+            val groupIds = groups.map { it.id }.toSet()
+            require(payload.referenceRevision?.matches(Regex("[a-f0-9]{40}")) == true)
+            require(groups.isNotEmpty() && groups.distinctBy { it.id }.size == groups.size && groups.distinctBy { it.slug }.size == groups.size)
+            require(groups.all { it.id > 0 && it.slug.isNotBlank() })
+            require(links.all { it.speciesId in ids && it.eggGroupId in groupIds })
+            require(links.distinct().size == links.size && links.map { it.speciesId }.toSet() == ids)
+            require(links.groupBy { it.speciesId }.values.all { it.size in 1..2 })
+        }
         if (payload.explorerComplete) {
             val pokemonIds = payload.varieties.map { it.pokemonId }.toSet()
             require(payload.referenceRevision?.matches(Regex("[a-f0-9]{40}")) == true)

@@ -149,7 +149,27 @@ def enrich_payload(payload, downloader=None):
                             for row in rows("pokemon_form_names.csv") if int(row["pokemon_form_id"]) in form_ids
                             and row["local_language_id"] == "7" and (row["pokemon_name"] or row["form_name"])]
     payload["referenceRevision"] = revision
+    enrich_egg_groups(payload, downloader)
     payload["explorerComplete"] = True
+    validate_payload(payload)
+    return payload
+
+
+def enrich_egg_groups(payload, downloader):
+    """Extend the existing snapshot, keeping its identities and pinned revision."""
+    revision = payload["referenceRevision"]
+    if not re.fullmatch(r"[a-f0-9]{40}", revision):
+        raise ValueError("Invalid upstream revision")
+    base = CSV_BASE.replace("/master/", f"/{revision}/")
+    def rows(name):
+        return list(csv.DictReader(io.StringIO(downloader(base + name))))
+    names = {int(r["egg_group_id"]): r["name"] for r in rows("egg_group_prose.csv") if r["local_language_id"] == "7"}
+    payload["eggGroups"] = [{"id": int(r["id"]), "slug": r["identifier"], "nameEs": names.get(int(r["id"]))}
+                            for r in rows("egg_groups.csv")]
+    species_ids = {r["speciesId"] for r in payload["species"]}
+    payload["speciesEggGroups"] = [{"speciesId": int(r["species_id"]), "eggGroupId": int(r["egg_group_id"])}
+                                   for r in rows("pokemon_egg_groups.csv") if int(r["species_id"]) in species_ids]
+    payload["eggGroupsComplete"] = True
     validate_payload(payload)
     return payload
 
@@ -172,6 +192,19 @@ def validate_payload(payload):
         raise ValueError("Orphan or invalid variety")
     if any(sum(row["isDefault"] for row in varieties if row["speciesId"] == sid) != 1 for sid in ids):
         raise ValueError("Each species needs exactly one default variety")
+    if payload.get("eggGroupsComplete", False) or payload.get("eggGroups") or payload.get("speciesEggGroups"):
+        groups, links = payload.get("eggGroups", []), payload.get("speciesEggGroups", [])
+        if not re.fullmatch(r"[a-f0-9]{40}", payload.get("referenceRevision", "")):
+            raise ValueError("Invalid egg group reference revision")
+        group_ids = {r["id"] for r in groups}
+        if not groups or len(group_ids) != len(groups) or len({r["slug"] for r in groups}) != len(groups) or any(r["id"] <= 0 or not r["slug"] for r in groups):
+            raise ValueError("Invalid egg groups")
+        if any(r["speciesId"] not in ids or r["eggGroupId"] not in group_ids for r in links):
+            raise ValueError("Orphan egg group relationship")
+        if len({(r["speciesId"], r["eggGroupId"]) for r in links}) != len(links):
+            raise ValueError("Duplicate egg group relationship")
+        if {r["speciesId"] for r in links} != ids or any(sum(r["speciesId"] == sid for r in links) not in (1, 2) for sid in ids):
+            raise ValueError("Incomplete egg group coverage")
     if payload.get("explorerComplete", False):
         if not re.fullmatch(r"[a-f0-9]{40}", payload.get("referenceRevision", "")):
             raise ValueError("Invalid upstream revision")
@@ -232,10 +265,19 @@ def main():
     parser.add_argument("--workers", type=int, default=4, choices=range(1, 5))
     parser.add_argument("--refresh", action="store_true")
     parser.add_argument("--verify-only", action="store_true")
+    parser.add_argument("--enrich-eggs-only", action="store_true", help="Extend the existing verified snapshot at its pinned revision; preserve all identities")
     parser.add_argument("--previous", help="Reject disappearing/reassigned identities against this snapshot")
     args = parser.parse_args()
     if args.verify_only:
         payload = verify(json.loads(Path(args.output).read_text(encoding="utf-8")))
+    elif args.enrich_eggs_only:
+        previous = verify(json.loads(Path(args.output).read_text(encoding="utf-8")))
+        def download(url):
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "RotomPedia-index-generator/2"}), timeout=60) as response:
+                return response.read().decode("utf-8")
+        payload = enrich_egg_groups(json.loads(canonical(previous)), download)
+        check_changes(previous, payload)
+        atomic_write(args.output, json.dumps(envelope_for(payload), ensure_ascii=False, indent=2) + "\n")
     else:
         client = Client(args.cache, args.refresh)
         national = client.get(SOURCE, max_age=0)
