@@ -3,6 +3,9 @@ package com.duoc.rotompedia.data.index
 import androidx.room.withTransaction
 import com.duoc.rotompedia.data.PokemonFormCatalog
 import com.duoc.rotompedia.data.explorer.ExplorerEggGroup
+import com.duoc.rotompedia.data.explorer.ExplorerMetadata
+import com.duoc.rotompedia.data.explorer.ExplorerRegionalDex
+import com.duoc.rotompedia.data.explorer.ExplorerDexNumber
 import com.duoc.rotompedia.data.local.AppDatabase
 import com.duoc.rotompedia.data.local.index.*
 import com.squareup.moshi.Moshi
@@ -14,8 +17,8 @@ import kotlinx.coroutines.flow.StateFlow
 class PokemonIndexImporter(private val db: AppDatabase, moshi: Moshi) {
     // Immutable metadata from the validated bundled index, not personal Room data.
     // Rehydrated even when Room already contains this snapshot (offline reopening).
-    private val eggs = MutableStateFlow<Map<Int, List<ExplorerEggGroup>>>(emptyMap())
-    val eggGroups: StateFlow<Map<Int, List<ExplorerEggGroup>>> = eggs
+    private val explorer = MutableStateFlow(ExplorerMetadata())
+    val metadata: StateFlow<ExplorerMetadata> = explorer
     private val envelopeAdapter = moshi.adapter(IndexEnvelope::class.java)
     private val payloadAdapter = moshi.adapter(IndexPayload::class.java)
 
@@ -66,10 +69,15 @@ class PokemonIndexImporter(private val db: AppDatabase, moshi: Moshi) {
             true
         }
         val groups = payload.eggGroups.associateBy { it.id }
-        eggs.value = payload.speciesEggGroups.groupBy { it.speciesId }.mapValues { (_, links) -> links.map { link ->
+        val eggs = payload.speciesEggGroups.groupBy { it.speciesId }.mapValues { (_, links) -> links.map { link ->
             val group = groups.getValue(link.eggGroupId)
             ExplorerEggGroup(group.slug, group.nameEs ?: "${group.slug} (sin nombre español)")
         } }
+        val dexes = payload.regionalDexes.associate { it.id to ExplorerRegionalDex(it.id, it.region, it.slug, it.nameEs, it.versionGroups) }
+        val numbers = payload.regionalDexNumbers.groupBy { it.speciesId }.mapValues { (_, rows) ->
+            rows.map { ExplorerDexNumber(dexes.getValue(it.dexId), it.number) }
+        }
+        explorer.value = ExplorerMetadata(eggs, numbers, ready = true)
         imported
     }
 }

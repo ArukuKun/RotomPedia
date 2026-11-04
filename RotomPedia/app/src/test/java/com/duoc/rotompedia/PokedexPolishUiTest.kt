@@ -103,7 +103,7 @@ class PokedexPolishUiTest {
     }
 
     @Test fun `Gigamax filter is available and navigates to exact variety not national id`() {
-        compose.onNodeWithText("Filtros", substring = false).performClick()
+        compose.onNodeWithText("Filtrar", substring = false).performClick()
         compose.onNodeWithText("Gigamax", substring = false).performScrollTo().performClick()
         compose.waitUntil(20_000) { controller.result.value.entries.size == 34 }
         compose.onNodeWithText("Aplicar y cerrar").performClick()
@@ -115,7 +115,7 @@ class PokedexPolishUiTest {
     }
 
     @Test fun `egg group filter from shared Spanish metadata is interactive`() {
-        compose.onNodeWithText("Filtros", substring = false).performClick()
+        compose.onNodeWithText("Filtrar", substring = false).performClick()
         compose.onNodeWithText("Ditto", substring = false).performScrollTo().performClick()
         compose.waitUntil(20_000) { controller.result.value.entries.map { it.slug } == listOf("ditto") }
         compose.onNodeWithText("Aplicar y cerrar").performClick()

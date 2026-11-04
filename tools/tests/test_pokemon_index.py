@@ -28,6 +28,28 @@ class IndexTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             generator.validate_payload(payload)
 
+    def test_regional_dexes_pin_Hisui_starter_order_and_source_editions(self):
+        payload = self.bundled()
+        self.assertTrue(payload["regionalDexesComplete"])
+        self.assertEqual(1445, len(payload["regionalDexNumbers"]))
+        hisui = next(r for r in payload["regionalDexes"] if r["region"] == "hisui")
+        self.assertEqual(["legends-arceus"], hisui["versionGroups"])
+        numbers = {r["speciesId"]: r["number"] for r in payload["regionalDexNumbers"] if r["dexId"] == hisui["id"]}
+        self.assertEqual([3, 6, 9], [numbers[s] for s in (724, 157, 503)])
+        self.assertEqual(242, len(numbers))
+
+    def test_regional_orphan_duplicate_and_incomplete_records_rejected(self):
+        for kind in ("orphan", "duplicate", "missing"):
+            payload = self.bundled()
+            if kind == "orphan":
+                payload["regionalDexNumbers"][0]["speciesId"] = 999999
+            elif kind == "duplicate":
+                payload["regionalDexNumbers"].append(dict(payload["regionalDexNumbers"][0]))
+            else:
+                payload["regionalDexNumbers"] = [r for r in payload["regionalDexNumbers"] if r["dexId"] != 30]
+            with self.assertRaises(ValueError):
+                generator.validate_payload(payload)
+
     def test_egg_groups_cover_all_species_with_pinned_relationships(self):
         payload = self.bundled()
         self.assertTrue(payload["eggGroupsComplete"])

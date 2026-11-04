@@ -12,7 +12,13 @@ data class IndexPayload(val source: String, val speciesCount: Int, val varietyCo
     val varietyTypes: List<VarietyTypeRecord> = emptyList(), val forms: List<FormRecord> = emptyList(),
     val formNames: List<FormNameRecord> = emptyList(), val referenceRevision: String? = null,
     val explorerComplete: Boolean = false, val eggGroups: List<EggGroupRecord> = emptyList(),
-    val speciesEggGroups: List<SpeciesEggGroupRecord> = emptyList(), val eggGroupsComplete: Boolean = false)
+    val speciesEggGroups: List<SpeciesEggGroupRecord> = emptyList(), val eggGroupsComplete: Boolean = false,
+    val regionalDexes: List<RegionalDexRecord> = emptyList(), val regionalDexNumbers: List<RegionalDexNumberRecord> = emptyList(),
+    val regionalDexesComplete: Boolean = false)
+@JsonClass(generateAdapter = true)
+data class RegionalDexRecord(val id: Int, val region: String, val slug: String, val nameEs: String, val versionGroups: List<String>)
+@JsonClass(generateAdapter = true)
+data class RegionalDexNumberRecord(val dexId: Int, val speciesId: Int, val number: Int)
 @JsonClass(generateAdapter = true)
 data class EggGroupRecord(val id: Int, val slug: String, val nameEs: String?)
 @JsonClass(generateAdapter = true)
@@ -53,6 +59,18 @@ object IndexValidator {
         require(payload.varieties.all { it.pokemonId > 0 && it.speciesId in ids && it.slug.isNotBlank() })
         require(payload.varieties.groupBy { it.speciesId }.keys == ids)
         require(payload.varieties.groupBy { it.speciesId }.values.all { list -> list.count { it.isDefault } == 1 })
+        if (payload.regionalDexesComplete || payload.regionalDexes.isNotEmpty() || payload.regionalDexNumbers.isNotEmpty()) {
+            val dexes = payload.regionalDexes
+            val numbers = payload.regionalDexNumbers
+            val dexIds = dexes.map { it.id }.toSet()
+            require(payload.referenceRevision?.matches(Regex("[a-f0-9]{40}")) == true)
+            require(dexes.size == 4 && dexIds.size == 4 && dexes.map { it.region }.toSet() == setOf("alola", "galar", "hisui", "paldea"))
+            require(dexes.all { it.id > 0 && it.slug.isNotBlank() && it.nameEs.isNotBlank() && it.versionGroups.isNotEmpty() })
+            require(numbers.all { it.dexId in dexIds && it.speciesId in ids && it.number > 0 })
+            require(numbers.distinctBy { it.dexId to it.speciesId }.size == numbers.size)
+            require(numbers.distinctBy { it.dexId to it.number }.size == numbers.size)
+            require(numbers.map { it.dexId }.toSet() == dexIds)
+        }
         if (payload.eggGroupsComplete || payload.eggGroups.isNotEmpty() || payload.speciesEggGroups.isNotEmpty()) {
             val groups = payload.eggGroups
             val links = payload.speciesEggGroups

@@ -4,22 +4,27 @@ import com.duoc.rotompedia.data.PokemonFormCatalog
 import com.duoc.rotompedia.data.local.index.*
 
 enum class VarietyCategory(val label: String) {
-    ALL("Todas"), SPECIES("Especies"), STABLE("Variedades estables"), REGIONAL("Regionales"),
+    ALL("Todas"), SPECIES("Especies"), STABLE("Forma alternativa"), REGIONAL("Regionales"),
     MEGA("Megaevoluciones"), GMAX("Gigamax"), BATTLE("Combate"), OTHER("Cosméticas / otras")
 }
 
 data class ExplorerEggGroup(val slug: String, val label: String)
+data class ExplorerRegionalDex(val id: Int, val region: String, val slug: String, val name: String, val versionGroups: List<String>)
+data class ExplorerDexNumber(val dex: ExplorerRegionalDex, val number: Int)
+data class ExplorerMetadata(val eggGroups: Map<Int, List<ExplorerEggGroup>> = emptyMap(),
+    val regionalNumbers: Map<Int, List<ExplorerDexNumber>> = emptyMap(), val ready: Boolean = false)
 
 data class ExplorerPokemon(
     val speciesId: Int, val nationalNumber: Int, val pokemonId: Int, val pokemonFormId: Int?,
     val speciesName: String, val slug: String, val displayName: String, val isDefault: Boolean,
     val generationId: Int, val category: VarietyCategory, val regionalOrigin: String?,
     val types: List<String>, val formOrder: Int, val aliases: List<String> = emptyList(),
-    val eggGroups: List<ExplorerEggGroup> = emptyList()
+    val eggGroups: List<ExplorerEggGroup> = emptyList(), val regionalNumbers: List<ExplorerDexNumber> = emptyList()
 ) {
     val numberLabel get() = "#${nationalNumber.toString().padStart(3, '0')}"
     val isNamedDefault get() = isDefault && displayName != speciesName
     val isVariant get() = !isDefault || isNamedDefault
+    val isTotem get() = "totem" in slug.split('-')
 }
 
 data class ExplorerFilter(val query: String = "", val category: VarietyCategory = VarietyCategory.ALL,
@@ -27,7 +32,8 @@ data class ExplorerFilter(val query: String = "", val category: VarietyCategory 
     val favoritesOnly: Boolean = false, val eggGroup: String? = null)
 data class ExplorerGroup(val speciesId: Int, val nationalNumber: Int, val speciesName: String,
     val matching: List<ExplorerPokemon>, val primary: ExplorerPokemon, val autoExpanded: Boolean)
-data class ExplorerResult(val groups: List<ExplorerGroup> = emptyList(), val speciesCount: Int = 0, val variantCount: Int = 0) {
+data class ExplorerResult(val groups: List<ExplorerGroup> = emptyList(), val speciesCount: Int = 0, val variantCount: Int = 0,
+    val ready: Boolean = false, val regionalOrder: ExplorerRegionalDex? = null, val missingRegionalNumbers: Int = 0) {
     val entries get() = groups.flatMap { it.matching }
 }
 
@@ -49,7 +55,7 @@ object PokemonExplorer {
     fun region(slug: String): String? = listOf("alola", "galar", "hisui", "paldea").firstOrNull { it in slug.split('-') }
 
     fun entries(rows: List<ExplorerSpeciesRelation>, formNames: List<IndexedName>,
-        eggGroups: Map<Int, List<ExplorerEggGroup>> = emptyMap()): List<ExplorerPokemon> {
+        eggGroups: Map<Int, List<ExplorerEggGroup>> = emptyMap(), regionalNumbers: Map<Int, List<ExplorerDexNumber>> = emptyMap()): List<ExplorerPokemon> {
         val localizedForms = formNames.filter { it.language == "es" }.groupBy { it.resourceId }
         return rows.flatMap { row ->
             val speciesName = row.names.firstOrNull { it.resourceType == "species" && it.language == "es" }?.name
@@ -71,7 +77,7 @@ object PokemonExplorer {
                     speciesName, v.slug, name, v.isDefault, row.species.generationId, category, region(v.slug),
                     relation.types.sortedBy { it.slot }.map { it.typeName }, form?.formOrder ?: 0,
                     relation.names.filter { it.resourceType == "variety" }.map { it.name } + row.names.filter { it.resourceType == "species" }.map { it.name },
-                    eggGroups[row.species.speciesId].orEmpty())
+                    eggGroups[row.species.speciesId].orEmpty(), regionalNumbers[row.species.speciesId].orEmpty())
             }
         }.sortedWith(compareBy<ExplorerPokemon> { it.nationalNumber }.thenByDescending { it.isDefault }.thenBy { it.formOrder }.thenBy { it.slug })
     }
@@ -86,6 +92,8 @@ object PokemonExplorer {
         // Pokédex: national species unless the user explicitly requests a form category/origin.
         // Picker: retains all exact varieties and the existing grouped behaviour.
         val speciesOnly = nationalOnly && filter.category in setOf(VarietyCategory.ALL, VarietyCategory.SPECIES) && filter.regionalOrigin == null
+        val regionalOrder = if (nationalOnly && filter.regionalOrigin != null) entries.asSequence().flatMap { it.regionalNumbers }
+            .firstOrNull { it.dex.region == filter.regionalOrigin }?.dex else null
         val groups = entries.groupBy { it.speciesId }.values.mapNotNull { all ->
             val primary = all.firstOrNull { it.isDefault } ?: return@mapNotNull null
             val matching = all.filter { pokemon ->
@@ -94,6 +102,7 @@ object PokemonExplorer {
                     .plus(pokemon.types.flatMap { listOf(it, com.duoc.rotompedia.util.traducirTipo(it)) }).joinToString(" "))
                 (if (numeric != null) pokemon.nationalNumber == numeric else words.all { it in text }) &&
                     (!speciesOnly || pokemon.isDefault) &&
+                    (!nationalOnly || !pokemon.isTotem) &&
                     (q != "mega" || pokemon.category == VarietyCategory.MEGA) &&
                     (filter.category == VarietyCategory.ALL || if (filter.category == VarietyCategory.SPECIES) pokemon.isDefault else pokemon.category == filter.category) &&
                     (filter.generationId == null || pokemon.generationId == filter.generationId) &&
@@ -104,7 +113,11 @@ object PokemonExplorer {
             }
             if (matching.isEmpty()) null else ExplorerGroup(primary.speciesId, primary.nationalNumber, primary.speciesName,
                 matching, primary, active)
-        }.sortedBy { it.nationalNumber }
-        return ExplorerResult(groups, groups.size, if (speciesOnly) 0 else groups.sumOf { it.matching.count(ExplorerPokemon::isVariant) })
+        }.sortedWith(compareBy<ExplorerGroup> { group ->
+            if (regionalOrder == null) group.nationalNumber else group.primary.regionalNumbers.firstOrNull { it.dex.id == regionalOrder.id }?.number ?: Int.MAX_VALUE
+        }.thenBy { it.nationalNumber })
+        val missing = if (regionalOrder == null) 0 else groups.count { group -> group.primary.regionalNumbers.none { it.dex.id == regionalOrder.id } }
+        return ExplorerResult(groups, groups.size, if (speciesOnly) 0 else groups.sumOf { it.matching.count(ExplorerPokemon::isVariant) },
+            ready = true, regionalOrder = regionalOrder, missingRegionalNumbers = missing)
     }
 }

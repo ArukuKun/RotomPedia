@@ -24,13 +24,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.duoc.rotompedia.data.explorer.ExplorerPokemon
+import com.duoc.rotompedia.data.explorer.ExplorerRegionalDex
 import com.duoc.rotompedia.data.images.PokemonImageStyle
 
 /** Flat national results only. The team picker retains its grouped variety browser. */
 @Composable
 internal fun PokedexResults(entries: List<ExplorerPokemon>, grid: Boolean, favorites: Set<Int>,
     onFavorite: ((ExplorerPokemon) -> Unit)?, onChoose: (ExplorerPokemon) -> Unit, modifier: Modifier = Modifier,
-    speciesNames: Boolean = true) {
+    speciesNames: Boolean = true, regionalOrder: ExplorerRegionalDex? = null) {
     val listState = rememberLazyListState()
     val gridState = rememberLazyGridState()
     // Some upstream variants share a localized name (e.g. two Toxtricity Gigamax).
@@ -40,12 +41,12 @@ internal fun PokedexResults(entries: List<ExplorerPokemon>, grid: Boolean, favor
         modifier = modifier.testTag("pokedex-grid"), contentPadding = PaddingValues(vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(entries, key = { it.pokemonId }) { pokemon ->
-            PokedexCard(pokemon, true, favorites, onFavorite, onChoose, speciesNames, pokemon.displayName in ambiguousNames)
+            PokedexCard(pokemon, true, favorites, onFavorite, onChoose, speciesNames, pokemon.displayName in ambiguousNames, regionalOrder)
         }
     } else LazyColumn(state = listState, modifier = modifier.testTag("pokedex-list"),
         contentPadding = PaddingValues(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(entries, key = { it.pokemonId }) { pokemon ->
-            PokedexCard(pokemon, false, favorites, onFavorite, onChoose, speciesNames, pokemon.displayName in ambiguousNames)
+            PokedexCard(pokemon, false, favorites, onFavorite, onChoose, speciesNames, pokemon.displayName in ambiguousNames, regionalOrder)
         }
     }
 }
@@ -53,14 +54,17 @@ internal fun PokedexResults(entries: List<ExplorerPokemon>, grid: Boolean, favor
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PokedexCard(pokemon: ExplorerPokemon, grid: Boolean, favorites: Set<Int>,
-    onFavorite: ((ExplorerPokemon) -> Unit)?, onChoose: (ExplorerPokemon) -> Unit, speciesNames: Boolean, showTechnicalName: Boolean) {
+    onFavorite: ((ExplorerPokemon) -> Unit)?, onChoose: (ExplorerPokemon) -> Unit, speciesNames: Boolean, showTechnicalName: Boolean,
+    regionalOrder: ExplorerRegionalDex?) {
     val name = if (speciesNames && pokemon.isDefault) pokemon.speciesName else pokemon.displayName
+    val regionalNumber = pokemon.regionalNumbers.firstOrNull { it.dex.id == regionalOrder?.id }
     Card(Modifier.fillMaxWidth().testTag("pokemon_${pokemon.pokemonId}").clickable { onChoose(pokemon) },
         shape = RoundedCornerShape(14.dp), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
         if (grid) Column(Modifier.fillMaxWidth().padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)) {
             PokedexSprite(pokemon)
             Text(pokemon.numberLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            regionalNumber?.let { Text("${it.dex.name} #${it.number.toString().padStart(3, '0')}", fontSize = 11.sp) }
             Text(name, fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.Center)
             if (showTechnicalName) Text("Forma: ${pokemon.slug}", fontSize = 10.sp, textAlign = TextAlign.Center)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -72,6 +76,7 @@ private fun PokedexCard(pokemon: ExplorerPokemon, grid: Boolean, favorites: Set<
             PokedexSprite(pokemon)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(pokemon.numberLabel, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                regionalNumber?.let { Text("${it.dex.name} #${it.number.toString().padStart(3, '0')}", fontSize = 12.sp) }
                 Text(name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 if (showTechnicalName) Text("Forma: ${pokemon.slug}", fontSize = 11.sp)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {

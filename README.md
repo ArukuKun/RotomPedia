@@ -14,6 +14,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **Pulido post-RC1:** Pokédex nacional sin desplegables, proporciones originales restauradas, grupos huevo, Gigamax y Lista/Cuadrícula de tres columnas. Publicado como `v3.5.0-rc2` / `30502`, con la misma firma compatible que RC1; **no incluye el resto del backlog**. Evidencias y pendientes en [§4.1 del Plan Maestro](docs/ROTOMPEDIA_PLAN_MAESTRO.md#41-estabilización-posterior-a-v350-rc1--pokédex-alcance-inmediato-autorizado).
 
+**Observaciones de RC2:** preparando `v3.5.0-rc3` / `30503`: botón de filtros visible con icono, filtros/vista/scroll restaurados al volver de la ficha, orden regional verificado (Hisui con sus iniciales al comienzo) y retirada del filtro general «Variedades estables» y duplicados Tótem de Pokédex, sin borrar sus identidades. 86 pruebas Kotlin/23 Python correctas; validación de teléfono pendiente. Detalles en §4.2 del único Plan Maestro.
+
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
 

@@ -150,6 +150,7 @@ def enrich_payload(payload, downloader=None):
                             and row["local_language_id"] == "7" and (row["pokemon_name"] or row["form_name"])]
     payload["referenceRevision"] = revision
     enrich_egg_groups(payload, downloader)
+    enrich_regional_dexes(payload, downloader)
     payload["explorerComplete"] = True
     validate_payload(payload)
     return payload
@@ -174,6 +175,36 @@ def enrich_egg_groups(payload, downloader):
     return payload
 
 
+def enrich_regional_dexes(payload, downloader):
+    """Explicit reference editions, never an inferred order or merged DLC numbering."""
+    revision = payload["referenceRevision"]
+    if not re.fullmatch(r"[a-f0-9]{40}", revision):
+        raise ValueError("Invalid upstream revision")
+    base = CSV_BASE.replace("/master/", f"/{revision}/")
+    def rows(name):
+        return list(csv.DictReader(io.StringIO(downloader(base + name))))
+    chosen = {"alola": "updated-alola", "galar": "galar", "hisui": "hisui", "paldea": "paldea"}
+    regions = {r["id"]: r["identifier"] for r in rows("regions.csv")}
+    names = {r["pokedex_id"]: r["name"] for r in rows("pokedex_prose.csv") if r["local_language_id"] == "7"}
+    versions = {r["id"]: r["identifier"] for r in rows("version_groups.csv")}
+    links = rows("pokedex_version_groups.csv")
+    dexes = []
+    for r in rows("pokedexes.csv"):
+        region = regions.get(r["region_id"])
+        if chosen.get(region) == r["identifier"]:
+            dexes.append({"id": int(r["id"]), "region": region, "slug": r["identifier"],
+                          "nameEs": names.get(r["id"], r["identifier"]),
+                          "versionGroups": sorted({versions[x["version_group_id"]] for x in links if x["pokedex_id"] == r["id"]})})
+    dex_ids = {r["id"] for r in dexes}
+    species_ids = {r["speciesId"] for r in payload["species"]}
+    payload["regionalDexes"] = dexes
+    payload["regionalDexNumbers"] = [{"dexId": int(r["pokedex_id"]), "speciesId": int(r["species_id"]), "number": int(r["pokedex_number"])}
+                                     for r in rows("pokemon_dex_numbers.csv") if int(r["pokedex_id"]) in dex_ids and int(r["species_id"]) in species_ids]
+    payload["regionalDexesComplete"] = True
+    validate_payload(payload)
+    return payload
+
+
 def validate_payload(payload):
     species, varieties = payload["species"], payload["varieties"]
     if payload["source"] != SOURCE or not species:
@@ -192,6 +223,21 @@ def validate_payload(payload):
         raise ValueError("Orphan or invalid variety")
     if any(sum(row["isDefault"] for row in varieties if row["speciesId"] == sid) != 1 for sid in ids):
         raise ValueError("Each species needs exactly one default variety")
+    if payload.get("regionalDexesComplete") or payload.get("regionalDexes") or payload.get("regionalDexNumbers"):
+        dexes, numbers = payload.get("regionalDexes", []), payload.get("regionalDexNumbers", [])
+        if not re.fullmatch(r"[a-f0-9]{40}", payload.get("referenceRevision", "")):
+            raise ValueError("Invalid regional dex reference")
+        dex_ids = {r["id"] for r in dexes}
+        if {r["region"] for r in dexes} != {"alola", "galar", "hisui", "paldea"} or len(dexes) != 4 or len(dex_ids) != 4:
+            raise ValueError("Invalid regional dex identities")
+        if any(r["id"] <= 0 or not r["slug"] or not r["nameEs"] or not r["versionGroups"] for r in dexes):
+            raise ValueError("Invalid regional dex context")
+        if any(r["dexId"] not in dex_ids or r["speciesId"] not in ids or r["number"] <= 0 for r in numbers):
+            raise ValueError("Orphan regional dex number")
+        if any(len({(r["dexId"], r[key]) for r in numbers}) != len(numbers) for key in ("speciesId", "number")):
+            raise ValueError("Duplicate regional dex number")
+        if {r["dexId"] for r in numbers} != dex_ids:
+            raise ValueError("Incomplete regional dex coverage")
     if payload.get("eggGroupsComplete", False) or payload.get("eggGroups") or payload.get("speciesEggGroups"):
         groups, links = payload.get("eggGroups", []), payload.get("speciesEggGroups", [])
         if not re.fullmatch(r"[a-f0-9]{40}", payload.get("referenceRevision", "")):
@@ -266,16 +312,18 @@ def main():
     parser.add_argument("--refresh", action="store_true")
     parser.add_argument("--verify-only", action="store_true")
     parser.add_argument("--enrich-eggs-only", action="store_true", help="Extend the existing verified snapshot at its pinned revision; preserve all identities")
+    parser.add_argument("--enrich-regions-only", action="store_true", help="Add verified regional dex orders at the existing pinned revision")
     parser.add_argument("--previous", help="Reject disappearing/reassigned identities against this snapshot")
     args = parser.parse_args()
     if args.verify_only:
         payload = verify(json.loads(Path(args.output).read_text(encoding="utf-8")))
-    elif args.enrich_eggs_only:
+    elif args.enrich_eggs_only or args.enrich_regions_only:
         previous = verify(json.loads(Path(args.output).read_text(encoding="utf-8")))
         def download(url):
             with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "RotomPedia-index-generator/2"}), timeout=60) as response:
                 return response.read().decode("utf-8")
-        payload = enrich_egg_groups(json.loads(canonical(previous)), download)
+        enrich = enrich_regional_dexes if args.enrich_regions_only else enrich_egg_groups
+        payload = enrich(json.loads(canonical(previous)), download)
         check_changes(previous, payload)
         atomic_write(args.output, json.dumps(envelope_for(payload), ensure_ascii=False, indent=2) + "\n")
     else:

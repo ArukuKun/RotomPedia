@@ -7,8 +7,7 @@ import kotlinx.coroutines.flow.*
 
 /** Per-screen state. Both consumers use the same repository and pure filter engine. */
 class PokemonExplorerController(scope: CoroutineScope, repository: PokemonRepository, favorites: Flow<Set<Int>>,
-    val nationalOnly: Boolean = false) {
-    val filter = MutableStateFlow(ExplorerFilter())
+    val nationalOnly: Boolean = false, val filter: MutableStateFlow<ExplorerFilter> = MutableStateFlow(ExplorerFilter())) {
     private val initializing = MutableStateFlow(true)
     private val error = MutableStateFlow<String?>(null)
     val loading: StateFlow<Boolean> = initializing
@@ -26,7 +25,8 @@ class PokemonExplorerController(scope: CoroutineScope, repository: PokemonReposi
         emit(emptyList())
     }.stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
     val result = combine(entries, filter, favorites) { entries, filters, ids ->
-        PokemonExplorer.filter(entries, filters, ids, nationalOnly)
+        // Do not mount/restore lazy positions against an empty, not-yet-loaded index.
+        if (entries.isEmpty()) ExplorerResult() else PokemonExplorer.filter(entries, filters, ids, nationalOnly)
     }.flowOn(Dispatchers.Default).catch { e ->
         if (e is CancellationException) throw e
         error.value = "No se pudo consultar el índice nacional."

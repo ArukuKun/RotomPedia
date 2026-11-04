@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.duoc.rotompedia.data.explorer.*
+import com.duoc.rotompedia.data.items.ItemLabels
 import com.duoc.rotompedia.util.traducirTipo
 import com.duoc.rotompedia.viewmodel.*
 
@@ -52,9 +54,15 @@ fun PokemonExplorerContent(
         OutlinedTextField(value = filters.query, onValueChange = { controller.filter.value = filters.copy(query = it) },
             label = { Text("Nombre, forma o número nacional") }, singleLine = true, modifier = Modifier.fillMaxWidth())
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            OutlinedButton(onClick = { showFilters = true },
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)) {
+                Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Filtrar")
+            }
             Text(if (controller.nationalOnly) "${result.entries.size} resultados · ${result.speciesCount} especies"
-                else "${result.speciesCount} especies · ${result.variantCount} variantes", fontSize = 12.sp)
-            TextButton(onClick = { showFilters = !showFilters }) { Text(if (showFilters) "Cerrar filtros" else "Filtros") }
+                else "${result.speciesCount} especies · ${result.variantCount} variantes", fontSize = 12.sp,
+                modifier = Modifier.padding(start = 8.dp).weight(1f))
         }
         if (controller.nationalOnly) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(selected = !grid, onClick = { grid = false }, label = { Text("Lista") })
@@ -65,16 +73,20 @@ fun PokemonExplorerContent(
             filters.type?.let(::traducirTipo), filters.eggGroup?.let { slug -> eggGroups.firstOrNull { it.slug == slug }?.label ?: slug },
             "Favoritos".takeIf { filters.favoritesOnly })
         if (summary.isNotEmpty()) Text(summary.joinToString(" · "), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
-        Text("Orden nacional", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+        val regionalOrder = result.regionalOrder
+        Text(if (regionalOrder == null) "Orden nacional" else "Orden de ${regionalOrder.name} · ${regionalOrder.versionGroups.joinToString(" / ", transform = ItemLabels::version)}",
+            fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (result.missingRegionalNumbers > 0) Text("${result.missingRegionalNumbers} especies sin número en esta Pokédex regional: al final, por orden nacional. No se mezclan numeraciones de DLC.", fontSize = 11.sp)
+        if (loading || (!result.ready && error == null)) LinearProgressIndicator(Modifier.fillMaxWidth())
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        if (!loading && result.groups.isEmpty() && error == null) {
+        if (!loading && result.ready && result.groups.isEmpty() && error == null) {
             Text("No hay Pokémon con estos filtros.", modifier = Modifier.padding(vertical = 20.dp))
         }
-        if (controller.nationalOnly) {
+        if (controller.nationalOnly && result.ready) key(filters) {
             PokedexResults(result.entries, grid, favoriteIds, onFavorite, onChoose,
-                Modifier.fillMaxWidth().weight(1f), speciesNames = filters.category in setOf(VarietyCategory.ALL, VarietyCategory.SPECIES) && filters.regionalOrigin == null)
-        } else LazyColumn(Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp),
+                Modifier.fillMaxWidth().weight(1f), speciesNames = filters.category in setOf(VarietyCategory.ALL, VarietyCategory.SPECIES) && filters.regionalOrigin == null,
+                regionalOrder = regionalOrder)
+        } else if (!controller.nationalOnly) LazyColumn(Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp)) {
             items(result.groups, key = { "species_${it.speciesId}" }) { group ->
                 val children = group.matching.filter { it.isVariant }
@@ -151,13 +163,14 @@ private fun ExplorerFilters(filter: ExplorerFilter, allowFavorites: Boolean, egg
         Column(Modifier.verticalScroll(rememberScrollState()).padding(10.dp)) {
             Text("Categoría", fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                VarietyCategory.entries.forEach { category ->
+                VarietyCategory.entries.filterNot { it == VarietyCategory.STABLE }.forEach { category ->
                     FilterChip(selected = filter.category == category,
                         onClick = { onChange(filter.copy(category = category)) },
                         label = { Text(if (nationalOnly && category == VarietyCategory.ALL) "Nacional (especies)" else category.label, fontSize = 11.sp) })
                 }
             }
             if (nationalOnly) Text("El listado nacional muestra una entrada por especie. Elige una categoría u origen regional para consultar variedades; el número sigue siendo nacional.", fontSize = 12.sp)
+            if (nationalOnly) Text("Las formas alternativas se consultan en la ficha y el selector de equipos. Las variantes Tótem no se duplican en este listado; no se borran de los datos guardados.", fontSize = 12.sp)
             Text("Grupo huevo (dato de especie)", fontWeight = FontWeight.Bold)
             if (eggGroups.isEmpty()) Text("Sin grupos huevo documentados en este índice.", fontSize = 12.sp)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {

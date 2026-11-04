@@ -31,8 +31,8 @@ class DefaultPokemonRepository(
     override fun observeNational() = dao.observeNational()
     override fun observeVarieties(speciesId: Int) = dao.observeVarieties(speciesId)
     override fun observeIndexState() = dao.observeState()
-    override fun observeExplorer() = combine(dao.observeExplorer(), dao.observeFormNames(), importer.eggGroups) { rows, names, eggs ->
-        com.duoc.rotompedia.data.explorer.PokemonExplorer.entries(rows, names, eggs)
+    override fun observeExplorer() = combine(dao.observeExplorer(), dao.observeFormNames(), importer.metadata) { rows, names, metadata ->
+        if (!metadata.ready) emptyList() else com.duoc.rotompedia.data.explorer.PokemonExplorer.entries(rows, names, metadata.eggGroups, metadata.regionalNumbers)
     }.flowOn(Dispatchers.Default)
     override suspend fun ensureIndex() { indexMutex.withLock { importer.importJson(bundledIndex()) } }
     override suspend fun importIndex(json: String): Boolean = indexMutex.withLock { importer.importJson(json) }

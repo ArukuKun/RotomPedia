@@ -146,10 +146,13 @@ class PokemonExplorerTest {
         try {
             assertTrue(PokemonIndexImporter(db, moshi).importJson(json))
             val reopenedImporter = PokemonIndexImporter(db, moshi)
-            assertFalse(reopenedImporter.importJson(json)) // Room identity rows do not need reimporting.
             val repo = DefaultPokemonRepository(db, api, reopenedImporter) { json }
+            assertTrue(repo.observeExplorer().first().isEmpty()) // Do not restore a regional position using national-only metadata.
+            assertFalse(reopenedImporter.importJson(json)) // Room identity rows do not need reimporting.
             val entries = repo.observeExplorer().first()
             assertTrue(entries.all { it.eggGroups.isNotEmpty() })
+            assertEquals(listOf("decidueye-hisui", "typhlosion-hisui", "samurott-hisui"),
+                PokemonExplorer.filter(entries, ExplorerFilter(regionalOrigin = "hisui"), nationalOnly = true).entries.take(3).map { it.slug })
             assertEquals(listOf("ditto"), PokemonExplorer.filter(entries, ExplorerFilter(eggGroup = "ditto"), nationalOnly = true).entries.map { it.slug })
             Mockito.verifyNoInteractions(api)
         } finally { db.close() }
@@ -165,7 +168,7 @@ class PokemonExplorerTest {
         try {
             val importer = PokemonIndexImporter(db, moshi)
             importer.importJson(json)
-            val previous = importer.eggGroups.value
+            val previous = importer.metadata.value
             val state = db.pokemonIndexDao().state()
             val envelope = envelopeAdapter.fromJson(json)!!
             val payload = payloadAdapter.fromJson(envelope.payloadJson)!!
@@ -175,7 +178,46 @@ class PokemonExplorerTest {
             try { importer.importJson(envelopeAdapter.toJson(broken)); fail("Orphan relationship accepted") }
             catch (_: IllegalArgumentException) { }
             assertEquals(state, db.pokemonIndexDao().state())
-            assertEquals(previous, importer.eggGroups.value)
+            assertEquals(previous, importer.metadata.value)
         } finally { db.close() }
+    }
+
+    @Test fun `Hisui regional order starts with its three fully evolved starters and preserves national identity`() = checkEntries { entries ->
+        val result = PokemonExplorer.filter(entries, ExplorerFilter(regionalOrigin = "hisui"), nationalOnly = true)
+        assertEquals("hisui", result.regionalOrder!!.slug)
+        assertEquals(listOf("legends-arceus"), result.regionalOrder!!.versionGroups)
+        assertEquals(listOf("decidueye-hisui", "typhlosion-hisui", "samurott-hisui"), result.entries.take(3).map { it.slug })
+        assertEquals(listOf(724, 157, 503), result.entries.take(3).map { it.nationalNumber })
+        assertEquals(listOf(3, 6, 9), result.entries.take(3).map { p -> p.regionalNumbers.single { it.dex.region == "hisui" }.number })
+        assertEquals(16, result.entries.size)
+        assertEquals(0, result.missingRegionalNumbers)
+        assertEquals((1..1025).toList(), PokemonExplorer.filter(entries, ExplorerFilter(), nationalOnly = true).entries.map { it.nationalNumber })
+    }
+
+    @Test fun `regional reference editions are explicit and Galar DLC absences are never invented`() = checkEntries { entries ->
+        val result = PokemonExplorer.filter(entries, ExplorerFilter(regionalOrigin = "galar"), nationalOnly = true)
+        assertEquals(listOf("sword-shield"), result.regionalOrder!!.versionGroups)
+        assertTrue(result.missingRegionalNumbers > 0)
+        val numbered = result.entries.takeWhile { p -> p.regionalNumbers.any { it.dex.region == "galar" } }
+        assertEquals(result.entries.size - result.missingRegionalNumbers, numbered.size)
+        val numbers = numbered.map { p -> p.regionalNumbers.single { it.dex.region == "galar" }.number }
+        assertEquals(numbers.sorted(), numbers)
+        val missing = result.entries.drop(numbered.size)
+        assertEquals(missing.map { it.nationalNumber }.sorted(), missing.map { it.nationalNumber })
+    }
+
+    @Test fun `Totem presentation is hidden only in Pokedex and alternative identities remain available`() = checkEntries { entries ->
+        assertEquals(12, entries.count { it.isTotem })
+        val alola = PokemonExplorer.filter(entries, ExplorerFilter(regionalOrigin = "alola"), nationalOnly = true).entries
+        assertTrue(alola.none { it.isTotem })
+        assertEquals(1, alola.count { it.speciesId == 20 })
+        assertTrue(PokemonExplorer.filter(entries, ExplorerFilter(query = "totem")).entries.isNotEmpty())
+        assertTrue(PokemonExplorer.filter(entries, ExplorerFilter(query = "totem")).entries.map { it.pokemonId }
+            .containsAll(entries.filter { it.isTotem }.map { it.pokemonId }))
+        assertEquals(3, PokemonExplorer.filter(entries, ExplorerFilter(query = "lycanroc")).entries.size)
+        listOf("dialga-origin", "palkia-origin", "giratina-origin", "landorus-therian", "thundurus-therian").forEach { slug ->
+            assertTrue(entries.any { it.slug == slug })
+            assertTrue(PokemonExplorer.filter(entries, ExplorerFilter(query = slug)).entries.any { it.slug == slug })
+        }
     }
 }
