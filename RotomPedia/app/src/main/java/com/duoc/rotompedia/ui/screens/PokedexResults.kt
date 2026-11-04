@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.duoc.rotompedia.data.explorer.ExplorerPokemon
+import com.duoc.rotompedia.data.images.PokemonImageStyle
 
 /** Flat national results only. The team picker retains its grouped variety browser. */
 @Composable
@@ -84,9 +85,9 @@ private fun PokedexCard(pokemon: ExplorerPokemon, grid: Boolean, favorites: Set<
 
 @Composable
 private fun PokedexSprite(pokemon: ExplorerPokemon) {
-    // Restore RotomPedia's 72dp sprite from 2590bf5, retaining the v3.4 identity-safe resolver.
+    // Restore the 72dp artwork presentation from 2590bf5, with the identity-safe resolver.
     PokemonImage(pokemonId = pokemon.pokemonId, contentDescription = pokemon.displayName,
-        modifier = Modifier.size(72.dp).testTag("sprite_${pokemon.pokemonId}"))
+        style = PokemonImageStyle.ARTWORK, modifier = Modifier.size(72.dp).testTag("sprite_${pokemon.pokemonId}"))
 }
 
 @Composable
