@@ -10,8 +10,11 @@ permissions:
 
 jobs:
   build-and-release:
-    name: Verify Tagged APK
+    name: Verify Tag and Publish Prepared Pre-release
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Code
@@ -27,15 +30,33 @@ jobs:
       - name: Grant Execute Permission to Gradlew
         run: chmod +x ./RotomPedia/gradlew
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify bundled data and generator tests
+        run: |
+          python -m unittest discover -s tools/tests -v
+          python tools/generate_pokemon_index.py --verify-only
+          python tools/generate_item_index.py --verify-only
+          python tools/generate_reference_index.py --verify-only
+
       - name: Build Debug APK
         working-directory: ./RotomPedia
-        run: ./gradlew testDebugUnitTest lintDebug assembleDebug --stacktrace
+        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --stacktrace
 
-      # The runner uses an ephemeral debug key. Its APK is a CI artifact only.
-      # Publish the verified, update-compatible APK + checksum explicitly with gh:
-      # test milestones/RC -> prerelease; approved X.Y.0 base -> normal release.
+      # The runner's ephemeral debug key must never replace the installable APK.
+      # A compatible, locally signed APK + checksum must already exist in a draft.
       - name: Retain CI APK (not an installation update)
         uses: actions/upload-artifact@v4
         with:
           name: RotomPedia-tag-validation-only
           path: RotomPedia/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Verify compatible signed assets and publish pre-release only
+        if: ${{ contains(github.ref_name, '-') }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: bash .github/scripts/publish-prerelease.sh

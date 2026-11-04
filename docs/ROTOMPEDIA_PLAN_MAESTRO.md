@@ -4,13 +4,13 @@
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
 **Versión publicada actual:** **v3.5.0-rc1**, pre-release con A/B/C; validación manual y estabilización pendientes, no versión estable.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
-**Regla de alcance:** este documento no autoriza por sí solo a desarrollar o publicar las fases pendientes. Implementar la fase que el usuario autorice expresamente; no modificar versiones publicadas sin autorización.
+**Regla de alcance:** implementar solo fases autorizadas por el usuario. La política permanente de §8.1 autoriza commits, push, tags nuevos y pre-releases de esas fases sin pedir permiso adicional; no autoriza fases nuevas, versiones estables, cambios de firma ni operaciones destructivas. No modificar tags/releases anteriores.
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
 **Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc1`** con A/B/C integradas, rama `feature/v3.5-bc-encyclopedia`, tag en `a857f7e`; pruebas locales y CI correctas, validación del usuario en Android pendiente (§17). Política autorizada: pruebas/hitos como pre-release; base `X.Y.0` como release normal al cerrar la versión. No se autorizaron corrección de captura ni implementación de mapas/RI. Los bugs del apartado 13 no reabren v3.4 globalmente.
 
-**Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**, sin hoja de ruta paralela ni renumeración de fases. El usuario autoriza ahora solo la mejora de Pokédex (§4.1), en `feature/v3.5-pokedex-polish`. Las otras observaciones se incorporan a §13, sin autorización de implementación conjunta. Para esta intervención: no crear tags ni publicar releases sin nueva autorización; la política prueba/base anterior define el tipo de entrega, no anula este límite más reciente. No cambiar firma, `versionCode` ni releases históricas; numeración `0.x` solo en evaluación.
+**Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**, sin hoja de ruta paralela ni renumeración de fases. La mejora de Pokédex (§4.1) está implementada en `feature/v3.5-pokedex-polish`; se prepara su pre-release `v3.5.0-rc2` bajo la nueva política permanente de §8.1. Las otras observaciones siguen en §13, sin autorización de implementación conjunta. Conservar firma compatible y aumentar `versionCode` para cada APK de prueba; numeración `0.x` solo en evaluación. Las prohibiciones anteriores de push/tags/pre-releases de hitos autorizados quedan sustituidas por §8.1.
 
 **Ampliación de planificación:** Rotom Intelligence Pipeline se registra en §16 como investigación/prototipo futuro después de v3.5, con integración progresiva en v3.7 y sin bloquear mapas de v3.6. No es autorización para implementarlo, contratar servicios ni enviar datos a terceros. El [README principal](../README.md) resume estados de todas las series (3.x, 4.x y posteriores) y debe actualizarse junto con este plan al cerrar cada hito/versión.
 
@@ -191,11 +191,11 @@ Para actualizaciones del índice:
 
 ### 4.1 Estabilización posterior a v3.5.0-rc1 — Pokédex (alcance inmediato autorizado)
 
-No se reabren v3.4 ni v3.5-A/B/C como proyectos nuevos. Se pule la Pokédex sobre sus repositorios, identidades y resolución de imágenes. Sin crear otra versión ni retrasar v3.6/v3.7 hasta implementar todo el backlog.
+No se reabren v3.4 ni v3.5-A/B/C como proyectos nuevos. Se pule la Pokédex sobre sus repositorios, identidades y resolución de imágenes, sin crear otra línea funcional ni retrasar v3.6/v3.7 hasta implementar todo el backlog. RC2 es una entrega de prueba de esta misma estabilización.
 
-**Rama:** `feature/v3.5-pokedex-polish`, desde `03466d1` (documentación de publicación RC1). Sin tocar tag, versión Android, certificado ni Room v10.
+**Rama:** `feature/v3.5-pokedex-polish`, desde `03466d1` (documentación de publicación RC1). La implementación no cambió Room ni firma. Preparación posterior autorizada: `3.5.0-rc2` / `30502`, sin modificar el tag ni APK de RC1.
 
-**Commits locales de código:** `7515df6` (datos, filtros, nacional limpio, Lista/Cuadrícula y pruebas), `c52319d` (recuperar también presentación artwork del historial a través del resolutor compartido). Documentación de cierre en commit posterior; sin push/tag/release en esta intervención.
+**Commits de implementación:** `7515df6` (datos, filtros, nacional limpio, Lista/Cuadrícula y pruebas), `c52319d` (artwork original mediante resolutor compartido), `17ba815` (cierre documental). El cierre inicial fue local; después se autorizó su publicación como pre-release mediante §8.1.
 
 **Referencia visual propia:** historial `2590bf5`, `PokedexScreen.kt::PokemonListItemCard`: sprite 72 dp, número 18 sp, nombre 20 sp, padding horizontal 16/vertical 8 dp, elevación 4 dp. El explorador de `248c922` pasó a sprite 44 dp dentro de 48 dp. Se recuperan las proporciones de RotomPedia con wrapping, tipos y controles accesibles; no se copian tamaños de PokeInfo ni se restaura el antiguo cargador de imágenes por URL arbitraria.
 
@@ -220,7 +220,7 @@ No se reabren v3.4 ni v3.5-A/B/C como proyectos nuevos. Se pule la Pokédex sobr
 - [x] Pruebas de datos, UI, picker y regresión personal; compilación/lint y snapshot verificados. Sin migración ni borrado de cuentas/equipos/EV/IV/movimientos.
 - [ ] Validación del usuario en Android: proporciones, sprites reales, pantalla estrecha/texto grande, navegación, favoritos y estado al volver.
 
-**Estado de ejecución:** implementación local y verificación técnica completadas; pendiente de validación manual. No se ha publicado este pulido ni sustituido el APK de RC1. Backlog restante en §13; esta intervención termina aquí antes de otra mejora.
+**Estado de ejecución:** implementación y verificación técnica completadas; preparación de RC2 para validación manual. No sustituir el APK de RC1. Backlog restante en §13; no iniciar otra mejora al publicar esta prueba.
 
 #### Evidencia de implementación y regresión
 
@@ -233,7 +233,7 @@ No se reabren v3.4 ni v3.5-A/B/C como proyectos nuevos. Se pule la Pokédex sobr
 - `PokemonExplorerTest.kt`: ocho casos de datos (tres previos + cinco nuevos de nacional/filtros/identidad/offline) y un caso adicional de integridad de grupos huevo; se mantienen los casos de referencia y verificación de cero interacciones API. `PokedexPolishUiTest.kt`: cinco casos nuevos de Lista, proporciones, cuadrícula, estado/favoritos/navegación, Gigamax y grupo huevo. Los dos casos previos de `PokemonExplorerUiTest.kt` siguen comprobando el picker agrupado.
 - Evidencia de orden: `(1..1025)` exacto y los seis slugs iniciales; cuadrícula comprueba geometría de las tres primeras tarjetas y scroll a índices 24 y 1024. Filtros: Bulbasaur en Monstruo/Planta, Ditto en su grupo, Mewtwo en Desconocido; Alola × Hielo × Campo × favorito devuelve `10104`; combinación incompatible produce vacío. Número nacional sintético distinto de especie/variedad también probado.
 - Incidencia de prueba resuelta: el texto `#038` aparecía tanto en búsqueda como en tarjeta; se acotó el selector al tag de la tarjeta, sin eliminar la aserción. No se ocultaron fallos ni se deshabilitaron tests. Otros límites encontrados: formas Gigamax comparten `isBattleOnly`; se diferencian usando su identidad canónica, no un flag inexistente.
-- APK generado en `RotomPedia/app/build/outputs/apk/debug/app-debug.apk`; APK de instrumentación compilado, no ejecutado en dispositivo. No hay Android conectado (`adb devices` vacío). Se conservan `3.5.0-rc1` / `30501` y Room v10: diff de build, base, migraciones y esquemas contra `03466d1` vacío. `apksigner verify --print-certs` confirma el certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, igual al de RC1. **No es una nueva release** ni se reemplaza el asset publicado.
+- Evidencia del cierre técnico previo a la publicación: APK en `RotomPedia/app/build/outputs/apk/debug/app-debug.apk`; instrumentación compilada, no ejecutada en dispositivo (`adb devices` vacío). Entonces se conservaban `3.5.0-rc1` / `30501` y Room v10: diff de build, base, migraciones y esquemas contra `03466d1` vacío. `apksigner` confirmó certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, igual al de RC1. RC2 requiere recompilar con `30502` y verificar de nuevo; no reemplazar el asset anterior.
 
 #### Archivos de esta intervención
 
@@ -254,7 +254,7 @@ Rutas Kotlin base: `RotomPedia/app/src/main/java/com/duoc/rotompedia/`.
 - [ ] Marcar/desmarcar favoritos y volver desde detalle; favoritos de variedades guardados siguen accesibles al elegir su categoría, no se borran por ocultarse en nacional.
 - [ ] Selector de equipos conserva formas y selección exacta; revisar usuarios, equipos, EV/IV y movimientos antes/después de una futura actualización autorizada. Offline y placeholders gráficos.
 
-No se inicia otra mejora al completar este bloque. La validación requiere una entrega de prueba posterior autorizada o el entorno local; **la RC1 pública no contiene este pulido aún**.
+No se inicia otra mejora al completar este bloque. La nueva política de §8.1 autoriza entregar RC2 por GitHub para esta validación; **RC1 no contiene este pulido** y se conserva sin cambios.
 
 ---
 
@@ -375,7 +375,19 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 - [ ] Registrar archivos modificados, decisiones de arquitectura, pruebas ejecutadas, limitaciones y pendiente conocido.
 - [ ] Actualizar este plan y el README principal al cerrar cada hito/versión (3.x, 4.x y posteriores): estado público frente a local, commits/tags reales, pruebas, límites y migraciones. No crear un README nuevo que sustituya al principal en cada versión ni automatizar publicaciones por actualizar documentación.
 - [ ] No mezclar todas las mejoras en una sola PR o release gigante.
-- [ ] Nunca publicar tags/releases, cambiar firmas, borrar datos o avanzar a otra fase sin autorización.
+- [ ] Publicar pre-releases de fases autorizadas según §8.1; no publicar estables, cambiar firmas, borrar datos ni avanzar a otra fase sin aprobación independiente.
+
+### 8.1 Política permanente de desarrollo y publicación
+
+**Instrucción vigente del usuario:** una fase autorizada para implementar también está autorizada para su entrega de prueba en GitHub. No pedir otra aprobación para commits, push, etiqueta nueva, GitHub Actions y publicación **Pre-release**, con enlace directo de APK para instalación desde Android. Esta política sustituye las restricciones históricas de publicación de esos hitos, pero no amplía su alcance funcional.
+
+1. Ejecutar y aprobar las verificaciones obligatorias, corregir errores y no publicar builds fallidos. Registrar resultados y problemas conocidos en este mismo plan y en las notas de la pre-release.
+2. `versionCode` estrictamente creciente, mismo `applicationId` y certificado compatible con la instalación anterior. Si no puede verificarse la firma, **detener la publicación e informar**, no cambiarla ni sugerir desinstalar para forzar la instalación.
+3. Mantener datos, equipos, favoritos, configuraciones y migraciones no destructivas. No modificar ni sobrescribir tags/assets de releases anteriores; conservarlos para comparar.
+4. Todas las entregas automáticas de fases autorizadas son **pre-releases**; no promover a estable por tests o por ser una versión base. Las versiones estables requieren aprobación explícita propia, al igual que cambios de firma y acciones destructivas.
+5. GitHub Actions compila/verifica el código y solo publica el APK preparado después de verificar checksum, certificado y metadatos de paquete/versión contra su build. No distribuir la APK firmada con la clave efímera del runner. La clave privada compatible permanece fuera de GitHub y del repositorio.
+6. Flujo de esta entrega: build y firma locales comprobados → push de rama/tag nuevos → draft de pre-release con APK y `.sha256` → Actions ejecuta tests/build/verificaciones de assets → publica como pre-release, nunca Latest/estable → comprobar URL, estado público, digest y CI, actualizar evidencias y entregar enlace directo.
+7. Las fases no autorizadas siguen pendientes aunque exista esta autorización de distribución. No empezar mapas, RI ni el resto del backlog al terminar una pre-release.
 
 ---
 
@@ -383,13 +395,13 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 
 **Punto de partida vigente:** v3.4 terminada; v3.5-A/B/C implementadas y publicadas como **v3.5.0-rc1**, pendientes de validación manual. La preparación/implementación inicial de v3.5 de este apartado ya se cumplió; su historial técnico permanece en §11–§17.
 
-1. **Ahora: Pokédex post-RC1 (§4.1)**, única implementación autorizada: recuperar proporciones propias, nacional limpio, grupos huevo/categorías verificadas y Lista/Cuadrícula. Probar y registrar evidencia, sin tags/releases en esta intervención.
+1. **Ahora: entregar la Pokédex post-RC1 (§4.1)**, única implementación autorizada: implementación y pruebas completadas; preparar/publicar RC2 bajo §8.1, registrar evidencia y enlace de APK.
 2. **Puerta manual:** presentar el resultado y completar/revisar observaciones de Android, sin declarar v3.5 estable solo por tests. Detenerse antes de otra mejora.
 3. **Seleccionar la siguiente tarea de estabilización de §13 con autorización**, acotada por módulo; no ejecutar todo el backlog ni convertirlo en requisito ilimitado que posponga mapas. Matemática de captura y selector de Balls son trabajos distintos.
 4. **v3.6: mapas**, piloto por región/juego y expansión posterior, reutilizando componentes actuales (§5). Sigue siendo la siguiente versión funcional prevista, no se renumera por el pulido de v3.5.
 5. **v3.7: Rotom contextual e interfaz**, reglas locales, personalidad y accesibilidad (§6), coordinado con RI (§16). RI-1 se puede proponer tras v3.5, con autorización de investigación propia y sin bloquear v3.6; IA/servicios externos no forman parte de esta mejora.
 
-**Instrucción a OpenCode:** utilizar este documento como el contexto maestro de continuidad. No hacer una nueva auditoría extensa para reabrir v3.4 salvo que existan fallos concretos o falte evidencia imprescindible; concentrarse en **lo siguiente pendiente**. Cuando se autorice una fase, disponer de libertad para programar, investigar, refactorizar y probar dentro de ella, sin solicitar aprobación para cada archivo. Detenerse al llegar a cambios de alcance, publicación o tareas destructivas.
+**Instrucción a OpenCode:** utilizar este único documento como contexto maestro. No reabrir v3.4 globalmente; concentrarse en lo pendiente. Una fase autorizada permite programar, investigar, refactorizar, probar y publicar su pre-release según §8.1 sin pedir permiso por archivo ni por entrega de prueba. Detenerse ante cambios de alcance, publicación estable, cambio de firma u operaciones destructivas.
 
 ---
 
@@ -403,14 +415,14 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v3.4-C | ✅ Completada | `feature/v3.4-c-implementation`, `e41bda3`, `6c8e9c2`, `6a0f2ac` | Evidencias registradas; matriz manual de imágenes pendiente |
 | v3.4 integrada | ✅ Terminada; prerelease publicada | tag `v3.4.0-rc1`, commit `5d67ea0` | Bugs concretos en §13; no promoción a estable |
 | v3.5 | A/B/C publicadas como pre-release integrada; verificación local y CI correctas | `feature/v3.5-bc-encyclopedia`, `v3.5.0-rc1`, `a857f7e` | Validación manual Android pendiente (§17); base 3.5.0 aún no publicada |
-| v3.5 post-RC1 — Pokédex | Implementada y verificada localmente; no es otra versión | `feature/v3.5-pokedex-polish`, `7515df6`, `c52319d` | 77 Kotlin/21 Python; validación manual pendiente (§4.1). Sin push/tag/release |
+| v3.5 post-RC1 — Pokédex | Implementada y verificada; preparando RC2 como prueba, no fase nueva | `feature/v3.5-pokedex-polish`, `7515df6`, `c52319d` | 77 Kotlin/21 Python; publicación autorizada por §8.1, validación manual pendiente (§4.1) |
 | v3.6 | ⬜ Pendiente | — | Mapas por juego/región |
 | v3.7 | ⬜ Pendiente | — | Rotom contextual e interfaz |
 | Rotom Intelligence Pipeline | ⬜ Investigación y prototipo pendientes; sin iniciar | Sin rama/código de RI | Después de v3.5; integración progresiva con v3.7, sin retrasar v3.6 (§16) |
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 4 de noviembre de 2026.\
-**Próxima puerta:** terminar la mejora de Pokédex (§4.1), verificar regresiones y presentar validación de Android; después esperar autorización de otra tarea. No publicar ni promover a estable automáticamente.
+**Próxima puerta:** entregar RC2 de Pokédex por GitHub (§4.1/§8.1) para validación de Android; después esperar autorización de otra tarea. Nunca promover a estable automáticamente.
 
 ---
 
@@ -587,7 +599,7 @@ Esta sección es posterior a la revisión documental de §14; no cambia retroact
 - Validación: **52 pruebas Kotlin correctas** (39 previas + 13 nuevas, incluidas tres de interfaz); `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest` correcto, lint sin errores y con advertencias. Se probó además el paso carga→detalle de la ficha asíncrona, evitando que la ventana quedase mostrando carga tras recibir los datos.
 - Evidencias nuevas: `ItemRepositoryTest.kt`, `ItemPresentationTest.kt`, `ItemUiTest.kt`, extensión de `RoomPersistenceTest.kt`, `tools/tests/test_item_index.py` y esquema exportado `9.json`. El workflow de verificación se amplía a ramas v3.5 y valida ambos snapshots. No se ha ejecutado CI remoto porque no se autorizó push.
 - La aprobación en Android real permanece pendiente; no convertir compilación o Robolectric en validación de dispositivo. No instalar versiones antiguas sobre una base migrada a v9.
-- Puerta histórica: presentar A y esperar autorización de B. Después se autorizó B/C y su pre-release integrada (§17); la intervención posterior de Pokédex (§4.1) requiere nueva autorización para tags/releases.
+- Puerta histórica: presentar A y esperar autorización de B. Después se autorizó B/C y su pre-release integrada (§17). La política posterior de §8.1 ya permite tags/pre-releases de fases autorizadas, incluida Pokédex (§4.1), sin otra aprobación; estables siguen requiriéndola.
 
 ---
 
