@@ -43,7 +43,6 @@ import com.duoc.rotompedia.util.StatCalculator.StatType
 import com.duoc.rotompedia.util.getTipoColor
 import com.duoc.rotompedia.util.traducirTipo
 import com.duoc.rotompedia.data.model.MoveDetailResponse
-import com.duoc.rotompedia.viewmodel.PokemonMovesState
 import com.duoc.rotompedia.viewmodel.PokemonViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,13 +85,6 @@ fun MemberStatEditorDialog(
     var move4 by remember { mutableStateOf(miembro.move4) }
     var slotPickingMove by remember { mutableStateOf<Int?>(null) } // 1, 2, 3 o 4
 
-    // Cargar movimientos reales del Pokemon cuando el usuario cambia a la pestana de Movimientos
-    LaunchedEffect(selectedTab, miembro.pokemonId) {
-        if (selectedTab == 1) {
-            pokemonViewModel.loadPokemonMoves(miembro.pokemonId)
-        }
-    }
-    val pokemonMovesState by pokemonViewModel.pokemonMovesState.collectAsState()
 
     val totalEvs = evHp + evAtk + evDef + evSpa + evSpd + evSpe
     val remainingEvs = 510 - totalEvs
@@ -595,7 +587,7 @@ fun MemberStatEditorDialog(
         val currentSlot = slotPickingMove!!
         MovePickerDialog(
             slotIndex = currentSlot,
-            pokemonMovesState = pokemonMovesState,
+            pokemonId = miembro.pokemonId,
             onDismiss = { slotPickingMove = null },
             onMoveSelected = { selectedMove ->
                 when (currentSlot) {
@@ -620,14 +612,14 @@ fun MemberStatEditorDialog(
 }
 
 @Composable
-private fun MoveSlotCard(
+internal fun MoveSlotCard(
     slotIndex: Int,
     moveName: String?,
     onClick: () -> Unit,
     onClear: () -> Unit
 ) {
     val rotomForm by RotomThemeManager.currentForm.collectAsState()
-    val moveObj = remember(moveName) { moveName?.let { PokemonMoveData.findMove(it) } }
+    val moveObj = resolvedLegacyMove(moveName)
 
     Card(
         modifier = Modifier
@@ -687,7 +679,7 @@ private fun MoveSlotCard(
                             )
                         }
                         Text(
-                            text = "Pot: ${moveObj.power ?: "-"} • Prec: ${moveObj.accuracy?.let { "$it%" } ?: "-"} • PP: ${moveObj.pp}",
+                            text = "Pot: ${moveObj.power ?: "-"} • Prec: ${moveObj.accuracy?.let { "$it%" } ?: "-"} • PP: ${moveObj.pp ?: "—"}",
                             fontSize = 10.sp,
                             color = Color.LightGray
                         )
@@ -713,292 +705,17 @@ private fun MoveSlotCard(
                     Icon(Icons.Default.Add, contentDescription = null, tint = rotomForm.primaryColor)
                     Column {
                         Text(
-                            text = "Movimiento $slotIndex: (Vacío)",
+                            text = if (moveName.isNullOrBlank()) "Movimiento $slotIndex: (Vacío)" else "Movimiento $slotIndex: $moveName",
                             color = Color.Gray,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "Toca para asignar un movimiento del catálogo",
+                            text = if (moveName.isNullOrBlank()) "Toca para asignar un movimiento del catálogo" else
+                                "Texto guardado sin referencia única. Se conserva sin cambios; toca para revisar.",
                             color = Color(0xFF666666),
                             fontSize = 11.sp
                         )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Diálogo de selección de movimientos con búsqueda en vivo, filtro por categoría y tipo.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MovePickerDialog(
-    slotIndex: Int,
-    pokemonMovesState: PokemonMovesState,
-    onDismiss: () -> Unit,
-    onMoveSelected: (PokemonMove) -> Unit,
-    onClear: () -> Unit
-) {
-    val rotomForm by RotomThemeManager.currentForm.collectAsState()
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<MoveCategory?>(null) }
-    var selectedType by remember { mutableStateOf<String?>(null) }
-    var selectedMethodTab by remember { mutableIntStateOf(0) }
-
-    val pokemonMovesList: List<PokemonMove> = remember(pokemonMovesState, selectedMethodTab) {
-        when (pokemonMovesState) {
-            is PokemonMovesState.Success -> {
-                val lvlMoves = pokemonMovesState.levelUpMoves.map { PokemonMoveData.fromMoveDetail(it) }
-                val machMoves = pokemonMovesState.machineMoves.map { PokemonMoveData.fromMoveDetail(it) }
-                val eggMoves = pokemonMovesState.eggMoves.map { PokemonMoveData.fromMoveDetail(it) }
-                val tutMoves = pokemonMovesState.tutorMoves.map { PokemonMoveData.fromMoveDetail(it) }
-
-                when (selectedMethodTab) {
-                    1 -> lvlMoves
-                    2 -> machMoves
-                    3 -> eggMoves
-                    4 -> tutMoves
-                    5 -> PokemonMoveData.allMoves
-                    else -> (lvlMoves + machMoves + eggMoves + tutMoves).distinctBy { it.nameEn }
-                }
-            }
-            else -> PokemonMoveData.allMoves
-        }
-    }
-
-    val filteredMoves = remember(searchQuery, selectedCategory, selectedType, pokemonMovesList) {
-        pokemonMovesList.filter { m ->
-            val matchesCategory = selectedCategory == null || m.category == selectedCategory
-            val matchesType = selectedType == null || m.type.equals(selectedType, ignoreCase = true)
-            val matchesSearch = searchQuery.isBlank() ||
-                    m.nameEs.contains(searchQuery, ignoreCase = true) ||
-                    m.nameEn.contains(searchQuery, ignoreCase = true) ||
-                    m.description.contains(searchQuery, ignoreCase = true) ||
-                    m.type.contains(searchQuery, ignoreCase = true)
-
-            matchesCategory && matchesType && matchesSearch
-        }
-    }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(0.96f)
-                .fillMaxHeight(0.88f),
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
-            border = BorderStroke(1.dp, rotomForm.primaryColor)
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Elegir Movimiento $slotIndex",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        if (pokemonMovesState is PokemonMovesState.Success) {
-                            Text(
-                                text = "Movimientos aprendibles oficiales de PokeAPI",
-                                fontSize = 10.sp,
-                                color = rotomForm.accentColor
-                            )
-                        }
-                    }
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.LightGray)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                if (pokemonMovesState is PokemonMovesState.Success) {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        val tabs = listOf(
-                            0 to "🌟 Todos",
-                            1 to "⚔️ Nivel (${pokemonMovesState.levelUpMoves.size})",
-                            2 to "💿 MT (${pokemonMovesState.machineMoves.size})",
-                            3 to "🥚 Huevo (${pokemonMovesState.eggMoves.size})",
-                            4 to "🎓 Tutor (${pokemonMovesState.tutorMoves.size})",
-                            5 to "📚 General"
-                        )
-                        items(tabs) { (tabIdx, label) ->
-                            FilterChip(
-                                selected = selectedMethodTab == tabIdx,
-                                onClick = { selectedMethodTab = tabIdx },
-                                label = { Text(label, fontSize = 10.sp) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = rotomForm.primaryColor,
-                                    selectedLabelColor = Color.White,
-                                    containerColor = Color(0xFF262626),
-                                    labelColor = Color.LightGray
-                                )
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(6.dp))
-                } else if (pokemonMovesState is PokemonMovesState.Loading) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF222630))
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = rotomForm.primaryColor)
-                        Text(
-                            text = "Consultando movimientos reales en PokeAPI...",
-                            fontSize = 11.sp,
-                            color = Color.LightGray,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(6.dp))
-                }
-
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text("Buscar por nombre, tipo...", fontSize = 12.sp) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = rotomForm.primaryColor) },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Default.Close, contentDescription = "Limpiar", tint = Color.Gray, modifier = Modifier.size(16.dp))
-                            }
-                        }
-                    },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = rotomForm.primaryColor,
-                        unfocusedBorderColor = Color(0xFF333333)
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    FilterChip(
-                        selected = selectedCategory == null,
-                        onClick = { selectedCategory = null },
-                        label = { Text("Todas", fontSize = 10.sp) }
-                    )
-                    FilterChip(
-                        selected = selectedCategory == MoveCategory.PHYSICAL,
-                        onClick = { selectedCategory = if (selectedCategory == MoveCategory.PHYSICAL) null else MoveCategory.PHYSICAL },
-                        label = { Text("💥 Físico", fontSize = 10.sp) }
-                    )
-                    FilterChip(
-                        selected = selectedCategory == MoveCategory.SPECIAL,
-                        onClick = { selectedCategory = if (selectedCategory == MoveCategory.SPECIAL) null else MoveCategory.SPECIAL },
-                        label = { Text("🔮 Especial", fontSize = 10.sp) }
-                    )
-                    FilterChip(
-                        selected = selectedCategory == MoveCategory.STATUS,
-                        onClick = { selectedCategory = if (selectedCategory == MoveCategory.STATUS) null else MoveCategory.STATUS },
-                        label = { Text("🛡️ Estado", fontSize = 10.sp) }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "${filteredMoves.size} movimientos disponibles",
-                        fontSize = 11.sp,
-                        color = Color.Gray
-                    )
-                    TextButton(onClick = onClear) {
-                        Text("Dejar Vacío", color = Color(0xFFFF5252), fontSize = 11.sp)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                if (filteredMoves.isEmpty()) {
-                    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = if (pokemonMovesState is PokemonMovesState.Loading) "Cargando ataques..." else "No hay movimientos con esos filtros",
-                            color = Color.Gray,
-                            fontSize = 12.sp
-                        )
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        items(filteredMoves, key = { it.nameEn }) { move ->
-                            Surface(
-                                onClick = { onMoveSelected(move) },
-                                shape = RoundedCornerShape(10.dp),
-                                color = Color(0xFF242730),
-                                border = BorderStroke(1.dp, getTipoColor(move.type).copy(alpha = 0.4f)),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                        ) {
-                                            Text(move.nameEs, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            if (move.nameEs != move.nameEn) {
-                                                Text("(${move.nameEn})", color = Color.Gray, fontSize = 11.sp)
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                        ) {
-                                            BadgeTipo(tipo = move.type)
-                                            Text(
-                                                text = "${move.category.emoji} ${move.category.displayName}",
-                                                color = move.category.color,
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
-                                            Text(
-                                                text = "Pot: ${move.power ?: "-"} • Prec: ${move.accuracy?.let { "$it%" } ?: "-"} • PP: ${move.pp}",
-                                                color = Color.LightGray,
-                                                fontSize = 10.sp
-                                            )
-                                        }
-                                        if (move.description.isNotBlank()) {
-                                            Text(move.description, color = Color.Gray, fontSize = 10.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }

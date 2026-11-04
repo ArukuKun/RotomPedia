@@ -7,6 +7,8 @@ import androidx.room.RoomDatabase
 import com.duoc.rotompedia.data.local.index.*
 import com.duoc.rotompedia.data.local.migrations.DatabaseMigrations
 import com.duoc.rotompedia.data.items.*
+import com.duoc.rotompedia.data.reference.CachedLearnset
+import com.duoc.rotompedia.data.reference.LearnsetDao
 
 @Database(
     entities = [
@@ -17,12 +19,13 @@ import com.duoc.rotompedia.data.items.*
         MiembroEquipo::class,
         IndexedSpecies::class, IndexedVariety::class, IndexedForm::class,
         IndexedName::class, PokemonIndexState::class, IndexedVarietyType::class,
-        IndexedItem::class, CachedItemDetail::class, ItemIndexState::class
+        IndexedItem::class, CachedItemDetail::class, ItemIndexState::class, CachedLearnset::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
+    abstract fun learnsetDao(): LearnsetDao
     abstract fun itemDao(): ItemDao
 
     abstract fun usuarioDao(): UsuarioDao

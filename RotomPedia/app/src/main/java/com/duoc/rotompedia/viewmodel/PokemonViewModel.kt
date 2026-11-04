@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.duoc.rotompedia.data.model.ChainLink
 import com.duoc.rotompedia.data.model.EvolutionDetail
-import com.duoc.rotompedia.data.model.MoveDetailResponse
 import com.duoc.rotompedia.data.model.PokemonData
 import com.duoc.rotompedia.data.model.PokemonDataWithMoves
 import com.duoc.rotompedia.data.model.PokemonVariety
@@ -84,18 +83,6 @@ data class EvolutionStage(
 )
 
 // Estado para movimientos de un Pokémon
-sealed class PokemonMovesState {
-    object Idle : PokemonMovesState()
-    object Loading : PokemonMovesState()
-    data class Success(
-        val levelUpMoves: List<MoveDetailResponse>,
-        val machineMoves: List<MoveDetailResponse>,
-        val eggMoves: List<MoveDetailResponse>,
-        val tutorMoves: List<MoveDetailResponse>
-    ) : PokemonMovesState()
-    data class Error(val message: String) : PokemonMovesState()
-}
-
 // Estado para formas de un Pokémon
 sealed class PokemonFormsState {
     object Idle : PokemonFormsState()
@@ -140,7 +127,6 @@ class PokemonViewModel(
     private var evolutionJob: Job? = null
     private var relationsJob: Job? = null
     private var varietiesJob: Job? = null
-    private var movesJob: Job? = null
     private val _pokemonTypesCache = mutableMapOf<Int, List<String>>()
 
     // Sesión activa
@@ -157,11 +143,8 @@ class PokemonViewModel(
         ?: flowOf(emptyList())
 
     // ==================== MOVIMIENTOS ====================
-    private val _pokemonMovesState = MutableStateFlow<PokemonMovesState>(PokemonMovesState.Idle)
-    val pokemonMovesState: StateFlow<PokemonMovesState> = _pokemonMovesState.asStateFlow()
 
     // Cache de movimientos para no refetchear (pokemonId -> lista de moves por método)
-    private val _movesCache = mutableMapOf<Int, PokemonMovesState.Success>()
 
     // ==================== FORMAS ====================
     private val _pokemonFormsState = MutableStateFlow<PokemonFormsState>(PokemonFormsState.Idle)
@@ -548,76 +531,6 @@ class PokemonViewModel(
         }
     }
 
-    // Carga los movimientos reales de un Pokémon desde PokeAPI
-    fun loadPokemonMoves(pokemonId: Int) {
-        movesJob?.cancel()
-        // Retornar caché si ya se cargó
-        _movesCache[pokemonId]?.let {
-            _pokemonMovesState.value = it
-            return
-        }
-
-        movesJob = viewModelScope.launch {
-            _pokemonMovesState.value = PokemonMovesState.Loading
-            try {
-                val pokemonWithMoves = withContext(Dispatchers.IO) {
-                    PokemonApi.service.getPokemonWithMoves(pokemonId.toString())
-                }
-
-                // Un movimiento puede pertenecer a varios métodos. No perder MT/huevo
-                // por escoger solamente un detalle arbitrario de versión.
-                val movesByMethod = pokemonWithMoves.moves
-                    .flatMap { entry ->
-                        entry.versionGroupDetails.groupBy { it.moveLearnMethod.name }.map { (method, versions) ->
-                            Triple(method, entry.move.name, versions.maxByOrNull {
-                                it.versionGroup.url.trimEnd('/').substringAfterLast('/').toIntOrNull() ?: 0
-                            }?.levelLearnedAt ?: 0)
-                        }
-                    }
-                    .groupBy { it.first }
-
-                val levelUpNames = movesByMethod["level-up"]
-                    ?.sortedBy { it.third }?.map { it.second } ?: emptyList()
-
-                val machineNames = movesByMethod["machine"]?.map { it.second } ?: emptyList()
-                val eggNames = movesByMethod["egg"]?.map { it.second } ?: emptyList()
-                val tutorNames = movesByMethod["tutor"]?.map { it.second } ?: emptyList()
-
-                // Concurrencia acotada y errores visibles en vez de cachear listas incompletas.
-                val maxMoves = 60
-                val semaphore = Semaphore(4)
-                val detailsCache = mutableMapOf<String, MoveDetailResponse>()
-                suspend fun fetchMoveDetails(names: List<String>, limit: Int = maxMoves): List<MoveDetailResponse> {
-                    return coroutineScope {
-                        names.distinct().take(limit).map { moveName ->
-                            async {
-                                semaphore.withPermit {
-                                    detailsCache[moveName] ?: PokemonApi.service.getMoveDetail(moveName)
-                                        .also { detailsCache[moveName] = it }
-                                }
-                            }
-                        }.awaitAll()
-                    }
-                }
-
-                val levelUpMoves = fetchMoveDetails(levelUpNames)
-                val machineMoves = fetchMoveDetails(machineNames)
-                val eggMoves = fetchMoveDetails(eggNames)
-                val tutorMoves = fetchMoveDetails(tutorNames, 30)
-
-                val result = PokemonMovesState.Success(levelUpMoves, machineMoves, eggMoves, tutorMoves)
-                _movesCache[pokemonId] = result
-                _pokemonMovesState.value = result
-                Log.d(TAG, "Movimientos de #$pokemonId cargados: ${levelUpMoves.size} nivel, ${machineMoves.size} MT, ${eggMoves.size} huevo")
-
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                _pokemonMovesState.value = PokemonMovesState.Error("Error al cargar movimientos: ${e.message}")
-                Log.e(TAG, "Error al cargar movimientos de #$pokemonId: ${e.message}")
-            }
-        }
-    }
-
     // Un único flujo de carga de formas para todos los consumidores.
     fun loadPokemonForms(speciesId: Int) = loadFormVarieties(speciesId)
 
@@ -714,7 +627,5 @@ class PokemonViewModel(
         }
     }
 
-    fun resetMovesState() {
-        _pokemonMovesState.value = PokemonMovesState.Idle
-    }
+
 }

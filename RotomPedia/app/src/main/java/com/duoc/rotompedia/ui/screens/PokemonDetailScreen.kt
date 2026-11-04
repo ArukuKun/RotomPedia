@@ -530,7 +530,8 @@ fun PokemonDetailContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(modifier = Modifier.height(24.dp))
-        PokemonMovesSection(pokemonId = pokemon.id, pokemonViewModel = pokemonViewModel)
+        PokemonMovesSection(pokemonId = pokemon.id)
+        PokemonAbilitiesSection(pokemonId = pokemon.id, onPokemonClick = onPokemonClick)
         PokemonLocationsSection(pokemonId = pokemon.id)
         Spacer(modifier = Modifier.height(16.dp))
     }

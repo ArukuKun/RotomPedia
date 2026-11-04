@@ -50,5 +50,10 @@ object DatabaseMigrations {
             db.execSQL("CREATE TABLE IF NOT EXISTS item_index_state (id INTEGER NOT NULL PRIMARY KEY, sha256 TEXT NOT NULL)")
         }
     }
-    val ALL = arrayOf(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+    val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS pokemon_learnset_cache (pokemonId INTEGER NOT NULL PRIMARY KEY, json TEXT NOT NULL, fetchedAt INTEGER NOT NULL)")
+        }
+    }
+    val ALL = arrayOf(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
 }

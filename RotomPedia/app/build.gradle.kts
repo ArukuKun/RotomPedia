@@ -1,3 +1,5 @@
+import java.time.Duration
+
 // app/build.gradle.kts
 plugins {
     id("com.android.application")
@@ -48,6 +50,8 @@ android {
     testOptions.unitTests.isIncludeAndroidResources = true
     testOptions.unitTests.all {
         it.systemProperty("rotompedia.schemaDir", "$projectDir/schemas")
+        // Bound CI/local runs even if a Compose idling loop never completes.
+        it.timeout.set(Duration.ofMinutes(5))
     }
     sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
     sourceSets.getByName("test").assets.srcDir("$projectDir/schemas")

@@ -43,6 +43,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
@@ -113,7 +115,8 @@ fun MenuPrincipalScreen(navController: NavController, authViewModel: AuthViewMod
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 20.dp),
+                .padding(horizontal = 24.dp, vertical = 20.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -265,10 +268,14 @@ fun MenuPrincipalScreen(navController: NavController, authViewModel: AuthViewMod
                 horizontalArrangement = Arrangement.Center
             ) {
                 MenuButton(
-                    text = "Objetos Competitivos",
+                    text = "Objetos",
                     contentColor = rotomForm.primaryColor
                 ) { navController.navigate("competitive_items") }
+                Spacer(modifier = Modifier.width(14.dp))
+                MenuButton(text = "Movimientos", contentColor = rotomForm.accentColor) { navController.navigate("moves_reference") }
             }
+            Spacer(modifier = Modifier.height(14.dp))
+            MenuButton(text = "Habilidades", contentColor = rotomForm.primaryColor) { navController.navigate("abilities_reference") }
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -535,12 +542,24 @@ fun AppNavigationController() {
             )
         }
 
-        composable("competitive_items?slug={slug}", arguments = listOf(navArgument("slug") {
+        composable("moves_reference?moveId={moveId}", arguments = listOf(navArgument("moveId") { type = NavType.IntType; defaultValue = 0 })) { entry ->
+            ReferenceBrowserScreen(false, { navController.navigateUp() },
+                { navController.navigate("pokemon_detail/$it") }, { navController.navigate("competitive_items?itemId=$it") },
+                initialMoveId = entry.arguments?.getInt("moveId") ?: 0)
+        }
+        composable("abilities_reference?abilityId={abilityId}", arguments = listOf(navArgument("abilityId") { type = NavType.IntType; defaultValue = 0 })) { entry ->
+            ReferenceBrowserScreen(true, { navController.navigateUp() },
+                { navController.navigate("pokemon_detail/$it") }, { navController.navigate("competitive_items?itemId=$it") },
+                initialAbilityId = entry.arguments?.getInt("abilityId") ?: 0)
+        }
+        composable("competitive_items?slug={slug}&itemId={itemId}", arguments = listOf(navArgument("slug") {
             type = NavType.StringType; nullable = true; defaultValue = null
-        })) { entry ->
+        }, navArgument("itemId") { type = NavType.IntType; defaultValue = 0 })) { entry ->
             CompetitiveItemsScreen(
                 onNavigateBack = { navController.navigateUp() },
                 initialSlug = entry.arguments?.getString("slug"),
+                initialItemId = entry.arguments?.getInt("itemId") ?: 0,
+                onMoveClick = { navController.navigate("moves_reference?moveId=$it") },
                 onPokemonClick = { navController.navigate("pokemon_detail/$it") }
             )
         }

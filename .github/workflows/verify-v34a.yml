@@ -18,6 +18,7 @@ jobs:
       - run: python -m unittest discover -s tools/tests -v
       - run: python tools/generate_pokemon_index.py --verify-only
       - run: python tools/generate_item_index.py --verify-only
+      - run: python tools/generate_reference_index.py --verify-only
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

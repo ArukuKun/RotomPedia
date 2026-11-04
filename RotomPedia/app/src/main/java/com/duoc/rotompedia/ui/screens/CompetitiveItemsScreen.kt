@@ -27,23 +27,32 @@ import kotlinx.coroutines.flow.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompetitiveItemsScreen(onNavigateBack: () -> Unit, onPokemonClick: (String) -> Unit = {}, initialSlug: String? = null,
-    itemRepository: ItemRepository? = null) {
+    itemRepository: ItemRepository? = null, initialItemId: Int = 0, onMoveClick: (Int) -> Unit = {}) {
     val repository = itemRepository ?: AppContainer.get(LocalContext.current).items
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
     var retry by remember { mutableIntStateOf(0) }
     var filter by remember { mutableStateOf(ItemFilter()) }
     var selected by remember { mutableStateOf<IndexedItem?>(null) }
-    LaunchedEffect(repository, retry, initialSlug) {
+    var reference by remember { mutableStateOf<com.duoc.rotompedia.data.reference.ReferenceIndex?>(null) }
+    val localContext = LocalContext.current
+    LaunchedEffect(repository, retry, initialSlug, initialItemId) {
         loading = true; error = null
         try {
             repository.ensureIndex()
-            if (initialSlug != null) {
+            if (initialItemId > 0) {
+                selected = repository.observeItems().first().firstOrNull { it.itemId == initialItemId }
+                if (selected == null) error = "Objeto con ID desconocido. No se sustituye por otro."
+            } else if (initialSlug != null) {
                 selected = repository.resolve(initialSlug)
                 if (selected == null) error = "No se pudo resolver el objeto solicitado. Puedes buscarlo en el catálogo."
             }
         } catch (e: Exception) { if (e is CancellationException) throw e; error = "No se pudo preparar el índice de objetos." }
         finally { loading = false }
+    }
+    LaunchedEffect(itemRepository) {
+        if (itemRepository == null) try { reference = AppContainer.get(localContext).moves.index() }
+        catch (e: Exception) { if (e is CancellationException) throw e }
     }
     val itemsFlow = remember(repository) { repository.observeItems() }
     val all by itemsFlow.collectAsState(initial = emptyList())
@@ -100,7 +109,8 @@ fun CompetitiveItemsScreen(onNavigateBack: () -> Unit, onPokemonClick: (String) 
         }
     }
     selected?.let { item ->
-        ItemDetailSheet(item, repository, onDismiss = { selected = null }, onPokemonClick = onPokemonClick, pokemonLabels = pokemonLabels)
+        ItemDetailSheet(item, repository, onDismiss = { selected = null }, onPokemonClick = onPokemonClick, pokemonLabels = pokemonLabels,
+            reference = reference, onMoveClick = onMoveClick)
     }
 }
 
@@ -130,7 +140,8 @@ internal fun ItemSprite(slug: String, modifier: Modifier = Modifier, declared: S
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ItemDetailSheet(item: IndexedItem, repository: ItemRepository, onDismiss: () -> Unit, onPokemonClick: (String) -> Unit,
-    pokemonLabels: Map<Int, String> = emptyMap()) {
+    pokemonLabels: Map<Int, String> = emptyMap(), reference: com.duoc.rotompedia.data.reference.ReferenceIndex? = null,
+    onMoveClick: (Int) -> Unit = {}) {
     var data by remember(item.itemId) { mutableStateOf<ItemDetailResult?>(null) }
     var loading by remember(item.itemId) { mutableStateOf(true) }
     var error by remember(item.itemId) { mutableStateOf<String?>(null) }
@@ -163,7 +174,8 @@ internal fun ItemDetailSheet(item: IndexedItem, repository: ItemRepository, onDi
                 val detail = loaded.detail
                 Text(if (loaded.offline) "No se pudo actualizar: mostrando copia guardada." else "Ficha disponible en caché local.", fontSize = 12.sp)
                 Text("Fuente: PokeAPI · item/${detail.id} · guardado ${java.time.Instant.ofEpochMilli(loaded.fetchedAt)}", fontSize = 11.sp)
-                val groups = (detail.descriptions.map { it.versionGroup.name } + detail.prices.map { it.versionGroup.name }).distinct().sorted()
+                val machines = reference?.machines.orEmpty().filter { it.itemId == item.itemId }
+                val groups = (detail.descriptions.map { it.versionGroup.name } + detail.prices.map { it.versionGroup.name } + machines.map { it.versionGroup }).distinct().sorted()
                 ItemChoice("Edición de descripción / precio", group, groups, ItemLabels::version) { group = it }
                 val description = ItemPresentation.description(detail, group)
                 Text("Descripción de juego", style = MaterialTheme.typography.titleMedium)
@@ -187,6 +199,16 @@ internal fun ItemDetailSheet(item: IndexedItem, repository: ItemRepository, onDi
                 Text("Atributos documentados", style = MaterialTheme.typography.titleMedium)
                 Text(detail.attributes.map { ItemLabels.attribute(it.name) }.joinToString(" · ").ifBlank { "Sin atributos documentados; no implica que no se pueda usar o llevar." })
                 Text("Precio por edición", style = MaterialTheme.typography.titleMedium)
+                if (item.category == "all-machines") {
+                    Text("Movimiento de la MT / MO · depende de la edición", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    if (reference == null) Text("Referencia de relaciones no disponible.")
+                    else if (group == null) Text("Selecciona una edición para consultar el movimiento relacionado.")
+                    else {
+                        val links = machines.filter { it.versionGroup == group }.distinctBy { it.moveId }
+                        if (links.isEmpty()) Text("Sin relación documentada para esta edición.")
+                        links.forEach { link -> TextButton({ onMoveClick(link.moveId) }) { Text(reference.moves.firstOrNull { it.id == link.moveId }?.displayName ?: "Movimiento ID ${link.moveId}") } }
+                    }
+                }
                 val prices = detail.prices.filter { it.versionGroup.name == group }
                 Text(if (prices.isEmpty()) "Sin precio contextual documentado para la edición seleccionada. No se asume que sea gratis." else prices.joinToString("\n") {
                     "Compra: ${it.purchasePrice?.toString() ?: "sin dato"} · venta: ${it.sellPrice?.toString() ?: "sin dato"} · moneda: ${it.currency.name}"

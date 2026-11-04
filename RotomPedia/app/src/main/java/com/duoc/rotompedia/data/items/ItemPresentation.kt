@@ -31,7 +31,11 @@ object ItemLabels {
         "omega-ruby-alpha-sapphire" to "Rubí Omega / Zafiro Alfa", "sun-moon" to "Sol / Luna",
         "ultra-sun-ultra-moon" to "Ultrasol / Ultraluna", "lets-go-pikachu-lets-go-eevee" to "Let's Go Pikachu / Eevee",
         "sword-shield" to "Espada / Escudo", "brilliant-diamond-shining-pearl" to "Diamante Brillante / Perla Reluciente",
-        "legends-arceus" to "Leyendas Arceus", "scarlet-violet" to "Escarlata / Púrpura")
+        "legends-arceus" to "Leyendas Arceus", "scarlet-violet" to "Escarlata / Púrpura",
+        "colosseum" to "Colosseum", "xd" to "XD", "red-green-japan" to "Rojo / Verde (Japón)", "blue-japan" to "Azul (Japón)",
+        "the-isle-of-armor" to "La isla de la armadura (Espada / Escudo)", "the-crown-tundra" to "Las nieves de la corona (Espada / Escudo)",
+        "the-teal-mask" to "La máscara turquesa (Escarlata / Púrpura)", "the-indigo-disk" to "El disco índigo (Escarlata / Púrpura)",
+        "legends-za" to "Leyendas Pokémon: Z-A", "mega-dimension" to "Mega Dimension (nombre de la fuente)", "champions" to "Pokémon Champions (grupo de la fuente)")
     fun category(slug: String) = categories[slug] ?: "Categoría sin traducir: $slug"
     fun attribute(slug: String) = attributes[slug] ?: "Atributo sin traducir: $slug"
     fun version(slug: String) = versions[slug] ?: "Grupo: $slug"

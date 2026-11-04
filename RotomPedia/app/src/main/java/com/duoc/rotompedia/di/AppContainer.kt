@@ -29,10 +29,20 @@ class AppContainer private constructor(context: Context) {
         withContext(Dispatchers.IO) { application.assets.open("pokemon-index.json").bufferedReader().use { it.readText() } }
     }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val reference = com.duoc.rotompedia.data.reference.ReferenceStore(moshi) {
+        withContext(Dispatchers.IO) { application.assets.open("reference-index.json").bufferedReader().use { it.readText() } }
+    }
+    val moves: com.duoc.rotompedia.data.reference.MoveRepository = com.duoc.rotompedia.data.reference.DefaultMoveRepository(
+        reference, database, PokemonApi.service, pokemon, moshi)
+    val abilities: com.duoc.rotompedia.data.reference.AbilityRepository = com.duoc.rotompedia.data.reference.DefaultAbilityRepository(reference, pokemon)
     private val indexFailure = MutableStateFlow<String?>(null)
     val indexImportError = indexFailure.asStateFlow()
 
     init {
+        scope.launch {
+            try { reference.index() }
+            catch (e: Exception) { if (e is CancellationException) throw e /* screens offer retry; personal data remains untouched */ }
+        }
         scope.launch {
             try { pokemon.ensureIndex() }
             catch (e: Exception) {

@@ -1258,7 +1258,7 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 rowMoves.forEach { moveName ->
-                                    val moveInfo = PokemonMoveData.findMove(moveName)
+                                    val moveInfo = resolvedLegacyMove(moveName)
                                     val moveType = moveInfo?.type ?: "normal"
                                     val catEmoji = moveInfo?.category?.emoji ?: "💥"
                                     val powerStr = moveInfo?.power?.toString() ?: "-"

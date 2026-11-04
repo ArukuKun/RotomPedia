@@ -53,6 +53,10 @@ class RoomPersistenceTest {
                     db.execSQL("INSERT INTO usuarios VALUES(1,'ash','a@example.com','legacy-password')")
                     db.execSQL("INSERT INTO favoritos VALUES('ash',10051,'Mega Blaziken')")
                     db.execSQL("INSERT INTO favoritos VALUES('default_user',3,'Venusaur')")
+                    if (version >= 9) {
+                        db.execSQL("INSERT INTO item_index VALUES(168,'shuca-berry','Baya Acardo','es','type-protection','holdable-active')")
+                        db.execSQL("INSERT INTO item_detail_cache VALUES(168,'legacy-cache',1234)")
+                    }
                     db.execSQL("INSERT INTO equipos VALUES(42,'ash','Equipo antiguo',12345)")
                     val advanced = if (version >= 5) ",nature,level,evHp,evAtk,evDef,evSpa,evSpd,evSpe,ivHp,ivAtk,ivDef,ivSpa,ivSpd,ivSpe" else ""
                     val advancedValues = if (version >= 5) ",'Firme',73,4,252,0,0,0,252,30,31,29,28,27,26" else ""
@@ -68,6 +72,25 @@ class RoomPersistenceTest {
 
     private fun open(name: String) = Room.databaseBuilder(context, AppDatabase::class.java, name)
         .addMigrations(*DatabaseMigrations.ALL).allowMainThreadQueries().build()
+
+    @Test fun `v9 upgrade preserves all personal moves and item cache while adding learnsets`() = runTest {
+        val name = "migration9.db"
+        legacy(name, 9)
+        val db = open(name)
+        try {
+            db.openHelper.writableDatabase
+            val member = db.equipoDao().obtenerEquipoPorId(42, "ash")!!.miembros.single()
+            assertEquals(10051, member.pokemonId)
+            assertEquals(73, member.level)
+            assertEquals(252, member.evAtk)
+            assertEquals(26, member.ivSpe)
+            assertEquals("Unknown Move", member.move4)
+            assertEquals("legacy-cache", db.itemDao().cached(168)!!.json)
+            assertEquals("Baya Acardo", db.itemDao().item(168)!!.name)
+            assertNotNull(db.favoritoDao().obtenerPorId("ash", 10051))
+            assertNull(db.learnsetDao().cached(10104))
+        } finally { db.close() }
+    }
 
     @Test fun `v8 upgrade only adds item tables and preserves personal data exactly`() = runTest {
         val name = "migration8.db"
