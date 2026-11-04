@@ -2,15 +2,15 @@
 
 **Marca / proyecto:** RotomPedia\
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
-**Versión publicada actual:** **v3.5.0-rc2**, pre-release con A/B/C y mejora de Pokédex; validación manual y estabilización pendientes, no versión estable.\
+**Versión publicada actual:** **v3.5.0-rc3**, pre-release con A/B/C y cuatro ajustes de Pokédex tras el reporte manual de RC2; validación y estabilización pendientes, no versión estable.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
 **Regla de alcance:** implementar solo fases autorizadas por el usuario. La política permanente de §8.1 autoriza commits, push, tags nuevos y pre-releases de esas fases sin pedir permiso adicional; no autoriza fases nuevas, versiones estables, cambios de firma ni operaciones destructivas. No modificar tags/releases anteriores.
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
-**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc2`**, A/B/C más Pokédex, rama `feature/v3.5-pokedex-polish`, tag en `c7010ac`; pruebas locales y Actions de publicación correctas, validación del usuario en Android pendiente (§4.1). La entrega RC1 conserva sus evidencias en §17. Política vigente en §8.1: pre-releases de fases autorizadas sin pedir permiso adicional; **estables siempre con aprobación propia**. No se autorizaron corrección de captura ni implementación de mapas/RI.
+**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc3`**, rama `feature/v3.5-pokedex-comfort`, tag en `4309dd8`; 86 Kotlin/23 Python, lint/build y ambos workflows correctos, nueva validación manual pendiente (§4.2). Evidencia de RC2 en §4.1 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. Captura, mapas y RI no se implementaron.
 
-**Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**. RC2 (§4.1) está publicada; las cuatro observaciones manuales posteriores autorizan continuar el pulido de Pokédex (§4.2) en `feature/v3.5-pokedex-comfort`, preparando `v3.5.0-rc3` / `30503` bajo §8.1. No se autoriza implementar conjuntamente el resto de §13 ni cambiar mapas/RI. Conservar firma compatible y versiones anteriores; `0.x` solo en evaluación.
+**Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**. Las cuatro observaciones manuales de RC2 están implementadas y publicadas como `v3.5.0-rc3` / `30503` (§4.2). No se autoriza implementar conjuntamente el resto de §13 ni cambiar mapas/RI. Conservar firma compatible y versiones anteriores; `0.x` solo en evaluación.
 
 **Ampliación de planificación:** Rotom Intelligence Pipeline se registra en §16 como investigación/prototipo futuro después de v3.5, con integración progresiva en v3.7 y sin bloquear mapas de v3.6. No es autorización para implementarlo, contratar servicios ni enviar datos a terceros. El [README principal](../README.md) resume estados de todas las series (3.x, 4.x y posteriores) y debe actualizarse junto con este plan al cerrar cada hito/versión.
 
@@ -273,7 +273,7 @@ No se inicia otra mejora al completar este bloque. La nueva política de §8.1 a
 
 **Autorización y evidencia:** el usuario reporta cuatro puntos concretos al probar Android: botón de filtros como texto amarillo poco reconocible; filtro de Kalos perdido al volver de Furfrou y scroll aplicado a mitad del nacional; orden de Hisui poco útil; categoría «Variedades estables» demasiado amplia y duplicados Tótem. Captura aportada: 16 resultados de Hisui ordenados nacionalmente. No se infieren modelo, versión Android ni otra validación no informada.
 
-**Rama:** `feature/v3.5-pokedex-comfort`, desde `b2443c7`. Es continuación de estabilización de v3.5, no una fase funcional paralela. Preparación RC3: código 30503, sin nueva migración Room ni cambios de firma. Se conserva íntegra la evidencia histórica de RC2 (§4.1); el contrato siguiente actualiza su comportamiento en estos puntos.
+**Rama:** `feature/v3.5-pokedex-comfort`, desde `b2443c7`. Es continuación de estabilización de v3.5, no una fase funcional paralela. RC3 publicada: código 30503, sin nueva migración Room ni cambios de firma. Se conserva íntegra la evidencia histórica de RC2 (§4.1); el contrato siguiente actualiza su comportamiento en estos puntos.
 
 - **Filtro visible:** botón `Filtrar` con borde, icono de tres barras y texto, alineado a la izquierda del resumen. Usa color de superficie legible, no texto amarillo suelto; conserva el panel inferior desplazable y sus filtros combinables.
 - **Retorno cómodo:** filtro guardado por entrada de navegación mediante `rememberSaveable`/Saver antes de crear el controlador. Conserva consulta, categoría, generación, origen regional, tipo, grupo huevo y favoritos. Lista y Cuadrícula guardan modo, índice y offset; no montar sus scrollers mientras faltan índice/metadatos validados. Cambiar voluntariamente los filtros inicia en el primer resultado; volver de la ficha restaura la posición del listado original.
@@ -294,10 +294,10 @@ No se inicia otra mejora al completar este bloque. La nueva política de §8.1 a
 - [x] Hisui comienza por los tres iniciales regionales según Leyendas Arceus, manteniendo número nacional y variedad exacta.
 - [x] Otras regiones muestran su contexto real y faltantes, sin numeraciones de DLC mezcladas.
 - [x] Sin chip de variedades estables ni duplicados Tótem en Pokédex; formas útiles y las 12 identidades Tótem intactas en el picker/índice.
-- [ ] Pruebas completas, lint/build y snapshot correctos; APK con firma compatible y versión creciente, entrega por §8.1.
+- [x] Pruebas completas, lint/build y snapshot correctos; APK con firma compatible y versión creciente, entrega por §8.1.
 - [ ] Validar RC3 en el teléfono, especialmente el recorrido exacto reportado y la sensación del nuevo botón.
 
-**Estado:** implementación y verificación local completas; preparando publicación. Captura, biología, movimientos, mochila, entrenadores, Team Builder, mapas y RI no se implementan en esta intervención.
+**Estado:** implementación verificada y publicada como pre-release; falta la validación de RC3 en el teléfono. Captura, biología, movimientos, mochila, entrenadores, Team Builder, mapas y RI no se implementan en esta intervención.
 
 **Evidencias locales:**
 
@@ -308,6 +308,15 @@ No se inicia otra mejora al completar este bloque. La nueva política de §8.1 a
 - Los primeros tests de ida/vuelta esperaban el controlador viejo durante la transición; se corrigió la sincronización esperando el listado restaurado en el árbol UI, sin retirar comprobaciones. Búsqueda `totem` admite alias parciales, por lo que se verifica que conserva las 12 identidades, no que todo resultado textual de esa consulta sea exclusivamente Tótem.
 - Archivos: `data/explorer/PokemonExplorer.kt`, `data/index/{PokemonIndexSnapshot,PokemonIndexImporter}.kt`, `data/repository/DefaultPokemonRepository.kt`, `viewmodel/{PokemonExplorerController,PokemonViewModel}.kt`, `ui/screens/{PokedexScreen,PokedexScreenState,PokedexResults,PokemonExplorerContent}.kt` (base Kotlin de §11). Nuevo test `PokedexNavigationUiTest.kt`, ampliaciones de `PokemonExplorerTest.kt`/`PokedexPolishUiTest.kt`, asset `pokemon-index.json`, generador/tests Python, build de versión, workflow de publicación, README y este mismo plan.
 - El workflow de tags ahora asegura Build Tools 35.0.0 antes de verificar/publicar, igual que la recuperación de RC2; evita depender del conjunto de SDK preinstalado del runner sin cambiar la clave ni rebajar sus controles.
+
+**Entrega pública RC3:**
+
+- [Pre-release](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc3), `draft=false`, `prerelease=true`; [APK directo](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc3/RotomPedia-v3.5.0-rc3.apk). Actions verificó y publicó automáticamente la entrega preparada bajo §8.1, sin recuperación ni retagueo.
+- Commit/tag **`4309dd8bf4efe2e03632da209dffb73bb31272f9` / `v3.5.0-rc3`**. Incluye código, pruebas, snapshot, versión y evidencias previas a publicación; la documentación de cierre se añade después sin cambiar tag ni APK.
+- APK `RotomPedia-v3.5.0-rc3.apk`, **23922929 bytes**, SHA-256 **`eeb4b65ebd8491eee48b5c249dac9f08f6b2b6f30af7a080b0712a1df2a567aa`**, coincidente con el digest público; `.apk.sha256` incluido. Enlace público comprobado por HTTP HEAD **200**, MIME APK y longitud correctos.
+- `versionName=3.5.0-rc3`, `versionCode=30503 > 30502`, mismo paquete y mínimo API 25. Certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, comprobado contra el APK público de RC2 (hash previo coincidente) y validado otra vez por Actions. Clave privada fuera de GitHub. Sin cambios Room/datos personales.
+- Ambos workflows del mismo commit **success**: [Verify RotomPedia 41896235062](https://github.com/ArukuKun/RotomPedia/actions/runs/41896235062) y [Release APK 41896234934](https://github.com/ArukuKun/RotomPedia/actions/runs/41896234934). Conservados RC1/RC2 y sus tags/assets sin modificación.
+- Notas incluyen los cuatro cambios, recorrido Kalos/Furfrou e Hisui, instalación sobre RC2 sin desinstalar, limitaciones regionales/Tótem y problemas conocidos. La calculadora de captura sigue pendiente y no se marca v3.5 estable por esta entrega. Detenerse aquí antes de otra mejora y recoger la validación manual.
 
 ---
 
@@ -448,7 +457,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 
 **Punto de partida vigente:** v3.4 terminada; v3.5-A/B/C implementadas y publicadas como **v3.5.0-rc1**, pendientes de validación manual. La preparación/implementación inicial de v3.5 de este apartado ya se cumplió; su historial técnico permanece en §11–§17.
 
-1. **Ahora: cerrar las cuatro observaciones manuales de RC2 (§4.2)**: filtro visible, memoria de navegación/scroll, orden regional verificado y depuración del filtro de formas. Probar y publicar RC3 bajo §8.1; RC2 queda como comparación histórica (§4.1).
+1. **Ahora: validar RC3 en el teléfono (§4.2)**: las cuatro observaciones de RC2 están corregidas y entregadas. Repetir Kalos/Furfrou y retorno desde Cuadrícula, revisar botón y orden regional; RC2 queda como comparación histórica (§4.1).
 2. **Puerta manual:** presentar el resultado y completar/revisar observaciones de Android, sin declarar v3.5 estable solo por tests. Detenerse antes de otra mejora.
 3. **Seleccionar la siguiente tarea de estabilización de §13 con autorización**, acotada por módulo; no ejecutar todo el backlog ni convertirlo en requisito ilimitado que posponga mapas. Matemática de captura y selector de Balls son trabajos distintos.
 4. **v3.6: mapas**, piloto por región/juego y expansión posterior, reutilizando componentes actuales (§5). Sigue siendo la siguiente versión funcional prevista, no se renumera por el pulido de v3.5.
@@ -469,14 +478,14 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v3.4 integrada | ✅ Terminada; prerelease publicada | tag `v3.4.0-rc1`, commit `5d67ea0` | Bugs concretos en §13; no promoción a estable |
 | v3.5 | A/B/C publicadas como pre-release integrada; verificación local y CI correctas | `feature/v3.5-bc-encyclopedia`, `v3.5.0-rc1`, `a857f7e` | Validación manual Android pendiente (§17); base 3.5.0 aún no publicada |
 | v3.5 post-RC1 — Pokédex | Publicada como pre-release `v3.5.0-rc2`; no versión estable | `feature/v3.5-pokedex-polish`, tag en `c7010ac`, publicación Actions `41887424591` | 77 Kotlin/21 Python, firma/checksum/versión verificados; validación manual pendiente (§4.1) |
-| v3.5 post-RC2 — comodidad Pokédex | Observaciones manuales autorizadas; preparando RC3 | `feature/v3.5-pokedex-comfort` | Retorno Kalos/Furfrou, estado de ambas vistas, orden Hisui y Tótem; evidencia en §4.2 |
+| v3.5 post-RC2 — comodidad Pokédex | Publicada como pre-release `v3.5.0-rc3`; nueva validación pendiente | `feature/v3.5-pokedex-comfort`, tag en `4309dd8` | 86 Kotlin/23 Python, ambos CI correctos; retorno Kalos/Furfrou, vistas, Hisui y Tótem (§4.2) |
 | v3.6 | ⬜ Pendiente | — | Mapas por juego/región |
 | v3.7 | ⬜ Pendiente | — | Rotom contextual e interfaz |
 | Rotom Intelligence Pipeline | ⬜ Investigación y prototipo pendientes; sin iniciar | Sin rama/código de RI | Después de v3.5; integración progresiva con v3.7, sin retrasar v3.6 (§16) |
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 4 de noviembre de 2026.\
-**Próxima puerta:** entregar RC3 y que el usuario repita los recorridos de RC2 para validar sus correcciones (§4.2); después esperar autorización de otra tarea. Nunca promover a estable automáticamente.
+**Próxima puerta:** el usuario descarga RC3 y repite los recorridos de RC2 para validar sus correcciones (§4.2); después esperar autorización de otra tarea. Nunca promover a estable automáticamente.
 
 ---
 
