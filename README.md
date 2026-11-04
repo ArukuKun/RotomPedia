@@ -8,7 +8,7 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **Referencia pública:** [prerelease `v3.4.0-rc1`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.4.0-rc1), hitos A+B+C terminados. No se ha promovido a estable.
 
-**Desarrollo local:** v3.5-A (objetos) implementada en `feature/v3.5-a-items`, pendiente de validación del usuario en Android. Sin nueva release; v3.5-B/C aún no iniciadas.
+**Desarrollo local:** v3.5-A/B/C implementadas en `feature/v3.5-bc-encyclopedia`, con verificación técnica correcta y validación del usuario en Android pendiente. Sin nueva release.
 
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
@@ -20,8 +20,8 @@ Contiene alcance, autorización, evidencias, incidencias residuales y criterios 
 | v3.3.0-rc1 | Prerelease histórica | Refactor inicial de formas; [guía](docs/README-v3.3.md) y [validación](docs/v3.3-validacion.md). |
 | v3.4-A/B/C integrada | Terminada y publicada como prerelease | Índice y repositorios compartidos, Pokédex/picker nacional, filtros e imágenes por variedad. [Release RC1](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.4.0-rc1). |
 | v3.5-A — Objetos | Implementada localmente; validación manual pendiente | 2223 objetos, búsqueda local, fichas con procedencia, sprites y caché. Sin publicación. |
-| v3.5-B — Movimientos | Pendiente de autorización | Repositorio común, textos españoles con procedencia y aprendizaje por edición. |
-| v3.5-C — Habilidades | Pendiente de autorización | Fichas, habilidades normales/ocultas y relaciones verificables. |
+| v3.5-B — Movimientos | Implementada localmente; validación manual pendiente | 937 movimientos, repositorio común, textos españoles con procedencia y aprendizaje por edición. |
+| v3.5-C — Habilidades | Implementada localmente; validación manual pendiente | 374 habilidades, relaciones normales/ocultas por variedad/slot y enlaces verificados. |
 | v3.6 — Mapas interactivos | Planificada; sin iniciar | Piloto por región/juego, datos y activos verificados; navegación inspirada en PokeInfo. |
 | v3.7 — Rotom contextual e interfaz | Planificada; sin iniciar | Contexto local, personalidad, control de frecuencia y accesibilidad; IA opcional. |
 
@@ -70,6 +70,12 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 * **Conexiones:** Evolución → objeto y objeto → Pokémon portadores; sin añadir equipamiento persistido ni inferir legalidad de uso.
 * **Cobertura:** Los efectos sin traducción española se identifican; no se promete traducción integral ni detalle completo offline antes de descargarlo.
 
+### Movimientos y habilidades — desarrollo local v3.5-B/C
+* **Referencia compartida:** Snapshot local con hash y revisión fijada: 937 movimientos, 374 habilidades (311 nombres españoles), 2943 relaciones de habilidad por variedad y 2372 relaciones MT/MO–movimiento–objeto. Sin una petición por ficha o pulsación ni sprites inventados.
+* **Aprendizaje:** Completo bajo demanda por variedad, edición, método y nivel; caché persistente para reapertura offline. Páginas de 40 sin topes ocultos; catálogo general separado del aprendizaje.
+* **Editor:** Alias españoles/ingleses/slugs sin reescribir textos guardados; nombres desconocidos siguen visibles, no se muestran como vacíos.
+* **Límites:** Edición filtra aprendizaje, textos y MT/MO. Las estadísticas de movimientos y relaciones de habilidades son referencias actuales, no reconstrucciones históricas. Efectos sin español identificados como inglés; sin certificación de legalidad.
+
 ### 4. ☁️ Microservicio Propio (Backend Spring Boot)
 * **Integración Backend:** La app consume un servicio REST propio desarrollado en **Spring Boot (Java)**.
 * **Líderes de Gimnasio:** Visualización de líderes por región (Kanto, Johto, Hoenn) con datos e imágenes servidas desde el microservicio (IE 3.1.1).
@@ -77,7 +83,7 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 
 ### 5. 🗺️ Herramientas y extras existentes
 * **Visor de Mapas:** Pantalla interactiva para visualizar mapas de las regiones del juego.
-* **Equipos y herramientas:** Editor de equipos, estadísticas, movimientos y calculadora de captura. Las descripciones inglesas de movimientos y el cálculo de captura tienen incidencias pendientes; no se presentan como corregidas por v3.5-A.
+* **Equipos y herramientas:** Editor de equipos, estadísticas, movimientos y calculadora de captura. v3.5-B incorpora texto español por edición y fallback explícito; el cálculo de captura sigue diferido.
 * **UI Adaptativa:** Interfaz moderna construida 100% con **Jetpack Compose**.
 
 ## Calidad, compatibilidad y límites
@@ -86,11 +92,13 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 |---|---|---|
 | v3.4.0-rc1 publicada | 39 pruebas Kotlin, 12 Python, compilación/lint correctos y CI satisfactorio; reporte manual del usuario con incidencias concretas | Room v8 |
 | v3.5-A local | 52 pruebas Kotlin, 15 Python, lint sin errores (con advertencias), APK de aplicación y pruebas ensamblados; validación en Android real pendiente | Room v9: tres tablas nuevas de objetos; tablas existentes sin cambios |
+| v3.5-A/B/C local (4 de noviembre de 2026) | 66 pruebas Kotlin, 19 Python, lint sin errores (110 advertencias y 30 sugerencias), APK de aplicación e instrumentación ensamblados; no ejecutados en dispositivo | Room v10: añade solo caché de aprendizaje respecto a v9; conserva cuentas, equipos, favoritos, EV/IV y movimientos |
 
 - Datos personales e IDs técnicos se conservan; no se usa borrado destructivo como recuperación de una migración fallida.
 - Los APK publicados de esta etapa son de validación con firma de depuración, no firma privada de producción. Consultar las notas de la release antes de actualizar; no desinstalar para forzar una actualización sin respaldo.
 - No instalar una versión antigua sobre una base ya migrada a un esquema más reciente. El código local puede adelantarse al APK público; el nombre de una versión Android no demuestra por sí solo qué hitos están publicados.
-- Pendientes concretos: captura (`CAP-001`–`CAP-003`), español de movimientos (`MOV-001`), textos en pantallas estrechas (`UI-001`) y recursos gráficos aún ausentes. Véase el Plan Maestro, sin reabrir v3.4 completa.
+- El APK local conserva metadatos `3.4.0-rc1` / `30402`; no es una nueva release. No se han publicado estos cambios ni ejecutado CI remoto.
+- Pendientes concretos: captura (`CAP-001`–`CAP-003`), validación manual del español de movimientos (`MOV-001`, implementado localmente), textos en pantallas estrechas (`UI-001`) y recursos gráficos aún ausentes. Véase el Plan Maestro, sin reabrir v3.4 completa.
 
 ## 🛠️ Stack Tecnológico
 
