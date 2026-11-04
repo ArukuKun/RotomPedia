@@ -588,6 +588,8 @@ Se registra la propuesta del usuario y se alinea con v3.7; **no se ha implementa
 
 ## 17. Ejecución autorizada: v3.5-B/C — Movimientos y habilidades
 
+> **Actualización de autorización posterior al cierre técnico:** el usuario indicó publicar siempre las entregas de prueba como pre-release y las versiones base `X.Y.0` como release normal para poder probar desde el teléfono. Se autoriza push de esta entrega, tag y pre-release `v3.5.0-rc1` con A/B/C integradas. Esto sustituye las restricciones anteriores de «sin publicación autorizada» para esta entrega, pero no autoriza cerrar v3.5 estable, implementar captura/mapas/RI ni publicar pruebas como estables. Mantener APK firmado con certificado comprobado, código de versión creciente, checksum y notas de migración; no publicar automáticamente APK con una clave efímera de CI.
+
 **Fecha:** 4 de noviembre de 2026. **Rama:** `feature/v3.5-bc-encyclopedia`, incluye A y la planificación de RI. Autorización: continuar los hitos restantes de v3.5 mediante «sigue lo que tenemos que terminar para la 3.5», «sigue» y «siguele bro». Sin push/tag/release, cambios de firma ni incremento de versión Android.
 
 **Commit de implementación y pruebas:** `e382d67`. Incluye repositorios, snapshot, migración, interfaz y correcciones finales de las seis pruebas UI; esta documentación se conserva en un commit local posterior.

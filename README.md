@@ -10,6 +10,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **Desarrollo local:** v3.5-A/B/C implementadas en `feature/v3.5-bc-encyclopedia`, con verificación técnica correcta y validación del usuario en Android pendiente. Sin nueva release.
 
+**Política de publicación autorizada:** subir las entregas de prueba a GitHub como **pre-release** (hitos A/B/C, RC y otras pruebas); publicar las versiones base `X.Y.0` como **release normal**, solo cuando se decida cerrar esa versión. No convertir una prueba en estable automáticamente. Cada entrega incluirá APK con la firma de actualización comprobada, versión Android creciente y SHA-256. Se prepara `v3.5.0-rc1` con A/B/C integradas para la prueba en teléfono.
+
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
 
@@ -97,7 +99,7 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 - Datos personales e IDs técnicos se conservan; no se usa borrado destructivo como recuperación de una migración fallida.
 - Los APK publicados de esta etapa son de validación con firma de depuración, no firma privada de producción. Consultar las notas de la release antes de actualizar; no desinstalar para forzar una actualización sin respaldo.
 - No instalar una versión antigua sobre una base ya migrada a un esquema más reciente. El código local puede adelantarse al APK público; el nombre de una versión Android no demuestra por sí solo qué hitos están publicados.
-- El APK local conserva metadatos `3.4.0-rc1` / `30402`; no es una nueva release. No se han publicado estos cambios ni ejecutado CI remoto.
+- La entrega de prueba en preparación usa `3.5.0-rc1` / `30501`; no es la versión base estable `3.5.0`.
 - Pendientes concretos: captura (`CAP-001`–`CAP-003`), validación manual del español de movimientos (`MOV-001`, implementado localmente), textos en pantallas estrechas (`UI-001`) y recursos gráficos aún ausentes. Véase el Plan Maestro, sin reabrir v3.4 completa.
 
 ## 🛠️ Stack Tecnológico

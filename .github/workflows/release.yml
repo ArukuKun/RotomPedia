@@ -6,11 +6,11 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build-and-release:
-    name: Build & Publish APK Release
+    name: Verify Tagged APK
     runs-on: ubuntu-latest
 
     steps:
@@ -31,35 +31,11 @@ jobs:
         working-directory: ./RotomPedia
         run: ./gradlew testDebugUnitTest lintDebug assembleDebug --stacktrace
 
-      - name: Prepare APK Asset for Release
-        # RC assets are published explicitly after local verification. A runner's
-        # ephemeral debug key must not replace the APK users install as an update.
-        if: ${{ !contains(github.ref_name, '-rc') }}
-        run: |
-          VERSION_TAG="${{ github.ref_name }}"
-          echo "Preparing release APK for tag: ${VERSION_TAG}"
-          ls -la ./RotomPedia/app/build/outputs/apk/debug/
-          cp ./RotomPedia/app/build/outputs/apk/debug/app-debug.apk "./RotomPedia-${VERSION_TAG}.apk"
-          cp ./RotomPedia/app/build/outputs/apk/debug/app-debug.apk "./RotomPedia-latest.apk"
-
-      - name: Create GitHub Release and Upload APK
-        if: ${{ !contains(github.ref_name, '-rc') }}
-        uses: softprops/action-gh-release@v2
+      # The runner uses an ephemeral debug key. Its APK is a CI artifact only.
+      # Publish the verified, update-compatible APK + checksum explicitly with gh:
+      # test milestones/RC -> prerelease; approved X.Y.0 base -> normal release.
+      - name: Retain CI APK (not an installation update)
+        uses: actions/upload-artifact@v4
         with:
-          name: "RotomPedia ${{ github.ref_name }}"
-          tag_name: ${{ github.ref_name }}
-          files: |
-            ./RotomPedia-${{ github.ref_name }}.apk
-            ./RotomPedia-latest.apk
-          fail_on_unmatched_files: true
-          draft: false
-          prerelease: ${{ contains(github.ref_name, '-') }}
-          generate_release_notes: true
-          body: |
-            RotomPedia v3.4: índice nacional compartido, Pokédex y selector agrupados por especie, filtros locales combinables y resolución de imágenes por variedad.
-
-            Incluye los hitos A, B y C. Pendiente de validación del usuario en Android real.
-
-            APK debug firmado con clave de desarrollo. Si Android indica firma incompatible, no desinstales la aplicación para forzar la instalación sin respaldar antes los datos. Tras migrar a Room v8, no vuelvas a instalar una versión anterior sobre esos datos.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: RotomPedia-tag-validation-only
+          path: RotomPedia/app/build/outputs/apk/debug/app-debug.apk
