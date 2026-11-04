@@ -2,13 +2,15 @@
 
 **Marca / proyecto:** RotomPedia\
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
-**Versión base actual:** **v3.4 completada**, según confirmación del propietario del proyecto.\
+**Versión publicada actual:** **v3.5.0-rc1**, pre-release con A/B/C; validación manual y estabilización pendientes, no versión estable.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
 **Regla de alcance:** este documento no autoriza por sí solo a desarrollar o publicar las fases pendientes. Implementar la fase que el usuario autorice expresamente; no modificar versiones publicadas sin autorización.
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
 **Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc1`** con A/B/C integradas, rama `feature/v3.5-bc-encyclopedia`, tag en `a857f7e`; pruebas locales y CI correctas, validación del usuario en Android pendiente (§17). Política autorizada: pruebas/hitos como pre-release; base `X.Y.0` como release normal al cerrar la versión. No se autorizaron corrección de captura ni implementación de mapas/RI. Los bugs del apartado 13 no reabren v3.4 globalmente.
+
+**Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**, sin hoja de ruta paralela ni renumeración de fases. El usuario autoriza ahora solo la mejora de Pokédex (§4.1), en `feature/v3.5-pokedex-polish`. Las otras observaciones se incorporan a §13, sin autorización de implementación conjunta. Para esta intervención: no crear tags ni publicar releases sin nueva autorización; la política prueba/base anterior define el tipo de entrega, no anula este límite más reciente. No cambiar firma, `versionCode` ni releases históricas; numeración `0.x` solo en evaluación.
 
 **Ampliación de planificación:** Rotom Intelligence Pipeline se registra en §16 como investigación/prototipo futuro después de v3.5, con integración progresiva en v3.7 y sin bloquear mapas de v3.6. No es autorización para implementarlo, contratar servicios ni enviar datos a terceros. El [README principal](../README.md) resume estados de todas las series (3.x, 4.x y posteriores) y debe actualizarse junto con este plan al cerrar cada hito/versión.
 
@@ -143,13 +145,13 @@ Para actualizaciones del índice:
 
 ---
 
-## 4. v3.5 — Enciclopedia enriquecida (IMPLEMENTADA LOCALMENTE)
+## 4. v3.5 — Enciclopedia enriquecida (A/B/C EN PRE-RELEASE; ESTABILIZACIÓN ABIERTA)
 
 **Objetivo:** que objetos, movimientos y habilidades sean fichas útiles e interconectadas, no catálogos de emojis o nombres incompletos.
 
 ### v3.5-A — Objetos / Items
 
-**Implementada localmente; validación del usuario en Android pendiente.** Evidencias y límites en §15. No se ha publicado una versión de este hito.
+**Implementada y publicada dentro de v3.5.0-rc1; validación del usuario en Android pendiente.** Evidencias iniciales en §15 y publicación integrada en §17. No se crea otra entrega retrospectiva de A.
 
 - [x] Auditar `CompetitiveItemData` y separar información factual de consejos editoriales (§15).
 - [x] `ItemRepository` compartido: detalle REST `item`; identidades/categorías/atributos desde CSV oficiales fijados a revisión, sin consultas REST por cada filtro.
@@ -186,6 +188,73 @@ Para actualizaciones del índice:
 - [x] Selector de edición en aprendizaje/textos/MT; advertencias de valores y relaciones actuales, no historial reconstruido.
 
 **Criterio de salida v3.5:** pantallas en español con recursos correctos, datos de procedencia clara, búsqueda/reutilización compartida, tests de regresión y ninguna pérdida de equipos.
+
+### 4.1 Estabilización posterior a v3.5.0-rc1 — Pokédex (alcance inmediato autorizado)
+
+No se reabren v3.4 ni v3.5-A/B/C como proyectos nuevos. Se pule la Pokédex sobre sus repositorios, identidades y resolución de imágenes. Sin crear otra versión ni retrasar v3.6/v3.7 hasta implementar todo el backlog.
+
+**Rama:** `feature/v3.5-pokedex-polish`, desde `03466d1` (documentación de publicación RC1). Sin tocar tag, versión Android, certificado ni Room v10.
+
+**Commits locales de código:** `7515df6` (datos, filtros, nacional limpio, Lista/Cuadrícula y pruebas), `c52319d` (recuperar también presentación artwork del historial a través del resolutor compartido). Documentación de cierre en commit posterior; sin push/tag/release en esta intervención.
+
+**Referencia visual propia:** historial `2590bf5`, `PokedexScreen.kt::PokemonListItemCard`: sprite 72 dp, número 18 sp, nombre 20 sp, padding horizontal 16/vertical 8 dp, elevación 4 dp. El explorador de `248c922` pasó a sprite 44 dp dentro de 48 dp. Se recuperan las proporciones de RotomPedia con wrapping, tipos y controles accesibles; no se copian tamaños de PokeInfo ni se restaura el antiguo cargador de imágenes por URL arbitraria.
+
+**Contrato de presentación:**
+
+- Pokédex nacional: una variedad predeterminada por especie, número nacional oficial y nombre de especie, sin hijos ni desplegables. Buscar `#038` en este modo muestra Ninetales, no despliega Alola. Tipos/grupos huevo/favoritos no expanden variantes silenciosamente.
+- Categorías explícitas u origen regional permiten explorar formas; resultados planos, ordenados por número nacional, con nombre de variedad e ID técnico intacto. No mostrar una especie base que no cumple los filtros como resultado seleccionable.
+- Selector de equipos mantiene su explorador agrupado y acceso a variedades; detalle/formas existente permanece. No eliminar metadata ni identidades, cosméticos no seleccionables siguen sin inventarse como variedades.
+- Lista predeterminada, filas amplias y sprite 72 dp. Cuadrícula `LazyVerticalGrid` de **tres columnas**, tantas filas como resultados, claves `pokemonId`. Misma consulta, filtros, favoritos y callbacks de navegación al cambiar de vista; scroll independiente por modo.
+- Filtros intersectados: tipo, generación/origen regional existentes, categorías y grupo huevo. Gigamax por marcador canónico `-gmax` verificado tanto en variedad como en `pokemon-form`, separado de la categoría Combate; Mega por `isMega`. No derivar categorías del número de ID.
+- Grupos huevo: ampliar el **mismo** `pokemon-index.json` con `egg_groups.csv`, `egg_group_prose.csv` y `pokemon_egg_groups.csv` de la revisión fijada `e2710d30d14b3f4dc6a02a4a71e8619cd835b7ff`. Son metadatos de especie (no legalidad reproductiva histórica por juego), disponibles offline; no listas factuales manuales ni red por pulsación.
+
+**Aceptación y evidencias:** marcar solo tras comprobar cada punto; validación visual en teléfono sigue siendo una puerta independiente.
+
+- [x] Vista normal con 1025 especies, una por número nacional y orden #001…#1025; primeros seis Bulbasaur→Charizard.
+- [x] Sin Megas/variedades desplegadas ni desplegables en la Pokédex nacional; picker y detalle mantienen formas.
+- [x] Sprite 72 dp y proporciones de filas recuperadas del historial propio; prueba UI de 72×72 dp y tarjeta de al menos 96 dp.
+- [x] Grupo huevo funcional, combinable y con procedencia; 15 grupos/1304 relaciones que cubren las 1025 especies.
+- [x] Categorías Mega/Gigamax y regionales funcionales; 34 variedades Gigamax en el snapshot, número nacional separado de ID técnico.
+- [x] Lista predeterminada y cuadrícula con tres columnas, navegación más allá del noveno resultado hasta el último.
+- [x] Consulta/filtros/favoritos/navegación intactos al cambiar de vista; favoritos por variedad, no migrados a especie.
+- [x] Pruebas de datos, UI, picker y regresión personal; compilación/lint y snapshot verificados. Sin migración ni borrado de cuentas/equipos/EV/IV/movimientos.
+- [ ] Validación del usuario en Android: proporciones, sprites reales, pantalla estrecha/texto grande, navegación, favoritos y estado al volver.
+
+**Estado de ejecución:** implementación local y verificación técnica completadas; pendiente de validación manual. No se ha publicado este pulido ni sustituido el APK de RC1. Backlog restante en §13; esta intervención termina aquí antes de otra mejora.
+
+#### Evidencia de implementación y regresión
+
+- `PokemonExplorer.filter(..., nationalOnly=true)` aplica nacional limpio solo en Pokédex; el contrato predeterminado del picker conserva variedades. Se verifica `#038`→`38` en nacional y acceso a `10104` en picker/categoría regional. Mega y Gigamax se filtran sobre identidades existentes; `10196` muestra `#006` y navega a Charizard Gigamax, no a Charizard base.
+- Grupos huevo añadidos al snapshot original con `--enrich-eggs-only`. Comparación estructurada con `03466d1`: **sin cambios** en especies, variedades, formas, tipos, nombres de formas ni revisión upstream; solo se añaden `eggGroups`, `speciesEggGroups` y `eggGroupsComplete`. Permanecen 1025 especies, 1351 variedades y 1579 formas.
+- `PokemonIndexImporter` valida hash y relaciones antes de importar; publica metadatos de grupo huevo del mismo snapshot al repositorio, también si Room ya tenía el índice. Se rehidratan desde el asset en reapertura offline, sin otra tabla/catálogo ni migración. Se prueba rechazo de relación huérfana aunque el marcador de cobertura esté desactivado, sin reemplazar estado válido.
+- `PokedexResults.kt`: Lista/LazyColumn y Cuadrícula/LazyVerticalGrid con `GridCells.Fixed(3)` y claves por `pokemonId`. Mantiene el resolutor de imágenes de v3.4 y carga lazy de 72 dp, con estilo `ARTWORK` como el componente original y fallbacks de identidad correctos; no restaura URLs arbitrarias. Para nombres de variedad duplicados de la fuente, muestra el slug secundario en vez de inventar traducciones.
+- Panel de filtros desplazable en bottom sheet para no restar todo el alto de resultados en pantallas pequeñas. Etiquetas distinguen generación de especie, origen regional y grupo huevo. Los grupos huevo son relaciones actuales de especie, no reconstrucción por edición ni afirmación de legalidad reproductiva.
+- **77 pruebas Kotlin correctas, 0 fallos/errores/omitidas; 21 pruebas Python correctas.** `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --console=plain` correcto. Lint sin errores: 110 advertencias y 30 sugerencias, sin incidencias nuevas en `PokedexResults.kt`.
+- `PokemonExplorerTest.kt`: ocho casos de datos (tres previos + cinco nuevos de nacional/filtros/identidad/offline) y un caso adicional de integridad de grupos huevo; se mantienen los casos de referencia y verificación de cero interacciones API. `PokedexPolishUiTest.kt`: cinco casos nuevos de Lista, proporciones, cuadrícula, estado/favoritos/navegación, Gigamax y grupo huevo. Los dos casos previos de `PokemonExplorerUiTest.kt` siguen comprobando el picker agrupado.
+- Evidencia de orden: `(1..1025)` exacto y los seis slugs iniciales; cuadrícula comprueba geometría de las tres primeras tarjetas y scroll a índices 24 y 1024. Filtros: Bulbasaur en Monstruo/Planta, Ditto en su grupo, Mewtwo en Desconocido; Alola × Hielo × Campo × favorito devuelve `10104`; combinación incompatible produce vacío. Número nacional sintético distinto de especie/variedad también probado.
+- Incidencia de prueba resuelta: el texto `#038` aparecía tanto en búsqueda como en tarjeta; se acotó el selector al tag de la tarjeta, sin eliminar la aserción. No se ocultaron fallos ni se deshabilitaron tests. Otros límites encontrados: formas Gigamax comparten `isBattleOnly`; se diferencian usando su identidad canónica, no un flag inexistente.
+- APK generado en `RotomPedia/app/build/outputs/apk/debug/app-debug.apk`; APK de instrumentación compilado, no ejecutado en dispositivo. No hay Android conectado (`adb devices` vacío). Se conservan `3.5.0-rc1` / `30501` y Room v10: diff de build, base, migraciones y esquemas contra `03466d1` vacío. `apksigner verify --print-certs` confirma el certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, igual al de RC1. **No es una nueva release** ni se reemplaza el asset publicado.
+
+#### Archivos de esta intervención
+
+Rutas Kotlin base: `RotomPedia/app/src/main/java/com/duoc/rotompedia/`.
+
+- `data/explorer/PokemonExplorer.kt`; `data/index/PokemonIndexSnapshot.kt`; `data/index/PokemonIndexImporter.kt`; `data/repository/DefaultPokemonRepository.kt`.
+- `viewmodel/PokemonExplorerController.kt`; `viewmodel/PokemonViewModel.kt`.
+- `ui/screens/PokedexScreen.kt`; `ui/screens/PokemonExplorerContent.kt`; nuevo `ui/screens/PokedexResults.kt`.
+- `RotomPedia/app/src/main/assets/pokemon-index.json`.
+- `RotomPedia/app/src/test/java/com/duoc/rotompedia/PokemonExplorerTest.kt`; nuevo `RotomPedia/app/src/test/java/com/duoc/rotompedia/PokedexPolishUiTest.kt`.
+- `tools/generate_pokemon_index.py`; `tools/tests/test_pokemon_index.py`; `README.md` y **este mismo Plan Maestro**.
+
+#### Validación pendiente en el teléfono
+
+- [ ] Confirmar que tamaño/espaciado recuperan la identidad visual deseada; texto grande y ancho estrecho sin controles inaccesibles.
+- [ ] Nacional sin desplegables, Lista inicial; cambiar a Cuadrícula y recorrer más de nueve resultados. Confirmar imágenes, tipos y nombres largos, sin confundir número e ID.
+- [ ] Mega/Gigamax/regionales/grupos huevo y combinaciones; búsqueda/vacíos/limpiar filtros, apertura/cierre del bottom sheet y teclado.
+- [ ] Marcar/desmarcar favoritos y volver desde detalle; favoritos de variedades guardados siguen accesibles al elegir su categoría, no se borran por ocultarse en nacional.
+- [ ] Selector de equipos conserva formas y selección exacta; revisar usuarios, equipos, EV/IV y movimientos antes/después de una futura actualización autorizada. Offline y placeholders gráficos.
+
+No se inicia otra mejora al completar este bloque. La validación requiere una entrega de prueba posterior autorizada o el entorno local; **la RC1 pública no contiene este pulido aún**.
 
 ---
 
@@ -289,6 +358,16 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 - [ ] Textos en español y etiquetas de origen/versión para datos que cambian entre juegos.
 - [ ] No declarar estabilidad exclusivamente por compilación o tests unitarios; completar pruebas manuales/instrumentadas disponibles.
 
+**Matriz adicional post-RC1 (aplica a §4.1):**
+
+- [ ] Nacional: una entrada por especie, #001–#006 y extremos #001/#1025, sin desplegables; comprobar búsquedas por número y ausencia de variantes implícitas.
+- [ ] Formas: Mega Venusaur/Charizard, Gigamax Charizard, Ninetales de Alola y formas estables; elegir variedad conserva `pokemonId` y muestra número nacional, no ID interno.
+- [ ] Filtros: grupo huevo × tipo × categoría × generación/origen × favoritos, vacíos reales y limpieza de consulta/filtros. Grupo huevo de especie no se anuncia como historial por juego.
+- [ ] Lista/Cuadrícula: lista inicial, sprite 72 dp, tres columnas reales, scroll más allá de nueve y hasta el final, sin límite de resultados. Claves estables y mismo resolutor gráfico, sin llamadas de datos al escribir o cambiar vista.
+- [ ] Alternar vista sin perder búsqueda, filtros, favoritos ni identidad de navegación; selector de equipos sigue ofreciendo variedades.
+- [ ] Regresión de cuentas, equipos, EV/IV, cuatro movimientos y cachés; no cambiar esquema ni certificado. Pruebas automatizadas separadas de validación manual de actualización.
+- [ ] Android real: texto grande, pantallas pequeñas, teclado, filtros desplazables, imágenes ausentes/offline y retorno desde detalle; no afirmar que Robolectric mide todos los dispositivos.
+
 ### Disciplina de desarrollo
 
 - [ ] Usar rama de trabajo, revisar `git status` antes de tocar archivos y evitar sobrescribir cambios del usuario.
@@ -302,14 +381,13 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 
 ## 9. Orden recomendado desde hoy
 
-**Punto de partida:** v3.4 (A+B+C) **terminada según el usuario**. No volver a ejecutarlas como proyectos nuevos.
+**Punto de partida vigente:** v3.4 terminada; v3.5-A/B/C implementadas y publicadas como **v3.5.0-rc1**, pendientes de validación manual. La preparación/implementación inicial de v3.5 de este apartado ya se cumplió; su historial técnico permanece en §11–§17.
 
-1. **Verificación ligera de v3.4**: revisar el repositorio actual, completar el registro de evidencias y anotar únicamente regresiones reales. No reescribir la fase.
-2. **Preparar v3.5**: revisar módulos actuales de objetos/movimientos/habilidades; proponer hitos A/B/C y criterios; pedir autorización de implementación.
-3. **Implementar v3.5 por hitos autorizados**, con pruebas antes de la siguiente etapa.
-   - Una vez finalizada v3.5, se puede proponer investigación acotada de RI-1 (§16), previa autorización; no bloquear ni posponer el piloto de mapas por este proyecto.
-4. **Desarrollar v3.6** mediante piloto de mapa por región/juego y expansión posterior.
-5. **Desarrollar v3.7** con Rotom contextual basado en reglas y pulido transversal; IA solo como opción futura aprobada.
+1. **Ahora: Pokédex post-RC1 (§4.1)**, única implementación autorizada: recuperar proporciones propias, nacional limpio, grupos huevo/categorías verificadas y Lista/Cuadrícula. Probar y registrar evidencia, sin tags/releases en esta intervención.
+2. **Puerta manual:** presentar el resultado y completar/revisar observaciones de Android, sin declarar v3.5 estable solo por tests. Detenerse antes de otra mejora.
+3. **Seleccionar la siguiente tarea de estabilización de §13 con autorización**, acotada por módulo; no ejecutar todo el backlog ni convertirlo en requisito ilimitado que posponga mapas. Matemática de captura y selector de Balls son trabajos distintos.
+4. **v3.6: mapas**, piloto por región/juego y expansión posterior, reutilizando componentes actuales (§5). Sigue siendo la siguiente versión funcional prevista, no se renumera por el pulido de v3.5.
+5. **v3.7: Rotom contextual e interfaz**, reglas locales, personalidad y accesibilidad (§6), coordinado con RI (§16). RI-1 se puede proponer tras v3.5, con autorización de investigación propia y sin bloquear v3.6; IA/servicios externos no forman parte de esta mejora.
 
 **Instrucción a OpenCode:** utilizar este documento como el contexto maestro de continuidad. No hacer una nueva auditoría extensa para reabrir v3.4 salvo que existan fallos concretos o falte evidencia imprescindible; concentrarse en **lo siguiente pendiente**. Cuando se autorice una fase, disponer de libertad para programar, investigar, refactorizar y probar dentro de ella, sin solicitar aprobación para cada archivo. Detenerse al llegar a cambios de alcance, publicación o tareas destructivas.
 
@@ -325,13 +403,14 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v3.4-C | ✅ Completada | `feature/v3.4-c-implementation`, `e41bda3`, `6c8e9c2`, `6a0f2ac` | Evidencias registradas; matriz manual de imágenes pendiente |
 | v3.4 integrada | ✅ Terminada; prerelease publicada | tag `v3.4.0-rc1`, commit `5d67ea0` | Bugs concretos en §13; no promoción a estable |
 | v3.5 | A/B/C publicadas como pre-release integrada; verificación local y CI correctas | `feature/v3.5-bc-encyclopedia`, `v3.5.0-rc1`, `a857f7e` | Validación manual Android pendiente (§17); base 3.5.0 aún no publicada |
+| v3.5 post-RC1 — Pokédex | Implementada y verificada localmente; no es otra versión | `feature/v3.5-pokedex-polish`, `7515df6`, `c52319d` | 77 Kotlin/21 Python; validación manual pendiente (§4.1). Sin push/tag/release |
 | v3.6 | ⬜ Pendiente | — | Mapas por juego/región |
 | v3.7 | ⬜ Pendiente | — | Rotom contextual e interfaz |
 | Rotom Intelligence Pipeline | ⬜ Investigación y prototipo pendientes; sin iniciar | Sin rama/código de RI | Después de v3.5; integración progresiva con v3.7, sin retrasar v3.6 (§16) |
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 4 de noviembre de 2026.\
-**Próxima puerta:** validar v3.5-A/B/C en Android antes de proponer publicación u otra fase.
+**Próxima puerta:** terminar la mejora de Pokédex (§4.1), verificar regresiones y presentar validación de Android; después esperar autorización de otra tarea. No publicar ni promover a estable automáticamente.
 
 ---
 
@@ -439,14 +518,29 @@ Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
 
 | ID / destino propuesto | Evidencia | Trabajo pendiente / criterio de cierre |
 |---|---|---|
-| `CAP-001` — mantenimiento futuro de captura; diferido por el usuario | Captura de Virizion `#640`, ratio 3, salud 1%, Ocaso Ball: 0.1%, ~99.0 bolas y acumuladas redondeadas a 0%. El usuario sospecha que no cambia según la bola. | Reproducir por juego con mismos PS/estado/entorno/turno, comparando Poké/Súper/Ultra/Ocaso activa e inactiva y Master; validar contra fórmulas/fuentes independientes y añadir tests. No dar por confirmada una causa con una sola captura. |
+| `CAP-001` — corrección matemática de captura; pendiente, no autorizada ahora | Captura histórica de Virizion `#640`, ratio 3, salud 1%, Ocaso Ball: 0.1%, ~99.0 bolas y acumuladas redondeadas a 0%. Nuevo reporte del usuario menciona legendarios como Mewtwo, sin parámetros suficientes para una reproducción nueva. | Reproducir por edición con mismos PS/estado/entorno/turno, comparar fórmulas y referencias verificables, tasas/bonificaciones/redondeos; tests de legendarios y especies comunes. No limitar artificialmente el resultado a 0.1%, ni dar una causa por confirmada con el reporte. Independiente del selector visual `CAP-004`. |
 | `CAP-002` — coherencia numérica y condiciones, mismo mantenimiento | `CatchRateCalculatorScreen.kt:89–105` incluye `selectedBall` en `remember` y la pasa a `calculate`; `CatchRateCalculator.kt:83–124` sí aplica multiplicadores, pero limita probabilidad visible a ≥0.1% y esperadas a ≤99. Usa potencia 0.75 y luego cuatro comprobaciones. `DIVE_BALL` aplica 3.5 sin condición y `HEAVY_BALL` no tiene entrada de peso. | Auditar fórmula/condiciones por edición antes de prometer «oficial Gen 8/9»; separar cálculo real de presentación/redondeo, eliminar mensajes engañosos y verificar monotonicidad/acumuladas. Los límites explican parte de la presentación, no prueban por sí solos la causa completa. |
 | `CAP-003` — datos de captura y PS, mismo mantenimiento | La pantalla usa `resolveBaseCatchRate` local; además existe `CatchRateCalculator.getDefaultCatchRate`, otra tabla. Se pasa `maxHp=100` y porcentaje redondeado como PS; el botón «1 PS» representa 1%, no 1 PS real. | Obtener tasa por especie del repositorio/datos verificables y distinguir porcentaje/PS reales; probar variedades, tasas ausentes y estimaciones. No mezclar esta corrección funcional con el repositorio enciclopédico de objetos sin ampliar alcance. |
 | `MOV-001` — traducción/procedencia, v3.5-B | Captura del editor de Typhlosion de Hisui: nombres españoles y efectos ingleses. Código y muestra de PokeAPI confirmados en §12.1–12.2. | Implementado localmente: texto español por edición y fallback inglés identificado, sin inventar efectos detallados. Pruebas correctas; validación manual pendiente (§17). |
 | `UI-001` — pantallas estrechas / texto grande | En las capturas se parte verticalmente «255 (Común)» y «Estado»; hay controles horizontales parcialmente visibles. | Revisar anchuras mínimas, wrapping, scroll y accesibilidad sin borrar filtros; decidir en su hito funcional o pulido v3.7, y probar con tamaños de fuente grandes. Observación visual, no causa confirmada de `CAP-001`. |
 | `ITEM-001` — datos de bayas, v3.5-A | Discrepancia histórica de `shuca_berry`, verificada en §12.2. | Corregida en la implementación local de A: índice oficial, Baya Acardo/Tierra y efecto revisado con fuente. Pruebas de bayas/identidad; pendiente de validación manual. |
+| `DEX-001` — nacional limpio y proporciones propias; **autorizado ahora** | Observación Android: filas/sprites reducidos y variedades desplegables no deseadas en la Pokédex normal. Referencia propia `2590bf5` frente a `248c922`. | §4.1: 1025 especies ordenadas, sin hijos/desplegables; recuperar sprite 72 dp/nombre 20 sp, sin retirar formas del detalle/picker. Validación visual en teléfono pendiente. |
+| `DEX-002` — filtros verificables; **autorizado ahora** | Tipos/origen/generación ya existen; faltan grupos huevo y categoría Gigamax diferenciada. | §4.1: ampliar el índice existente desde la revisión fijada; combinar grupo huevo, tipo, categoría, generación/origen y favoritos. Relación de especie explícita, cobertura real, sin catálogos factuales manuales. |
+| `DEX-003` — Lista/Cuadrícula; **autorizado ahora** | Solicitud post-RC1; lista como defecto y cuadrícula de tres columnas sin máximo de nueve. | §4.1: componentes lazy, claves estables, sprite/número/nombre/tipos, resultados completos y estado compartido al alternar; navegación/favoritos intactos. |
+| `BIO-001` — ficha biológica compacta; pendiente de autorización | Usuario solicita reorganizar bajo imagen/descripción; habilidades ya tienen repositorio/fichas. | Especie/categoría, altura y peso con unidades y procedencia; habilidades normales y `(oculta)` en bloque compacto, conservando fichas detalladas. No atribuir descripción de especie a variedad sin especificidad verificada. |
+| `ABIL-001` — contadores y traducciones; pendiente de autorización | Ya existe habilidad → variedades asociadas en v3.5-C. Se reportan traducciones incorrectas sin aportar aún la lista exacta de nombres. | Añadir contadores **de variedades distintas (`pokemonId`)** normales y ocultas; deduplicar cada rol, indicar que una variedad podría pertenecer a ambos si la fuente lo registra. Si se ofrecen especies, conteo separado por `speciesId`, nunca mezclar unidades. Revisar muestras/traducciones con fuentes españolas verificables, sin reemplazos inventados ni reimplementar el enlace existente. |
+| `MOV-002` — símbolos y presentación; pendiente de autorización | v3.5 ya expone tipo/categoría en texto y filtros por ambos en el catálogo; no son funciones inexistentes. | Pulir tipo elemental y símbolo Física/Especial/Estado, conservar y validar filtros actuales, fichas, métodos/niveles/ediciones y repositorio. No reconstruir el catálogo desde cero. |
+| `MOV-003` — movimientos Z; pendiente de autorización e investigación de cobertura | Solicitud de filtro adicional, no nueva categoría de daño. | Relación/marcador de movimiento Z desde fuente verificable y contexto de juego; intersectar con tipo/categoría. Física, Especial y Estado siguen siendo las tres categorías de daño; no clasificar Z como cuarta. |
+| `ITEM-002` — mochila por bolsillos; pendiente de autorización | `ItemRepository`, sprites y categorías oficiales ya existen. | Explorar Poké Balls, Medicina, Bayas, MT/MO, clave, equipables y otros bolsillos documentados. Usar relaciones de fuente/edición, no una organización universal inventada ni equipabilidad inferida solo del bolsillo; declarar cobertura. |
+| `TRAIN-001` — líderes, Alto Mando, Campeón y revanchas; pendiente de autorización | Módulo de líderes y backend Spring Boot existentes, no sistema completo de entrenadores por edición. | Investigar/reutilizar backend y contratos; filtro principal **juego/edición**, región secundaria. No mezclar Rubí/Zafiro, Esmeralda y RO/ZA; verificar personajes, orden, equipos, estadísticas y revanchas por fuente/edición. No inventar ni asumir que PokeAPI cubre todo. Los filtros regionales de Pokédex no se reemplazan por este criterio. |
+| `CAP-004` — selector visual de Poké Balls; pendiente de autorización | Tarjetas de Balls actuales; solicitud de botón → diálogo/bottom sheet. No prueba una causa matemática. | Reutilizar `ItemRepository`: sprite real, nombre español, buscador y listado con condiciones documentadas. Balls menos comunes solo con datos/mecánicas compatibles por edición; no hacer una tabla duplicada ni atribuirle `CAP-001`–003. |
+| `TEAM-001` — acceso a editar movimientos; pendiente de autorización | Editor existente persiste cuatro movimientos; se solicita acceso por integrante desde pestaña Movimientos. | Añadir `Editar movimientos` por Pokémon abriendo **el mismo editor**, sin otro sistema; preservar cuatro textos, usuario activo, propiedad y variedad exacta. Pruebas de guardar/cancelar/reabrir/cambiar usuario. |
+| `SEC-001` — distribución y seguridad; pendiente de revisión autorizada | APK debug con firma comprobada; solicitud de revisar avisos Play Protect, permisos y privacidad. No se ha probado una causa concreta de avisos. | Revisar procedencia/instalación y captura exacta del aviso, manifiesto/permisos necesarios, política de privacidad real y estrategia de firma/actualización. No prometer quitar advertencias, evadir controles ni fabricar documentos; no cambiar certificado ni comprometer datos. |
+| `VER-001` — posible numeración 0.x; **solo propuesta** | Usuario considera expresar beta con 0.x, sin aprobar política definitiva. | Mantener 3.x y `versionCode` creciente hasta decidir; no renombrar tags/releases antiguas ni reducir código Android. Pruebas como pre-release y base como release normal solo con autorización aplicable; no asignar una nueva versión a estas tareas. |
 
-Las incidencias están registradas localmente en este plan; **no se han creado issues públicos**. ITEM-001 y MOV-001 tienen cambios locales, no publicados; CAP-001–003 siguen diferidos. Conservar las capturas de esta conversación como evidencia aportada por el usuario; no afirmar que se archivaron sus archivos en el repositorio.
+**Orden y límites del backlog:** primero DEX-001–003, única programación autorizada; luego validación manual y selección con el usuario de una siguiente tarea acotada. BIO/ABIL/MOV/ITEM/TEAM son pulido de módulos existentes; CAP matemático y selector se planifican y validan por separado; TRAIN exige investigación de datos/backend; SEC/VER no permiten cambios de firma o numeración por inferencia. No ejecutar esta tabla de golpe ni crear una línea paralela que sustituya v3.6, v3.7 o RI.
+
+Las incidencias se registran en este único plan; **no se han creado issues públicos**. ITEM-001 y MOV-001 están incluidos en la RC1 publicada, aún pendientes de aprobación manual. CAP-001–004 y las mejoras no DEX siguen pendientes, sin implementación autorizada ahora. Conservar las capturas de la conversación como evidencia del usuario; no afirmar que sus archivos se archivaron en el repositorio.
 
 ---
 
@@ -461,7 +555,7 @@ Las incidencias están registradas localmente en este plan; **no se han creado i
 - [ ] Validación manual de v3.5 en Android por el usuario.
 - [ ] v3.6: reutilizar `MapScreen.kt` (ya tiene zoom/pan y pines en un mismo contenedor transformado), `RegionLocationData.kt` y `LocationDetailBottomSheet.kt`; no empezar de cero. Falta contexto de edición en el modelo local de encuentros, cobertura cartográfica comprobada y validación de hitboxes. Elegir piloto y permisos de activos antes de expandir.
 - [ ] v3.7: reutilizar `RotomCommentaryEngine.kt` y `RotomThemeManager.kt`; ya existen comentarios en detalle y temas. Falta el motor contextual transversal, prioridades/cooldown, controles de frecuencia y accesibilidad. No describirlo como inexistente ni como completo. IA opcional sigue sin autorizar.
-- Alcance de la revisión documental original: solo plan/README. Las implementaciones posteriores autorizadas de Kotlin/Room/build se registran en §15 y §17; sin nueva publicación.
+- Alcance de la revisión documental original: solo plan/README. Las implementaciones posteriores de Kotlin/Room/build y la publicación integrada se conservan en §15 y §17; el pulido actual autorizado y no publicado está en §4.1.
 
 ---
 
@@ -469,7 +563,7 @@ Las incidencias están registradas localmente en este plan; **no se han creado i
 
 Esta sección es posterior a la revisión documental de §14; no cambia retroactivamente su alcance ni el código/tag publicado de v3.4.
 
-**Rama:** `feature/v3.5-a-items`. **Distribución:** solo desarrollo local, sin push/tag/release ni incremento de versión de publicación. No se modificaron movimientos, habilidades ni cálculo de captura; los cambios en detalle/evoluciones son enlaces a objetos oficiales.
+**Registro histórico de la entrega inicial:** rama `feature/v3.5-a-items`, entonces solo desarrollo local sin push/tag/release ni incremento de versión. Más tarde se incluyó A en la pre-release integrada de §17. En ese hito no se modificaron movimientos, habilidades ni cálculo de captura; los cambios en detalle/evoluciones son enlaces a objetos oficiales.
 
 **Commits de implementación:** `66f6c95` (índice, repositorio, caché y migración), `3f589cd` (enciclopedia, enlaces y pruebas de interfaz). Esta rama también conserva el commit documental previo `47df886`; la release pública sigue apuntando a `5d67ea0`.
 
@@ -493,7 +587,7 @@ Esta sección es posterior a la revisión documental de §14; no cambia retroact
 - Validación: **52 pruebas Kotlin correctas** (39 previas + 13 nuevas, incluidas tres de interfaz); `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest` correcto, lint sin errores y con advertencias. Se probó además el paso carga→detalle de la ficha asíncrona, evitando que la ventana quedase mostrando carga tras recibir los datos.
 - Evidencias nuevas: `ItemRepositoryTest.kt`, `ItemPresentationTest.kt`, `ItemUiTest.kt`, extensión de `RoomPersistenceTest.kt`, `tools/tests/test_item_index.py` y esquema exportado `9.json`. El workflow de verificación se amplía a ramas v3.5 y valida ambos snapshots. No se ha ejecutado CI remoto porque no se autorizó push.
 - La aprobación en Android real permanece pendiente; no convertir compilación o Robolectric en validación de dispositivo. No instalar versiones antiguas sobre una base migrada a v9.
-- Puerta original: presentar A y esperar autorización de B. Después se autorizó continuar B/C (§17); publicar sigue sin autorizarse.
+- Puerta histórica: presentar A y esperar autorización de B. Después se autorizó B/C y su pre-release integrada (§17); la intervención posterior de Pokédex (§4.1) requiere nueva autorización para tags/releases.
 
 ---
 
@@ -582,7 +676,7 @@ El orden de presentación RI-1…RI-5 no hace obligatoria RI-4: se puede integra
 
 ### 16.7 Alcance de esta incorporación
 
-Se registra la propuesta del usuario y se alinea con v3.7; **no se ha implementado pipeline, base de curiosidades, búsqueda web, proveedor de IA ni motor nuevo**. No se aprobaron presupuesto, credenciales, recopilación de datos ni despliegue de un backend adicional. v3.4 permanece terminada; v3.5-A/B/C están implementadas localmente y pendientes de validación manual (§17). Captura, mapas y RI siguen diferidos, sin reabrir fases ni mover sus prioridades.
+Se registra la propuesta del usuario y se alinea con v3.7; **no se ha implementado pipeline, base de curiosidades, búsqueda web, proveedor de IA ni motor nuevo**. No se aprobaron presupuesto, credenciales, recopilación de datos ni despliegue de un backend adicional. v3.4 permanece terminada; v3.5-A/B/C están publicadas en RC1 y pendientes de validación manual (§17). La Pokédex post-RC1 (§4.1) no incluye RI, captura ni mapas y no mueve sus prioridades.
 
 ---
 
