@@ -6,13 +6,13 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 ## Estado actual y versiones
 
-**Prueba pública actual:** [pre-release `v3.5.0-rc1`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc1), con v3.5-A/B/C integradas. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc1/RotomPedia-v3.5.0-rc1.apk). No es la versión base estable `3.5.0`; v3.4 queda como referencia histórica.
+**Prueba pública actual:** [pre-release `v3.5.0-rc2`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc2), con el pulido de Pokédex y v3.5-A/B/C integradas. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc2/RotomPedia-v3.5.0-rc2.apk). No es la versión base estable `3.5.0`; RC1 se conserva sin cambios para comparar.
 
-**Código publicado:** rama `feature/v3.5-bc-encyclopedia`, tag `v3.5.0-rc1` en `a857f7e`; verificación local y CI correctas, validación del usuario en Android pendiente.
+**Código publicado:** rama `feature/v3.5-pokedex-polish`, tag `v3.5.0-rc2` en `c7010ac`; verificación local y publicación mediante Actions correctas, validación del usuario en Android pendiente.
 
 **Política permanente de publicación:** implementar una fase autorizada incluye permiso para commits, push, nuevo tag, GitHub Actions y **pre-release con APK descargable**, sin pedir autorización adicional. Exige verificaciones correctas, firma compatible, `versionCode` creciente, SHA-256, notas y problemas conocidos. No sobrescribir releases anteriores. **Versiones estables, cambios de firma y acciones destructivas requieren aprobación independiente**; esta política no autoriza nuevas fases. Ver §8.1 del único Plan Maestro.
 
-**Pulido post-RC1:** Pokédex nacional sin desplegables, proporciones originales restauradas, grupos huevo, Gigamax y Lista/Cuadrícula de tres columnas en `feature/v3.5-pokedex-polish`. Se prepara `v3.5.0-rc2` / `30502` bajo la política permanente; **no está incluido en RC1**. No incluye el resto del backlog. Evidencias y pendientes en [§4.1 del Plan Maestro](docs/ROTOMPEDIA_PLAN_MAESTRO.md#41-estabilización-posterior-a-v350-rc1--pokédex-alcance-inmediato-autorizado).
+**Pulido post-RC1:** Pokédex nacional sin desplegables, proporciones originales restauradas, grupos huevo, Gigamax y Lista/Cuadrícula de tres columnas. Publicado como `v3.5.0-rc2` / `30502`, con la misma firma compatible que RC1; **no incluye el resto del backlog**. Evidencias y pendientes en [§4.1 del Plan Maestro](docs/ROTOMPEDIA_PLAN_MAESTRO.md#41-estabilización-posterior-a-v350-rc1--pokédex-alcance-inmediato-autorizado).
 
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
@@ -26,7 +26,7 @@ Contiene alcance, autorización, evidencias, incidencias residuales y criterios 
 | v3.5-A — Objetos | En pre-release integrada; validación manual pendiente | 2223 objetos, búsqueda local, fichas con procedencia, sprites y caché. |
 | v3.5-B — Movimientos | En pre-release integrada; validación manual pendiente | 937 movimientos, repositorio común, textos españoles con procedencia y aprendizaje por edición. |
 | v3.5-C — Habilidades | En pre-release integrada; validación manual pendiente | 374 habilidades, relaciones normales/ocultas por variedad/slot y enlaces verificados. |
-| v3.5 post-RC1 — Pokédex | Pulido local verificado; validación en teléfono pendiente | 1025 especies sin desplegables; sprites 72 dp, grupos huevo, formas por filtros y Lista/Cuadrícula. Sin nueva versión publicada. |
+| v3.5 post-RC1 — Pokédex | Publicada como pre-release v3.5.0-rc2; validación en teléfono pendiente | 1025 especies sin desplegables; sprites 72 dp, grupos huevo, formas por filtros y Lista/Cuadrícula. |
 | v3.6 — Mapas interactivos | Planificada; sin iniciar | Piloto por región/juego, datos y activos verificados; navegación inspirada en PokeInfo. |
 | v3.7 — Rotom contextual e interfaz | Planificada; sin iniciar | Contexto local, personalidad, control de frecuencia y accesibilidad; IA opcional. |
 
@@ -67,7 +67,7 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 * **Pokédex Nacional:** Índice local de 1025 especies y 1351 variedades a partir de relaciones de [PokeAPI](https://pokeapi.co/), compartido con el selector de equipos y herramientas.
 * **Favoritos (Room):** Sistema para marcar/desmarcar Pokémon favoritos, guardándolos en base de datos local y permitiendo filtrar la lista para ver solo los guardados.
 * **Detalle y variedades:** Estadísticas, tipos en español, evoluciones, imágenes de la variedad seleccionada y placeholders cuando no existen recursos válidos. No se presenta un texto de especie como descripción específica de otra variedad.
-* **Exploración:** Orden nacional y búsqueda local por nombre, número y alias; filtros combinables. En el pulido local post-RC1, Pokédex muestra solo especies por defecto, sin desplegables; variedades por categoría/origen, mientras el picker conserva grupos. Grupos huevo desde el mismo índice fijado de PokeAPI, Gigamax diferenciada y Lista/Cuadrícula de tres columnas sin límite de nueve.
+* **Exploración:** Orden nacional y búsqueda local por nombre, número y alias; filtros combinables. Desde RC2, Pokédex muestra solo especies por defecto, sin desplegables; variedades por categoría/origen, mientras el picker conserva grupos. Grupos huevo desde el mismo índice fijado de PokeAPI, Gigamax diferenciada y Lista/Cuadrícula de tres columnas sin límite de nueve.
 
 ### 3. 🎒 Enciclopedia de objetos — v3.5-A incluida en RC1
 * **Catálogo:** 2223 objetos, 2218 con nombre español; categorías y atributos con búsqueda local.
@@ -98,13 +98,14 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 | v3.4.0-rc1 publicada | 39 pruebas Kotlin, 12 Python, compilación/lint correctos y CI satisfactorio; reporte manual del usuario con incidencias concretas | Room v8 |
 | v3.5-A local | 52 pruebas Kotlin, 15 Python, lint sin errores (con advertencias), APK de aplicación y pruebas ensamblados; validación en Android real pendiente | Room v9: tres tablas nuevas de objetos; tablas existentes sin cambios |
 | v3.5-A/B/C local (4 de noviembre de 2026) | 66 pruebas Kotlin, 19 Python, lint sin errores (110 advertencias y 30 sugerencias), APK de aplicación e instrumentación ensamblados; no ejecutados en dispositivo | Room v10: añade solo caché de aprendizaje respecto a v9; conserva cuentas, equipos, favoritos, EV/IV y movimientos |
-| Pulido Pokédex post-RC1 local | 77 pruebas Kotlin y 21 Python correctas; lint sin errores, APK de aplicación/instrumentación compilados. Sin validación de dispositivo ni CI nuevo | Room v10 sin cambios ni migraciones nuevas; identidades previas del snapshot intactas |
+| Pulido Pokédex RC2 | 77 pruebas Kotlin y 21 Python correctas; lint sin errores, APK de aplicación/instrumentación compilados y CI correcto. Firma/checksum/versión verificados por Actions antes de publicar; sin validación de dispositivo | Room v10 sin cambios ni migraciones nuevas; identidades previas del snapshot intactas |
 
 - Datos personales e IDs técnicos se conservan; no se usa borrado destructivo como recuperación de una migración fallida.
 - Los APK publicados de esta etapa son de validación con firma de depuración, no firma privada de producción. Consultar las notas de la release antes de actualizar; no desinstalar para forzar una actualización sin respaldo.
 - No instalar una versión antigua sobre una base ya migrada a un esquema más reciente. El código local puede adelantarse al APK público; el nombre de una versión Android no demuestra por sí solo qué hitos están publicados.
-- La pre-release publicada usa `3.5.0-rc1` / `30501`, con el mismo certificado comprobado que el APK público de v3.4.0-rc1. Incluye SHA-256; no es la versión base estable `3.5.0`. No desinstales para forzar una actualización si Android muestra un conflicto de firma.
-- El pulido local no cambia firma ni numeración. Una posible numeración `0.x` es solo una propuesta pendiente; no renombra releases ni reduce el `versionCode`.
+- La pre-release actual usa `3.5.0-rc2` / `30502` (RC1: `30501`), con el mismo certificado comprobado que RC1. Incluye SHA-256; no es la versión base estable `3.5.0`. Instalar como actualización; no desinstales ni borres datos para forzarla si Android informa conflicto de firma.
+- SHA-256 de RC2: `a8dd7e0754bcc51a93bc7d5e914d93fe63e9f9c992663a9399c1cb4b20cc198d`. [Verificación y publicación Actions correctas](https://github.com/ArukuKun/RotomPedia/actions/runs/41887424591).
+- Una posible numeración `0.x` es solo una propuesta pendiente; no renombra releases ni reduce el `versionCode`. Estables y cambios de firma siguen requiriendo aprobación.
 - Pendientes concretos: captura (`CAP-001`–`CAP-003`), validación manual del español de movimientos (`MOV-001`, implementado localmente), textos en pantallas estrechas (`UI-001`) y recursos gráficos aún ausentes. Véase el Plan Maestro, sin reabrir v3.4 completa.
 
 ## 🛠️ Stack Tecnológico
