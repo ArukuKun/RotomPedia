@@ -59,6 +59,11 @@ jobs:
         with:
           name: RotomPedia-validation-only
           path: RotomPedia/app/build/outputs/apk/debug
+      - name: Ensure pinned APK verification tools
+        run: |
+          if [ ! -x "$ANDROID_HOME/build-tools/35.0.0/apksigner" ]; then
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "build-tools;35.0.0"
+          fi
       - name: Resolve existing test tag without changing its app source
         id: prepared
         run: |

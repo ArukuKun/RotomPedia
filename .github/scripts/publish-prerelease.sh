@@ -30,11 +30,14 @@ actual_hash="$(sha256sum "$ASSET_DIR/$ASSET_NAME" | cut -d ' ' -f 1)"
 [[ "$actual_hash" == "$expected_hash" ]] || { echo "APK checksum mismatch." >&2; exit 1; }
 echo "Verified APK checksum: $actual_hash"
 
-APKSIGNER="$(find -L "$ANDROID_HOME/build-tools" -type f -name apksigner -executable | sort -V | tail -n 1)"
-AAPT="$(find -L "$ANDROID_HOME/build-tools" -type f -name aapt -executable | sort -V | tail -n 1)"
+# Match the locally verified tool version; runner images also contain newer tools
+# whose human-readable certificate output is not part of our parsing contract.
+APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
 [[ -x "$APKSIGNER" && -x "$AAPT" ]] || { echo "Executable Android verification tools are missing." >&2; exit 1; }
 echo "Using apksigner: $APKSIGNER; aapt: $AAPT"
 certificates="$("$APKSIGNER" verify --print-certs "$ASSET_DIR/$ASSET_NAME")"
+printf '%s\n' "$certificates"
 [[ "$(grep -cE '^Signer #[0-9]+ certificate SHA-256 digest:' <<< "$certificates")" == 1 ]]
 grep -Fxq 'Signer #1 certificate SHA-256 digest: 5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa' <<< "$certificates" || {
   echo "Signing certificate differs from the previously published compatible APK. Publication stopped." >&2
