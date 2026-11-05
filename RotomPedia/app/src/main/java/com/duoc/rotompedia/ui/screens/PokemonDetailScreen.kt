@@ -498,45 +498,8 @@ fun PokemonDetailContent(
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Formas", fontSize = 22.sp, fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.onBackground)
-        Spacer(Modifier.height(12.dp))
-        if (formsState is PokemonFormsState.Loading) {
-            CircularProgressIndicator(Modifier.size(24.dp))
-        }
-        if (formsState is PokemonFormsState.Error) {
-            Text((formsState as PokemonFormsState.Error).message, color = MaterialTheme.colorScheme.error)
-            TextButton(onClick = { pokemonViewModel.loadFormVarieties(speciesId) }) { Text("Reintentar") }
-        }
-        if (availableForms.size > 1) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                items(availableForms, key = { it.name }) { form ->
-                    val selected = form.id == pokemon.id
-                    Card(
-                        onClick = { if (!selected) onFormClick(form.id) },
-                        modifier = Modifier.width(160.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        border = BorderStroke(if (selected) 2.dp else 1.dp,
-                            if (selected) Color(0xFF61DAF6) else MaterialTheme.colorScheme.outlineVariant),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            PokemonImage(pokemonId = form.id, savedUrl = form.spriteUrl, contentDescription = form.formDisplayName,
-                                modifier = Modifier.size(96.dp))
-                            Text(form.formDisplayName, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-                            Text(if (selected) "✓ Seleccionada" else if (form.isDefault) "Predeterminada" else
-                                PokemonFormCatalog.find(form.name)?.formTag ?: "Variante", fontSize = 12.sp,
-                                color = if (selected) Color(0xFF61DAF6) else MaterialTheme.colorScheme.onSurfaceVariant)
-                            form.types.forEach { type -> Text(traducirTipo(type), fontSize = 12.sp) }
-                        }
-                    }
-                }
-            }
-        } else if (formsState is PokemonFormsState.Success) {
-            Text("Esta especie no tiene otras variedades de combate en PokeAPI.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Spacer(modifier = Modifier.height(24.dp))
+        PokemonFormsSection(pokemon.id, availableForms, formsState,
+            onRetry = { pokemonViewModel.loadFormVarieties(speciesId) }, onFormClick = onFormClick)
         PokemonMovesSection(pokemonId = pokemon.id)
         PokemonLocationsSection(pokemonId = pokemon.id)
         Spacer(modifier = Modifier.height(16.dp))

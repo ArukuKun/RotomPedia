@@ -20,6 +20,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **BIO-001 publicada:** `v3.5.0-rc5` / `30505`: bloque compacto de especie/categoría, altura/peso de la variedad y habilidades visibles con acceso a sus fichas existentes. Sin cambios de Room ni datos personales; medidas/categoría pueden faltar al reabrir offline. 100 pruebas Kotlin/23 Python, lint/build, snapshots y ambos workflows correctos; validación visual pendiente. Ver §4.4 del mismo Plan Maestro; P3 sigue para después.
 
+**Parche visual en preparación:** `v3.5.0-rc6` / `30506`, rama `feature/v3.5-ability-sprites`: mini sprites de la variedad exacta junto a los portadores de habilidades y sección «Formas» oculta cuando no hay alternativas. Mantiene lista completa, navegación y datos guardados; pruebas focalizadas correctas, suite final/publicación pendientes. Alcance y evidencia en §4.5 del Plan Maestro; evolución de Overqwil y P3 siguen pendientes.
+
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
 

@@ -12,6 +12,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +26,8 @@ import com.duoc.rotompedia.data.reference.*
 import com.duoc.rotompedia.di.AppContainer
 import com.duoc.rotompedia.util.traducirTipo
 import kotlinx.coroutines.CancellationException
+import coil.ImageLoader
+import coil.imageLoader
 
 @Composable
 fun resolvedLegacyMove(name: String?): PokemonMove? {
@@ -181,12 +185,23 @@ internal fun AbilityReferenceSheet(ability: ReferenceAbility, index: ReferenceIn
             Text("Relaciones actuales de la fuente por variedad y slot, no historial de habilidades por juego. La edición seleccionada solo filtra texto.", fontSize = 11.sp)
             if (links.isEmpty()) Text("Sin relación documentada en el índice nacional incluido; no implica inexistencia en todos los juegos.")
             links.take(visibleCount).forEach { link ->
-                TextButton({ onPokemonClick(link.pokemonId.toString()) }) {
-                    Text("${pokemonLabels[link.pokemonId] ?: "ID técnico ${link.pokemonId}"} · ${if (link.hidden) "Oculta" else "Normal"} · slot ${link.slot}")
-                }
+                AbilityPokemonRow(link, pokemonLabels[link.pokemonId] ?: "ID técnico ${link.pokemonId}", onPokemonClick)
             }
             if (visibleCount < links.size) TextButton({ count += 40 }) { Text("Cargar 40 más") }
             Text("Fuente: PokeAPI · ${index.revision.take(12)}", fontSize = 11.sp)
+        }
+    }
+}
+
+@Composable
+internal fun AbilityPokemonRow(link: AbilityLink, label: String, onPokemonClick: (String) -> Unit,
+    imageLoader: ImageLoader = LocalContext.current.imageLoader) {
+    TextButton({ onPokemonClick(link.pokemonId.toString()) }, modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            PokemonImage(pokemonId = link.pokemonId, contentDescription = null, imageLoader = imageLoader,
+                modifier = Modifier.size(40.dp).testTag("ability_sprite_${link.pokemonId}_${link.slot}"))
+            Spacer(Modifier.width(8.dp))
+            Text("$label · ${if (link.hidden) "Oculta" else "Normal"} · slot ${link.slot}", modifier = Modifier.weight(1f))
         }
     }
 }
