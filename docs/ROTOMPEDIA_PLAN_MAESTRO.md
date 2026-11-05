@@ -387,6 +387,8 @@ No se inicia otra mejora al completar este bloque. La nueva política de §8.1 a
 
 **Puerta manual RC6:** instalar sobre RC5 sin desinstalar; revisar sprites y nombres/roles de portadores desde catálogo y detalle, navegación a una variedad regional y carga adicional tras 40 relaciones. Comprobar Overqwil sin sección vacía, Ninetales/Charizard con alternativas reales, texto grande y datos guardados. Validación visual pendiente; EVO-001 y el resto del backlog no se presentan como resueltos.
 
+**Aprobación posterior del usuario:** «Esta perfecta! quedo de pana, sigamos!». RC6, incluidos ABIL-002 y DEX-008, aprobada en términos generales. No se infiere dispositivo ni ejecución individual de toda la matriz manual. Proponer EVO-001 (requisito evolutivo de Overqwil por edición) como siguiente alcance y confirmar antes de implementarlo; P3 continúa diferida. Esta aprobación no promueve v3.5 a estable ni autoriza todo el backlog.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -554,7 +556,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 5 de noviembre de 2026.\
-**Próxima puerta:** validar RC6, que entrega ABIL-002 y DEX-008 (§4.5); después seleccionar el siguiente alcance con autorización. EVO-001 queda registrada para revisión y P3 sigue diferida. Nunca promover a estable automáticamente.
+**Próxima puerta:** RC6 aprobada por el usuario (§4.5); confirmar el siguiente alcance propuesto, EVO-001, antes de implementarlo. P3 sigue diferida. Nunca promover a estable automáticamente.
 
 ---
 
