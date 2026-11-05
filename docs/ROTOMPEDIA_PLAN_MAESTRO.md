@@ -442,6 +442,8 @@ En Arceus las evoluciones se eligen en el menú tras cumplir la condición, no s
 
 **Puerta manual RC7:** instalar sobre RC6 sin desinstalar; alternar edición en Overqwil, Wyrdeer y Sneasler, verificar retroceso/sexo en Basculegion, objetos/luna en Kleavor/Ursaluna y niveles/lluvia en iniciales y regionales. Comprobar navegación exacta, referencia general diferenciada y datos previos. Otras ediciones fuera de cobertura y P3 pendiente; esperar aprobación antes de otro alcance.
 
+**Aprobación posterior del usuario:** «perfecto sigamos». RC7/EVO-001 aprobada en términos generales, sin inferir dispositivo ni ejecución exhaustiva de cada recorrido. Proponer ABIL-001 como siguiente alcance acotado: contadores de variedades distintas normales/ocultas y revisión de traducciones verificables, conservando sprites/fichas existentes. Confirmar antes de implementar; P3 y el resto del backlog no quedan autorizados por esta aprobación. No promover a estable.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -609,7 +611,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 5 de noviembre de 2026.\
-**Próxima puerta:** RC7 publicada y verificada (§4.6); esperar validación visual de EVO-001 y aprobación del usuario antes de otro alcance. P3 sigue diferida. Nunca promover a estable automáticamente.
+**Próxima puerta:** RC7/EVO-001 aprobada por el usuario (§4.6); confirmar ABIL-001 como siguiente alcance antes de implementarlo. P3 sigue diferida. Nunca promover a estable automáticamente.
 
 ---
 
