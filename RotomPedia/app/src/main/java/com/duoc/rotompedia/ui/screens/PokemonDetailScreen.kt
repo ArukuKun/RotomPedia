@@ -478,25 +478,7 @@ fun PokemonDetailContent(
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        when (evolutionState) {
-            is EvolutionState.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            }
-            is EvolutionState.Success -> {
-                EvolutionChainColumn(
-                    chain = evolutionState.evolutionChain,
-                    currentPokemonId = speciesId.toString(),
-                    onPokemonClick = onPokemonClick,
-                    onItemClick = onItemClick
-                )
-            }
-            is EvolutionState.Error -> {
-                Text(
-                    text = evolutionState.message,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-        }
+        PokemonEvolutionSection(pokemon.name, speciesId, indexedEntries, evolutionState, onPokemonClick, onItemClick)
         Spacer(modifier = Modifier.height(24.dp))
         PokemonFormsSection(pokemon.id, availableForms, formsState,
             onRetry = { pokemonViewModel.loadFormVarieties(speciesId) }, onFormClick = onFormClick)

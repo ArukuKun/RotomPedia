@@ -22,6 +22,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **Parche visual publicado:** `v3.5.0-rc6` / `30506`: mini sprites de la variedad exacta junto a los portadores de habilidades y sección «Formas» oculta cuando no hay alternativas. Mantiene lista completa, navegación y datos guardados; 105 Kotlin/23 Python y ambos workflows correctos, validación visual pendiente. Alcance y evidencia en §4.5 del Plan Maestro; evolución de Overqwil y P3 siguen pendientes.
 
+**Siguiente alcance autorizado:** tras aprobar RC6, el usuario amplía EVO-001 a las evoluciones especiales de Hisui. Preparando `v3.5.0-rc7` / `30507`, rama `feature/v3.5-hisui-evolutions`: 22 relaciones verificadas para Arceus y Escarlata/Púrpura, con selección de edición y variedades exactas. La referencia general de especie se conserva por separado; otras ediciones no se extrapolan. Sin cambios de datos personales ni P3. Evidencias y matriz en §4.6 del mismo Plan Maestro; verificación final y publicación pendientes.
+
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
 

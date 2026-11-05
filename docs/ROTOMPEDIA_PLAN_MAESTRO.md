@@ -389,6 +389,55 @@ No se inicia otra mejora al completar este bloque. La nueva política de §8.1 a
 
 **Aprobación posterior del usuario:** «Esta perfecta! quedo de pana, sigamos!». RC6, incluidos ABIL-002 y DEX-008, aprobada en términos generales. No se infiere dispositivo ni ejecución individual de toda la matriz manual. Proponer EVO-001 (requisito evolutivo de Overqwil por edición) como siguiente alcance y confirmar antes de implementarlo; P3 continúa diferida. Esta aprobación no promueve v3.5 a estable ni autoriza todo el backlog.
 
+### 4.6 EVO-001 ampliada — requisitos evolutivos de Hisui (autorizada)
+
+**Autorización:** tras aprobar RC6, el usuario amplía Overqwil a «todos los de Hisui que tienen esas restricciones, o requisitos» y confirma «si» al alcance: condiciones verificadas por juego, métodos locales frente a transferencia, sin mezclar ediciones. Rama `feature/v3.5-hisui-evolutions`; preparación `v3.5.0-rc7` / `30507`, entrega de prueba bajo §8.1. No autoriza P3, captura, mapas, RI ni el resto del backlog.
+
+**Diagnóstico:** `parseEvolutionChainWithStages` consume solo `evolutionDetails.firstOrNull()` y una cadena de **especies**, no variedades; su texto genérico no modela estilos/contador de usos ni garantiza contexto de juego. No se atribuye el mismo método a todas las ediciones ni se usa el ID nacional para representar una variedad de Hisui.
+
+**Diseño y límites:** referencia contextual local `HisuiEvolutions`, 22 relaciones verificadas cuyos slugs se resuelven en el **mismo índice Pokémon**. No introduce otro catálogo de identidades, peticiones por relación ni cambios de snapshot/Room. Bloque de evolución con edición explícita **Leyendas: Arceus / Escarlata-Púrpura**, requisitos, nombres/sprites y navegación a la variedad exacta; enlaces de objetos reutilizan las fichas existentes. La edición se guarda por variedad con `rememberSaveable`. Funciona aunque falle la cadena remota, una vez disponible el índice local.
+
+La referencia genérica previa de la especie se conserva tras un botón, identificada como **no filtrada por edición** (otros ancestros/ramas, como Scizor); no certifica variedad ni sustituye las reglas verificadas visibles por defecto. En las variedades ordinarias Qwilfish, Basculin rojo/azul y Sneasel/Weavile se excluyen las ramas reservadas a sus contrapartes de Hisui/Raya Blanca. Luna Carmesí no se atribuye como evolución de Ursaring. No se cambia la persistencia personal ni la consulta de movimientos.
+
+**Cobertura revisada (dos contextos, no afirmación universal para todos los juegos):**
+
+| Relación | Leyendas: Arceus | Escarlata/Púrpura |
+|---|---|---|
+| Stantler → Wyrdeer | Asalto Barrera 20 veces, estilo rápido; menú Evolucionar | Método deshabilitado; evolucionar en Arceus y transferir por HOME |
+| Scyther → Kleavor | Mineral Negro | Sin evolución local; alternativa válida: evolucionar en Arceus y transferir. No afirmar que sea la única obtención: también hay captura en DLC |
+| Teddiursa → Ursaring → Ursaluna normal | Nivel 30; Bloque de Turba en noche de luna llena | Teddiursa sí evoluciona; Ursaring no produce Ursaluna aquí. Luna Carmesí no es evolución |
+| Qwilfish de Hisui → Overqwil | Mil Púas Tóxicas 20 veces, estilo fuerte; menú Evolucionar | Subir de nivel con Mil Púas Tóxicas aprendido |
+| Sneasel de Hisui → Sneasler | Usar Garra Afilada de día, sin equiparla | Subir de nivel de día con Garra Afilada equipada |
+| Basculin Raya Blanca → Basculegion macho/hembra | ≥294 PS acumulados de retroceso sin debilitarse; menú Evolucionar, sin nivel adicional | Mismo daño acumulado y subir de nivel; conserva sexo e identidad |
+| Growlithe de Hisui → Arcanine de Hisui | Piedra Fuego | Piedra Fuego |
+| Voltorb de Hisui → Electrode de Hisui | Piedra Hoja, no Piedra Trueno ni nivel 30 | Piedra Hoja |
+| Cyndaquil → Quilava → Typhlosion de Hisui | Nivel 17 y después 36 | Quilava al 14; no produce Typhlosion de Hisui localmente |
+| Oshawott → Dewott → Samurott de Hisui | Nivel 17 y después 36 | Dewott al 17; no produce Samurott de Hisui localmente |
+| Rowlet → Dartrix → Decidueye de Hisui | Nivel 17 y después 36, no 34 | Dartrix al 17; no produce Decidueye de Hisui localmente |
+| Petilil → Lilligant de Hisui | Piedra Solar en Arceus | No produce esta forma localmente |
+| Rufflet → Braviary de Hisui | Nivel 54 en Arceus | No produce esta forma localmente |
+| Bergmite → Avalugg de Hisui | Nivel 37 en Arceus | No produce esta forma localmente |
+| Zorua de Hisui → Zoroark de Hisui | Nivel 30 | Nivel 30 de la misma variedad regional |
+| Goomy → Sliggoo de Hisui → Goodra de Hisui | Nivel 40 en Arceus; después ≥50 con lluvia natural | Goomy no produce Sliggoo de Hisui aquí; Sliggoo de Hisui sí evoluciona a Goodra de Hisui al subir desde nivel 50 con lluvia natural |
+
+En Arceus las evoluciones se eligen en el menú tras cumplir la condición, no se presentan como automáticas. Para métodos sin evolución local, HOME es una ruta posible, no una afirmación de exclusividad frente a capturas/eventos. **Otras ediciones (incluidas Z-A, GO o generaciones anteriores) no están verificadas por esta referencia y no reciben reglas extrapoladas.** No se incluyen cambios de forma legendarios como evoluciones. Niebla descartada para Goodra de Hisui: la referencia consultada limita la alternativa de niebla a generación VII; no mezclarla con Hisui.
+
+**Fuentes cotejadas el 05-11-2026:**
+
+- [Serebii: nuevos métodos de Arceus](https://www.serebii.net/legendsarceus/evolution.shtml): objetos, estilos y retroceso; contrastar por nombre, no copiar números de tabla que contiene erratas.
+- [Serebii: métodos de Escarlata/Púrpura](https://www.serebii.net/scarletviolet/evolution.shtml): Overqwil con movimiento aprendido.
+- Pokémon Database, apartado Evolution chart de [Wyrdeer](https://pokemondb.net/pokedex/wyrdeer), [Kleavor](https://pokemondb.net/pokedex/kleavor), [Ursaluna](https://pokemondb.net/pokedex/ursaluna), [Basculegion](https://pokemondb.net/pokedex/basculegion), [Sneasler](https://pokemondb.net/pokedex/sneasler), [Overqwil](https://pokemondb.net/pokedex/overqwil), y páginas de Arcanine, Electrode, Typhlosion, Samurott, Lilligant, Zoroark, Braviary, Sliggoo, Goodra, Avalugg y Decidueye en el mismo sitio: niveles/formas/objetos y variantes de iniciales.
+- Bulbapedia: [Hisuian form](https://bulbapedia.bulbagarden.net/wiki/Hisuian_form), [Methods of Evolution](https://bulbapedia.bulbagarden.net/wiki/Methods_of_Evolution), y Evolution data de [Sliggoo](https://bulbapedia.bulbagarden.net/wiki/Sliggoo_(Pok%C3%A9mon)), [Basculegion](https://bulbapedia.bulbagarden.net/wiki/Basculegion_(Pok%C3%A9mon)), [Sneasler](https://bulbapedia.bulbagarden.net/wiki/Sneasler_(Pok%C3%A9mon)), [Ursaluna](https://bulbapedia.bulbagarden.net/wiki/Ursaluna_(Pok%C3%A9mon)), [Wyrdeer](https://bulbapedia.bulbagarden.net/wiki/Wyrdeer_(Pok%C3%A9mon)) y Kleavor: evolución local frente a transferencia, nivel adicional, sexo y lluvia.
+- Nombres españoles de movimientos/objetos contrastados con los índices compartidos incluidos: **Mil Púas Tóxicas**, Asalto Barrera, Mineral Negro, Bloque de Turba, Garra Afilada y piedras. No crear alias de movimientos ni reescribir textos guardados por esta corrección.
+
+**Verificación:** primera pasada focalizada de 10 pruebas correcta; ampliada con la sección real de producción y estado de fallo remoto. Suite final Android en ejecución; 23 Python y los tres verificadores de snapshots correctos. Nuevos tests verifican las 22 relaciones contra identidades reales, exclusiones de formas, cambios de método por edición, navegación exacta, objetos, restauración de edición y ausencia de evoluciones inventadas. Publicación y validación visual pendientes.
+
+**Incidencia local de verificación:** una repetición se solapó con Gradle aún activo y falló al escribir `classes.jar` por bloqueo de archivo de Windows. La ejecución anterior terminó correctamente, pero no basta como evidencia del árbol final tras ajustar el nombre español a «Mil Púas Tóxicas». Se repite toda la verificación sin solapamiento (`--max-workers=1`); no publicar sobre el intento fallido ni cambiar firma por este bloqueo.
+
+**Verificación final local RC7:** repetición completa **correcta**, sin solapamiento: `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --console=plain --max-workers=1`. **117 Kotlin, cero fallos/errores/omitidas; 23 Python y los tres verificadores de snapshots correctos.** Lint sin errores, 110 advertencias/30 sugerencias. `git diff --check` correcto. Instrumentación compilada, no ejecutada; `adb devices` vacío. La incidencia de bloqueo anterior queda resuelta para esta entrega; validación visual pendiente.
+
+**APK preparado RC7:** `RotomPedia-v3.5.0-rc7.apk`, 24071978 bytes, SHA-256 `f8857ff5659159ab1b4c8be6a2f26b3ce062109f1f08f0cec04a15f543d1dec5`, con `.apk.sha256`. Paquete `com.duoc.rotompedia`, `3.5.0-rc7` / `30507 > 30506`, mínimo API 25. Build Tools 35.0.0 verifica certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, idéntico al APK RC6 cuyo hash también se comprobó. Clave privada fuera de GitHub. Publicación supeditada a repetir controles de §8.1 en Actions; no modificar tags/assets anteriores ni promover a estable.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -556,7 +605,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 5 de noviembre de 2026.\
-**Próxima puerta:** RC6 aprobada por el usuario (§4.5); confirmar el siguiente alcance propuesto, EVO-001, antes de implementarlo. P3 sigue diferida. Nunca promover a estable automáticamente.
+**Próxima puerta:** EVO-001 ampliada a Hisui está autorizada y en preparación RC7 (§4.6); terminar verificación y entregar pre-release para revisión visual. P3 sigue diferida. Nunca promover a estable automáticamente.
 
 ---
 
@@ -679,7 +728,7 @@ Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
 | `DEX-007` — categoría alternativa y Tótem; autorizado post-RC2 | Se cuestiona el cajón «Variedades estables» y Raticate Tótem duplicado. | §4.2: retirar chip general, ocultar Tótem en Pokédex sin borrar datos; conservar formas de Lycanroc, genios y Origen en fichas/picker y preservar equipos/favoritos por ID. |
 | `DEX-008` — sección Formas vacía; **publicada en RC6** | Tras aprobar RC5, el usuario reporta una sección sin alternativas y un aviso sobre PokeAPI en Overqwil. | §4.5: sección y espaciado propio ocultos sin alternativas; selección/identidades y reintento conservados. 105 Kotlin/23 Python y ambos CI correctos; validación visual pendiente. |
 | `ABIL-002` — mini sprites de portadores; **publicada en RC6** | El usuario solicita acompañar con sprite cada Pokémon de la lista de portadores en la ficha de habilidad. | §4.5: sprite de 40 dp por `pokemonId`, nombre/rol legibles, lista completa y navegación exacta. 105 Kotlin/23 Python y ambos CI correctos; validación visual pendiente. Contadores/traducciones de ABIL-001 siguen aparte. |
-| `EVO-001` — requisito evolutivo de Overqwil; pendiente de revisión | En el mismo reporte de RC5, el usuario indica que no se explica cómo evolucionarlo; no especifica edición ni pasos. | Reproducir y verificar la relación Qwilfish de Hisui → Overqwil y sus condiciones por juego; revisar datos y presentación sin inventar un requisito universal ni dar la incidencia por corregida. No ampliar automáticamente el parche visual DEX-008 a una reimplementación de evoluciones. |
+| `EVO-001` — requisitos evolutivos de Hisui; **ampliación autorizada tras RC6** | Reporte inicial Overqwil en RC5; después el usuario pide todos los casos de Hisui y confirma el alcance por edición. | §4.6: 22 relaciones verificadas en Arceus y Escarlata/Púrpura, identidad exacta, condiciones y transferencia diferenciadas. Primera pasada focalizada correcta; suite final, publicación RC7 y validación visual pendientes. No extrapolar a otras ediciones ni implementar P3. |
 | `BIO-001` — ficha biológica compacta; **publicada en RC5** | Usuario acepta expresamente continuar con BIO-001 tras aprobar RC4; habilidades reutilizan repositorio/fichas. | §4.4: 100 Kotlin/23 Python y ambos CI correctos; especie/categoría, medidas de variedad y habilidades normales/`(oculta)`. Validación visual pendiente; sin atribuir descripción de especie a variedad ni inventar medidas offline. |
 | `ABIL-001` — contadores y traducciones; pendiente de autorización | Ya existe habilidad → variedades asociadas en v3.5-C. Se reportan traducciones incorrectas sin aportar aún la lista exacta de nombres. | Añadir contadores **de variedades distintas (`pokemonId`)** normales y ocultas; deduplicar cada rol, indicar que una variedad podría pertenecer a ambos si la fuente lo registra. Si se ofrecen especies, conteo separado por `speciesId`, nunca mezclar unidades. Revisar muestras/traducciones con fuentes españolas verificables, sin reemplazos inventados ni reimplementar el enlace existente. |
 | `MOV-002` — P3, símbolos y presentación; pendiente de autorización | v3.5 ya expone tipo/categoría en texto y filtros por ambos en el catálogo; no son funciones inexistentes. | Ampliación P3 en §13.1: tipo con color y símbolo Física/Especial/Estado; filas compactas responsivas, sin rehacer catálogo, fichas ni repositorio. Filtros del catálogo general separados de métodos de aprendizaje. |
