@@ -21,7 +21,7 @@ data class ReferenceMove(val id: Int, val slug: String, val nameEs: String?, val
 @JsonClass(generateAdapter = true)
 data class ReferenceAbility(val id: Int, val slug: String, val nameEs: String?, val nameEn: String, val mainSeries: Boolean,
     val effectEs: String?, val effectEn: String?, val texts: List<ReferenceText>) {
-    val displayName get() = nameEs ?: nameEn
+    val displayName get() = AbilityNames.displayName(this)
 }
 @JsonClass(generateAdapter = true)
 data class AbilityLink(val pokemonId: Int, val abilityId: Int, val hidden: Boolean, val slot: Int)

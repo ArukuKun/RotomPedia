@@ -98,7 +98,7 @@ fun ReferenceBrowserScreen(abilities: Boolean, onBack: () -> Unit, onPokemonClic
                         if (count < rows.size) item { TextButton({ count += 40 }) { Text("Cargar 40 más") } }
                     }
                 } else {
-                    val rows = remember(loaded, query) { loaded.abilities.filter { ReferencePresentation.matches(query, it.displayName, it.nameEn, it.slug, it.id.toString()) }.sortedBy { it.displayName } }
+                    val rows = remember(loaded, query) { loaded.abilities.filter { AbilityNames.matches(it, query) }.sortedBy { it.displayName } }
                     Text("${rows.size} habilidades · mostrando ${minOf(count, rows.size)}")
                     LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         items(rows.take(count), key = { it.id }) { row -> Card(Modifier.fillMaxWidth().clickable { ability = row }) {
@@ -172,36 +172,59 @@ internal fun AbilityReferenceSheet(ability: ReferenceAbility, index: ReferenceIn
     var count by remember(ability.id) { mutableIntStateOf(40) }
     val selectedGroup = group
     val visibleCount = count
-    val links = index.pokemonAbilities.filter { it.abilityId == ability.id }.sortedBy { it.pokemonId }
+    val summary = remember(index, ability.id) { AbilityPresentation.holders(index, ability.id) }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(0.9f).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(ability.displayName, style = MaterialTheme.typography.titleLarge)
             Text("${ability.slug} · ID habilidad ${ability.id}")
             if (ability.nameEs == null) Text("Nombre español no disponible.")
+            AbilityNames.revision(ability)?.let { revision ->
+                Text("Antes de la novena generación: ${revision.previous}", style = MaterialTheme.typography.labelSmall)
+                Text("Nombre actual: WikiDex · español de España", style = MaterialTheme.typography.labelSmall)
+            }
             TextButton(onDismiss) { Text("Cerrar ficha") }
             ItemChoice("Edición del texto", selectedGroup, ability.texts.map { it.versionGroup }.distinct(), ItemLabels::version) { group = it }
             SourceText(ability.texts, selectedGroup, ability.effectEs, ability.effectEn)
-            Text("Pokémon asociados · ${links.size}", fontWeight = FontWeight.Bold)
-            Text("Relaciones actuales de la fuente por variedad y slot, no historial de habilidades por juego. La edición seleccionada solo filtra texto.", fontSize = 11.sp)
-            if (links.isEmpty()) Text("Sin relación documentada en el índice nacional incluido; no implica inexistencia en todos los juegos.")
-            links.take(visibleCount).forEach { link ->
-                AbilityPokemonRow(link, pokemonLabels[link.pokemonId] ?: "ID técnico ${link.pokemonId}", onPokemonClick)
+            AbilityHolderCounts(summary)
+            if (summary.holders.isEmpty()) Text("Sin variedades documentadas en el índice incluido.")
+            summary.holders.take(visibleCount).forEach { holder ->
+                AbilityHolderRow(holder, pokemonLabels[holder.pokemonId] ?: "ID técnico ${holder.pokemonId}", onPokemonClick)
             }
-            if (visibleCount < links.size) TextButton({ count += 40 }) { Text("Cargar 40 más") }
+            if (visibleCount < summary.total) TextButton({ count += 40 }) { Text("Cargar 40 más") }
             Text("Fuente: PokeAPI · ${index.revision.take(12)}", fontSize = 11.sp)
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun AbilityHolderCounts(summary: AbilityHolderSummary) {
+    Text("Variedades asociadas · ${summary.total}", fontWeight = FontWeight.Bold)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("Normal: ${summary.normal}")
+        Text("Oculta: ${summary.hidden}")
+    }
+    if (summary.both > 0) Text("Una variedad puede figurar en ambos roles.", style = MaterialTheme.typography.labelSmall)
+    Text("Referencia actual por variedad · no por especie", style = MaterialTheme.typography.labelSmall)
+    Text("La edición seleccionada solo cambia el texto.", style = MaterialTheme.typography.labelSmall)
+}
+
 @Composable
 internal fun AbilityPokemonRow(link: AbilityLink, label: String, onPokemonClick: (String) -> Unit,
     imageLoader: ImageLoader = LocalContext.current.imageLoader) {
-    TextButton({ onPokemonClick(link.pokemonId.toString()) }, modifier = Modifier.fillMaxWidth()) {
+    AbilityHolderRow(AbilityHolder(link.pokemonId, if (link.hidden) emptyList() else listOf(link.slot),
+        if (link.hidden) listOf(link.slot) else emptyList()), label, onPokemonClick, imageLoader)
+}
+
+@Composable
+internal fun AbilityHolderRow(holder: AbilityHolder, label: String, onPokemonClick: (String) -> Unit,
+    imageLoader: ImageLoader = LocalContext.current.imageLoader) {
+    TextButton({ onPokemonClick(holder.pokemonId.toString()) }, modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            PokemonImage(pokemonId = link.pokemonId, contentDescription = null, imageLoader = imageLoader,
-                modifier = Modifier.size(40.dp).testTag("ability_sprite_${link.pokemonId}_${link.slot}"))
+            PokemonImage(pokemonId = holder.pokemonId, contentDescription = null, imageLoader = imageLoader,
+                modifier = Modifier.size(40.dp).testTag("ability_sprite_${holder.pokemonId}_${holder.firstSlot}"))
             Spacer(Modifier.width(8.dp))
-            Text("$label · ${if (link.hidden) "Oculta" else "Normal"} · slot ${link.slot}", modifier = Modifier.weight(1f))
+            Text("$label · ${holder.roleLabel}", modifier = Modifier.weight(1f))
         }
     }
 }

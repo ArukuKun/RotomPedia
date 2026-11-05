@@ -24,6 +24,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **EVO-001 publicada:** `v3.5.0-rc7` / `30507`: 22 relaciones de Hisui verificadas para Arceus y Escarlata/Púrpura, con selección de edición y variedades exactas. La referencia general de especie se conserva por separado; otras ediciones no se extrapolan. Sin cambios de datos personales ni P3. 117 Kotlin/23 Python y ambos workflows correctos; validación visual pendiente. Evidencias y matriz en §4.6 del mismo Plan Maestro.
 
+**ABIL-001 autorizada y en preparación:** `v3.5.0-rc8` / `30508`, rama `feature/v3.5-ability-counts`: total y contadores normales/ocultas por variedad distinta, sin duplicar slots ni perder roles, sprites o navegación. Revisión de los 311 nombres españoles: tres nombres anteriores se muestran actualizados (Pereza, Viscosecreción, Esclusa de Aire), con alias históricos y procedencia; no se inventan los 63 nombres ausentes. Sin cambios de snapshot, Room ni datos personales. Ver §4.7 del Plan Maestro; verificación final/publicación y validación visual pendientes, P3 diferida.
+
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
 

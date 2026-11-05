@@ -75,7 +75,7 @@ class AbilitySpritesAndFormsUiTest {
         compose.setContent { MaterialTheme {
             AbilityReferenceSheet(ability, index, links.associate { it.pokemonId to "Pokémon ${it.pokemonId}" }, {}, { chosen = it })
         } }
-        compose.onNodeWithText("Pokémon asociados · 41").assertExists()
+        compose.onNodeWithText("Variedades asociadas · 41").assertExists()
         compose.onNodeWithText("Cargar 40 más").performScrollTo().performClick()
         compose.onNodeWithText("Pokémon 41 · Normal · slot 1").performScrollTo().performClick()
         assertEquals("41", chosen)

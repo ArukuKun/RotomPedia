@@ -121,6 +121,29 @@ class ReferenceRepositoryTest {
         } finally { db.close() }
     }
 
+    @Test fun `all bundled abilities retain exact holder identities roles and historical name aliases`() = runTest {
+        val index = store().index()
+        index.abilities.forEach { ability ->
+            val links = index.pokemonAbilities.filter { it.abilityId == ability.id }
+            val summary = AbilityPresentation.holders(index, ability.id)
+            assertEquals(links.map { it.pokemonId }.toSet().size, summary.total)
+            assertEquals(links.filterNot { it.hidden }.map { it.pokemonId }.toSet().size, summary.normal)
+            assertEquals(links.filter { it.hidden }.map { it.pokemonId }.toSet().size, summary.hidden)
+            assertTrue(AbilityNames.matches(ability, ability.displayName))
+            ability.nameEs?.let { assertTrue(AbilityNames.matches(ability, it)) }
+            summary.holders.forEach { holder ->
+                val source = links.filter { it.pokemonId == holder.pokemonId }
+                assertEquals(source.filterNot { it.hidden }.map { it.slot }.toSet(), holder.normalSlots.toSet())
+                assertEquals(source.filter { it.hidden }.map { it.slot }.toSet(), holder.hiddenSlots.toSet())
+            }
+        }
+        assertEquals("Pereza", index.abilities.single { it.slug == "truant" }.displayName)
+        assertEquals("Ausente", index.abilities.single { it.slug == "truant" }.nameEs)
+        assertEquals("Viscosecreción", index.abilities.single { it.slug == "liquid-ooze" }.displayName)
+        assertEquals("Esclusa de Aire", index.abilities.single { it.slug == "air-lock" }.displayName)
+        Mockito.verifyNoInteractions(api)
+    }
+
     @Test fun `flavor text is edition specific and does not invent Spanish effects`() = runTest {
         val index = store().index()
         val move = index.moves.single { it.id == 53 }
