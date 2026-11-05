@@ -6,9 +6,9 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 ## Estado actual y versiones
 
-**Prueba pública actual:** [pre-release `v3.5.0-rc8`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc8), con contadores/nombres de habilidades revisados y todas las mejoras de RC7. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc8/RotomPedia-v3.5.0-rc8.apk). No es la versión base estable `3.5.0`; RC1–RC7 se conservan sin cambios para comparar.
+**Prueba pública actual:** [pre-release `v3.5.0-rc9`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc9), con objetos por bolsillos y todas las mejoras de RC8. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc9/RotomPedia-v3.5.0-rc9.apk). No es la versión base estable `3.5.0`; RC1–RC8 se conservan sin cambios para comparar.
 
-**Código publicado:** rama `feature/v3.5-ability-counts`, tag `v3.5.0-rc8` en `d93350c`; 125 pruebas Kotlin/23 Python, lint/build y ambos workflows correctos. RC7 aprobada por el usuario; validación visual de RC8 en Android pendiente.
+**Código publicado:** rama `feature/v3.5-item-pockets`, tag `v3.5.0-rc9` en `17faea3`; 134 pruebas Kotlin/26 Python, lint/build y ambos workflows correctos. Validación visual de RC9 en Android pendiente.
 
 **Política permanente de publicación:** implementar una fase autorizada incluye permiso para commits, push, nuevo tag, GitHub Actions y **pre-release con APK descargable**, sin pedir autorización adicional. Exige verificaciones correctas, firma compatible, `versionCode` creciente, SHA-256, notas y problemas conocidos. No sobrescribir releases anteriores. **Versiones estables, cambios de firma y acciones destructivas requieren aprobación independiente**; esta política no autoriza nuevas fases. Ver §8.1 del único Plan Maestro.
 
@@ -26,7 +26,7 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **ABIL-001 publicada:** `v3.5.0-rc8` / `30508`: total y contadores normales/ocultas por variedad distinta, sin duplicar slots ni perder roles, sprites o navegación. Revisión de los 311 nombres españoles: tres nombres anteriores se muestran actualizados (Pereza, Viscosecreción, Esclusa de Aire), con alias históricos y procedencia; no se inventan los 63 nombres ausentes. Sin cambios de snapshot, Room ni datos personales. 125 Kotlin/23 Python y ambos workflows correctos; validación visual pendiente. Ver §4.7 del Plan Maestro; P3 diferida.
 
-**ITEM-002 autorizada y en preparación:** `v3.5.0-rc9` / `30509`, rama `feature/v3.5-item-pockets`: objetos por 8 bolsillos de referencia desde la misma fuente fijada, con búsqueda/filtros combinables y fichas/sprites existentes. Los 2223 objetos anteriores permanecen idénticos; el asset solo añade relaciones de bolsillos, sin cambios de Room ni datos personales. No certifica organización o disponibilidad por edición ni crea inventario personal. Ver §4.8 del Plan Maestro; pruebas finales y publicación pendientes, P3 diferida.
+**ITEM-002 publicada:** `v3.5.0-rc9` / `30509`: objetos por 8 bolsillos de referencia desde la misma fuente fijada, con búsqueda/filtros combinables y fichas/sprites existentes. Los 2223 objetos anteriores permanecen idénticos; el asset solo añade relaciones de bolsillos, sin cambios de Room ni datos personales. No certifica organización o disponibilidad por edición ni crea inventario personal. 134 Kotlin/26 Python y ambos workflows correctos; validación visual pendiente. Ver §4.8 del Plan Maestro; P3 diferida.
 
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
@@ -121,8 +121,8 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 - Datos personales e IDs técnicos se conservan; no se usa borrado destructivo como recuperación de una migración fallida.
 - Los APK publicados de esta etapa son de validación con firma de depuración, no firma privada de producción. Consultar las notas de la release antes de actualizar; no desinstalar para forzar una actualización sin respaldo.
 - No instalar una versión antigua sobre una base ya migrada a un esquema más reciente. El código local puede adelantarse al APK público; el nombre de una versión Android no demuestra por sí solo qué hitos están publicados.
-- La pre-release actual usa `3.5.0-rc8` / `30508` (RC7: `30507`), con el mismo certificado comprobado que las RC anteriores. Incluye SHA-256; no es la versión base estable `3.5.0`. Instalar como actualización; no desinstales ni borres datos para forzarla si Android informa conflicto de firma.
-- SHA-256 de RC8: `94a53ce3d5974fce824335d6621d3e417ce6e92c9fa5e471b6eccc38e452fb30`. [Verificación y publicación Actions correctas](https://github.com/ArukuKun/RotomPedia/actions/runs/41967640326); evidencias históricas conservadas en §4.1–§4.6 del plan.
+- La pre-release actual usa `3.5.0-rc9` / `30509` (RC8: `30508`), con el mismo certificado comprobado que las RC anteriores. Incluye SHA-256; no es la versión base estable `3.5.0`. Instalar como actualización; no desinstales ni borres datos para forzarla si Android informa conflicto de firma.
+- SHA-256 de RC9: `b4686824d1445ed80438d52f1e402e9ea37ea243e97460438fba21a2b4489c12`. [Verificación y publicación Actions correctas](https://github.com/ArukuKun/RotomPedia/actions/runs/42000420294); evidencias históricas conservadas en §4.1–§4.7 del plan.
 - Una posible numeración `0.x` es solo una propuesta pendiente; no renombra releases ni reduce el `versionCode`. Estables y cambios de firma siguen requiriendo aprobación.
 - Pendientes concretos: captura (`CAP-001`–`CAP-003`), validación manual del español de movimientos (`MOV-001`, implementado localmente), textos en pantallas estrechas (`UI-001`) y recursos gráficos aún ausentes. Véase el Plan Maestro, sin reabrir v3.4 completa.
 

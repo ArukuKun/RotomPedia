@@ -2,13 +2,13 @@
 
 **Marca / proyecto:** RotomPedia\
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
-**Versión publicada actual:** **v3.5.0-rc8**, pre-release con A/B/C y ABIL-001 sobre RC7; validación visual de RC8 y estabilización pendientes, no versión estable.\
+**Versión publicada actual:** **v3.5.0-rc9**, pre-release con A/B/C y objetos por bolsillos sobre RC8; validación visual de RC9 y estabilización pendientes, no versión estable.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
 **Regla de alcance:** implementar solo fases autorizadas por el usuario. La política permanente de §8.1 autoriza commits, push, tags nuevos y pre-releases de esas fases sin pedir permiso adicional; no autoriza fases nuevas, versiones estables, cambios de firma ni operaciones destructivas. No modificar tags/releases anteriores.
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
-**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc8`**, rama `feature/v3.5-ability-counts`, tag en `d93350c`; 125 Kotlin/23 Python, lint/build y ambos workflows correctos. RC7 aprobada por el usuario; ABIL-001 entregada, pendiente de validación visual (§4.7). Evidencias históricas RC2–RC7 en §4.1–§4.6 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
+**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc9`**, rama `feature/v3.5-item-pockets`, tag en `17faea3`; 134 Kotlin/26 Python, lint/build y ambos workflows correctos. ITEM-002 entregada, pendiente de validación visual (§4.8); continuidad tras RC8 aceptada sin inferir matriz manual exhaustiva. Evidencias históricas RC2–RC8 en §4.1–§4.7 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
 
 **Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**. Las cuatro observaciones manuales de RC2 están implementadas y publicadas como `v3.5.0-rc3` / `30503` (§4.2). No se autoriza implementar conjuntamente el resto de §13 ni cambiar mapas/RI. Conservar firma compatible y versiones anteriores; `0.x` solo en evaluación.
 
@@ -500,6 +500,10 @@ En Arceus las evoluciones se eligen en el menú tras cumplir la condición, no s
 
 **APK preparado RC9:** `RotomPedia-v3.5.0-rc9.apk`, 23993913 bytes; SHA-256 `b4686824d1445ed80438d52f1e402e9ea37ea243e97460438fba21a2b4489c12` y `.apk.sha256`. Paquete `com.duoc.rotompedia`, `3.5.0-rc9` / `30509 > 30508`, mínimo API 25. Build Tools 35.0.0 verifica certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, idéntico al APK RC8 cuyo hash también se comprobó. Clave privada fuera de GitHub; publicación supeditada a repetir controles de §8.1 en Actions, sin alterar releases previas ni promover a estable.
 
+**Entrega pública RC9:** tag inmutable `v3.5.0-rc9` en `17faea3`; [pre-release](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc9), `draft=false`, `prerelease=true`, no estable/Latest. Ambos workflows **success**: [Release APK 42000420294](https://github.com/ArukuKun/RotomPedia/actions/runs/42000420294) y [Verify 42000414303](https://github.com/ArukuKun/RotomPedia/actions/runs/42000414303). Actions repitió pruebas/lint/build y comprobó checksum, certificado único y paquete/versión antes de publicar automáticamente. Digest público idéntico al SHA-256 anterior; [APK directo](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc9/RotomPedia-v3.5.0-rc9.apk) comprobado con HTTP HEAD **200**, longitud 23993913 y MIME APK. RC1–RC8 y sus tags/assets intactos; documentación de cierre posterior no cambia el tag ni el APK.
+
+**Puerta manual RC9:** instalar sobre RC8 sin desinstalar; recorrer los ocho bolsillos, combinar Bayas/búsqueda Acardo/categoría/atributo, abrir/cerrar ficha y comprobar posición, restaurar filtros y usar Limpiar. Revisar MT/MO por edición en sus fichas, sprites y datos previos de equipos/favoritos. Validación visual pendiente; no autoriza otro alcance ni promoción a estable.
+
 **Fuentes:**
 - `https://raw.githubusercontent.com/PokeAPI/pokeapi/e2710d30d14b3f4dc6a02a4a71e8619cd835b7ff/data/v2/csv/item_pockets.csv`
 - `https://raw.githubusercontent.com/PokeAPI/pokeapi/e2710d30d14b3f4dc6a02a4a71e8619cd835b7ff/data/v2/csv/item_pocket_names.csv`
@@ -642,7 +646,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 
 **Punto de partida vigente:** v3.4 terminada; v3.5-A/B/C implementadas y publicadas como **v3.5.0-rc1**, pendientes de validación manual. La preparación/implementación inicial de v3.5 de este apartado ya se cumplió; su historial técnico permanece en §11–§17.
 
-1. **Ahora: validar RC8 en el teléfono (§4.7)**: RC7 fue aprobada. Revisar contadores por variedad/rol, nombres y alias históricos, sprites y lista completa; conservar regresiones y datos previos.
+1. **Ahora: validar RC9 en el teléfono (§4.8)**: revisar bolsillos de referencia, búsqueda/filtros combinados, fichas y conservación de posición; conservar regresiones y datos previos.
 2. **Puerta manual:** presentar el resultado y completar/revisar observaciones de Android, sin declarar v3.5 estable solo por tests. Detenerse antes de otra mejora.
 3. **Seleccionar la siguiente tarea de estabilización de §13 con autorización**, acotada por módulo; no ejecutar todo el backlog ni convertirlo en requisito ilimitado que posponga mapas. Matemática de captura y selector de Balls son trabajos distintos.
 4. **v3.6: mapas**, piloto por región/juego y expansión posterior, reutilizando componentes actuales (§5). Sigue siendo la siguiente versión funcional prevista, no se renumera por el pulido de v3.5.
@@ -672,7 +676,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 5 de noviembre de 2026.\
-**Próxima puerta:** ITEM-002 autorizada y en preparación RC9 (§4.8); terminar verificaciones y entregar para revisión visual. P3 sigue diferida. Nunca promover a estable automáticamente.
+**Próxima puerta:** RC9 publicada y verificada (§4.8); esperar validación visual de ITEM-002 y aprobación del usuario antes de otro alcance. P3 sigue diferida. Nunca promover a estable automáticamente.
 
 ---
 
@@ -801,7 +805,7 @@ Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
 | `MOV-002` — P3, símbolos y presentación; pendiente de autorización | v3.5 ya expone tipo/categoría en texto y filtros por ambos en el catálogo; no son funciones inexistentes. | Ampliación P3 en §13.1: tipo con color y símbolo Física/Especial/Estado; filas compactas responsivas, sin rehacer catálogo, fichas ni repositorio. Filtros del catálogo general separados de métodos de aprendizaje. |
 | `MOV-003` — P3, movimientos Z; pendiente de autorización e investigación de cobertura | Solicitud de filtro adicional, no nueva categoría de daño. | §13.1: conservar filtro general Z solo con relación/marcador verificable y contexto de juego; intersectar con tipo/categoría. Física, Especial y Estado siguen siendo las tres categorías de daño; Z no es una cuarta ni una pestaña de aprendizaje. |
 | `MOV-004` — P3, pantalla de aprendizaje por Pokémon; **propuesta para después** | El usuario considera poco cómoda la consulta dentro del detalle y describe como referencia un video de Incineroar en PokeInfo. | §13.1: «Consultar movimientos» abre pantalla dedicada con Nivel/Huevo/MT-MO/Tutor, edición, variedad exacta y acceso a fichas. Reutilizar aprendizaje/caché/traducciones existentes, sin límites arbitrarios ni regresión del editor. No implementar ahora. |
-| `ITEM-002` — objetos por bolsillos; **autorizada tras RC8** | Usuario acepta organizar el catálogo existente por bolsillos. La fuente fijada aporta 8 bolsillos/54 relaciones, pero no clasificación por edición. | §4.8: mismo catálogo, todos los IDs intactos; grupos de referencia, filtros combinables, sprites/fichas y preservación de estado. No inferir equipabilidad ni disponibilidad por juego. 26 Python correctas; pruebas Android/publicación RC9 y validación visual pendientes. |
+| `ITEM-002` — objetos por bolsillos; **publicada en RC9** | Usuario acepta organizar el catálogo existente por bolsillos. La fuente fijada aporta 8 bolsillos/54 relaciones, pero no clasificación por edición. | §4.8: mismo catálogo, IDs intactos, grupos de referencia, filtros, sprites/fichas y estado; 134 Kotlin/26 Python y ambos CI correctos. No inferir equipabilidad ni disponibilidad por juego. Validación visual pendiente. |
 | `TRAIN-001` — líderes, Alto Mando, Campeón y revanchas; pendiente de autorización | Módulo de líderes y backend Spring Boot existentes, no sistema completo de entrenadores por edición. | Investigar/reutilizar backend y contratos; filtro principal **juego/edición**, región secundaria. No mezclar Rubí/Zafiro, Esmeralda y RO/ZA; verificar personajes, orden, equipos, estadísticas y revanchas por fuente/edición. No inventar ni asumir que PokeAPI cubre todo. Los filtros regionales de Pokédex no se reemplazan por este criterio. |
 | `CAP-004` — selector visual de Poké Balls; pendiente de autorización | Tarjetas de Balls actuales; solicitud de botón → diálogo/bottom sheet. No prueba una causa matemática. | Reutilizar `ItemRepository`: sprite real, nombre español, buscador y listado con condiciones documentadas. Balls menos comunes solo con datos/mecánicas compatibles por edición; no hacer una tabla duplicada ni atribuirle `CAP-001`–003. |
 | `TEAM-001` — acceso a editar movimientos; pendiente de autorización | Editor existente persiste cuatro movimientos; se solicita acceso por integrante desde pestaña Movimientos. | Añadir `Editar movimientos` por Pokémon abriendo **el mismo editor**, sin otro sistema; preservar cuatro textos, usuario activo, propiedad y variedad exacta. Pruebas de guardar/cancelar/reabrir/cambiar usuario. |
