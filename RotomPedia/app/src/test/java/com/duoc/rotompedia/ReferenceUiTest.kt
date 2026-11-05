@@ -44,11 +44,12 @@ class ReferenceUiTest {
                 LearnRow(53, "flamethrower", "sun-moon", "machine", 0))), false, 1000)
         }
         compose.setContent { MaterialTheme { MoveLearnsetPane(10104, Modifier.fillMaxSize(), repo, onSelect = { chosen = it }) } }
-        compose.onNodeWithText("Selecciona una edición; no se mezclan generaciones.").assertExists()
+        compose.onNodeWithText("Selecciona una edición.").assertExists()
         compose.onNodeWithText("Lanzallamas").assertDoesNotExist()
-        compose.onNodeWithText("Edición de aprendizaje: Sin seleccionar").performClick()
+        compose.onNodeWithContentDescription("Edición de aprendizaje: Sin seleccionar").performClick()
         compose.onNodeWithText("Sol / Luna").performClick()
-        compose.onNodeWithText("Lanzallamas").performScrollTo().assertIsDisplayed()
+        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Lanzallamas"))
+        compose.onNodeWithText("Lanzallamas").assertIsDisplayed()
         compose.onNodeWithText("Nivel: nivel 10 · MT / MO").assertExists()
         compose.onNodeWithText("Lanzallamas").performClick()
         compose.runOnIdle { assertEquals(53, chosen?.moveId); assertEquals("Flamethrower", chosen?.nameEn) }
@@ -61,12 +62,12 @@ class ReferenceUiTest {
             override suspend fun learnset(pokemonId: Int, refresh: Boolean): LearnsetResult { calls++; throw java.io.IOException("offline") }
         }
         compose.setContent { MaterialTheme { MoveLearnsetPane(10104, Modifier.fillMaxSize(), repo) } }
-        compose.onNodeWithText("No se pudo consultar el aprendizaje de esta variedad. Sin copia utilizable, se necesita conexión.").assertExists()
+        compose.onNodeWithText("No se pudieron cargar los movimientos. Comprueba tu conexión e inténtalo de nuevo.").assertExists()
         compose.onNode(isToggleable()).performClick()
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Cargar 40 más"))
         compose.onNodeWithText("Cargar 40 más").performClick()
         compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
-        compose.onNodeWithText("937 movimientos · mostrando 80. Sin certificación de legalidad.").assertExists()
+        compose.onNodeWithText("937 movimientos · mostrando 80").assertExists()
         compose.runOnIdle { assertEquals(1, calls) }
     }
 
@@ -84,14 +85,14 @@ class ReferenceUiTest {
         compose.setContent { MaterialTheme { MoveSlotCard(1, "Movimiento legado desconocido", {}, {}) } }
         compose.onNodeWithText("Movimiento 1: Movimiento legado desconocido").assertExists()
         compose.onNodeWithText("Movimiento 1: (Vacío)").assertDoesNotExist()
-        compose.onNodeWithText("Texto guardado sin referencia única. Se conserva sin cambios; toca para revisar.").assertExists()
+        compose.onNodeWithText("Toca para revisar este movimiento.").assertExists()
     }
 
     @Test fun `ability description selects Spanish for the exact requested edition`() {
         val ability = reference.abilities.single { it.id == 66 }
         val spanish = ability.texts.first { it.language == "es" }
         compose.setContent { MaterialTheme { AbilityReferenceSheet(ability, reference, emptyMap(), {}, {}) } }
-        compose.onNodeWithText("Edición del texto: Sin seleccionar").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Edición del texto: Sin seleccionar").performScrollTo().performClick()
         compose.onNodeWithText(ItemLabels.version(spanish.versionGroup)).performScrollTo().performClick()
         compose.onNodeWithText(spanish.text).performScrollTo().assertIsDisplayed()
     }
@@ -103,7 +104,7 @@ class ReferenceUiTest {
         compose.setContent { MaterialTheme {
             MoveReferenceSheet(move, reference, listOf(IndexedItem(305, "tm01", "MT01", "es", "all-machines", "")), {}, { item = it })
         } }
-        compose.onNodeWithText("Edición: Sin seleccionar").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Edición: Sin seleccionar").performScrollTo().performClick()
         compose.onNodeWithText("Rojo / Azul").performClick()
         compose.onNodeWithText("MT01").performScrollTo().performClick()
         compose.runOnIdle { assertEquals(305, item) }

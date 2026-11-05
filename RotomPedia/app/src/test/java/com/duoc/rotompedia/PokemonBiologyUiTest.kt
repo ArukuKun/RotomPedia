@@ -59,11 +59,11 @@ class PokemonBiologyUiTest {
         compose.onNodeWithText("Consultar habilidades").assertDoesNotExist()
         compose.onNodeWithText("Poder Solar (oculta)").performScrollTo().performClick()
         assertEquals(hidden, chosen)
-        compose.onNodeWithText("solar-power · ID habilidad 94").assertExists()
+        compose.onNodeWithText("Poder Solar", substring = false).assertExists()
         compose.onNodeWithText("Cerrar ficha").performClick()
         compose.onNodeWithText("Mar Llamas").performScrollTo().performClick()
         assertEquals(normal, chosen)
-        compose.onNodeWithText("blaze · ID habilidad 66").assertExists()
+        compose.onAllNodesWithText("Mar Llamas", substring = false).onLast().assertExists()
     }
 
     @Test fun `narrow large text card wraps measurements and rejects category from another species`() {
@@ -104,7 +104,7 @@ class PokemonBiologyUiTest {
         val repository = repo { if (calls++ == 0) error("offline") else emptyList() }
         compose.setContent { MaterialTheme { Column { PokemonAbilitySummary(6, repository) { _, _ -> } } } }
         compose.onNodeWithText("Reintentar habilidades").performClick()
-        compose.onNodeWithText("Sin habilidades documentadas").assertExists()
+        compose.onNodeWithText("No hay habilidades para mostrar.").assertExists()
         compose.onNodeWithText("Reintentar habilidades").assertDoesNotExist()
     }
 

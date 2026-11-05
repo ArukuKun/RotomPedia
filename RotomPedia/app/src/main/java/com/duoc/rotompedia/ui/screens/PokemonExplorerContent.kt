@@ -80,7 +80,7 @@ fun PokemonExplorerContent(
             fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (result.missingRegionalNumbers > 0) Text("${result.missingRegionalNumbers} sin número regional · al final", fontSize = 11.sp)
         if (loading || (!result.ready && error == null)) LinearProgressIndicator(Modifier.fillMaxWidth())
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        error?.let { Text("No se pudo cargar la lista de Pokémon.", color = MaterialTheme.colorScheme.error) }
         if (!loading && result.ready && result.groups.isEmpty() && error == null) {
             Text("No hay Pokémon con estos filtros.", modifier = Modifier.padding(vertical = 20.dp))
         }

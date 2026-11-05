@@ -88,9 +88,9 @@ class HisuiEvolutionUiTest {
         } } }
         compose.onNodeWithText("Usar Mil Púas Tóxicas 20 veces en estilo fuerte; después elegir Evolucionar.").assertExists()
         compose.onNodeWithText("remote failure").assertDoesNotExist()
-        compose.onNodeWithText("Ver referencia general de la especie").performScrollTo().performClick()
-        compose.onNodeWithText("remote failure").assertExists()
-        compose.onNodeWithText("Referencia de especie · no filtrada por edición").assertExists()
+        compose.onNodeWithText("Ver línea de la especie").performScrollTo().performClick()
+        compose.onNodeWithText("remote failure").assertDoesNotExist()
+        compose.onNodeWithText("No se pudo cargar la evolución.").assertExists()
     }
 
     @Test fun `production ordinary Qwilfish does not show its regional counterparts evolution`() {

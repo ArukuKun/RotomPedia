@@ -509,6 +509,27 @@ En Arceus las evoluciones se eligen en el menú tras cumplir la condición, no s
 - `https://raw.githubusercontent.com/PokeAPI/pokeapi/e2710d30d14b3f4dc6a02a4a71e8619cd835b7ff/data/v2/csv/item_pocket_names.csv`
 - `https://raw.githubusercontent.com/PokeAPI/pokeapi/e2710d30d14b3f4dc6a02a4a71e8619cd835b7ff/data/v2/csv/item_categories.csv`
 
+### 4.9 Corrección de interfaz de cliente — sin diagnóstico ni procedencia en layouts
+
+**Autorización y corrección de criterio:** tras RC9, el usuario insiste en que los layouts de cliente no muestren mensajes sobre PokeAPI, caché, disponibilidad en la fuente o comentarios de desarrollador. Solicita además un acceso superior a filtros de objetos más intuitivo; acepta lo demás y **difiere expresamente los sprites faltantes**. Rama `feature/v3.5-clean-client-ui`, preparación `v3.5.0-rc10` / `30510`, entrega bajo §8.1. Este criterio sustituye las exigencias históricas de mostrar procedencia/limitaciones extensas en la interfaz corriente; **no elimina la procedencia de modelos, documentación o pruebas ni autoriza inventar datos**.
+
+**Regla de UI vigente:**
+
+- Nada de banners «datos de PokeAPI», «caché local», copias guardadas, revisión/hash/fecha de descarga, IDs técnicos o párrafos sobre ausencia en el proveedor. Es información interna, no contenido cotidiano de las fichas. La documentación y los tests mantienen trazabilidad, cobertura, incertidumbre y contratos de datos.
+- Contenido de juego disponible se conserva. Secciones opcionales sin contenido se ocultan sin tarjeta/título de advertencia ni sustitución por datos de otra variedad. Descripción Pokémon solo donde corresponde a la variedad predeterminada; no se usa la descripción de especie como si fuera de otra forma.
+- Errores operativos reales siguen visibles con texto breve orientado al usuario y reintento; nunca se imprime la excepción interna. Se conservan «Actualizar»/reintento y uso interno de cachés sin anunciar su implementación. Etiqueta breve «Inglés» cuando hace falta distinguir un texto no traducido, sin explicación del backend.
+- No declarar que un Pokémon no existe/no puede obtenerse solo porque falten encuentros; estado vacío breve. No inventar precio, efecto, traducción o referencia de MT/MO al ocultar los avisos técnicos.
+
+**Cambios:** limpieza en objetos, catálogo/fichas de movimientos y habilidades, biología, descripción Pokémon, encuentros y pies de evolución de Hisui. Los requisitos y selectores de juego, contadores, alias históricos, sprites y navegación siguen presentes. «Copiar ficha» copia contenido de cliente, sin fuente/slugs/IDs internos; la trazabilidad detallada permanece aquí. Mensaje sobre movimiento guardado no resuelto se reduce a una acción breve de revisión, conservando íntegro el texto persistido y su editor. No se implementa P3 ni se reorganiza su navegación.
+
+**Filtros:** botón superior de **Objetos** con icono + texto «Filtros», superficie tonal, forma redondeada, área táctil mínima de 48 dp, contador de filtros adicionales y estado accesible. Mantiene los bolsillos bajo la barra como navegación, sin duplicar su selección en el panel. Categoría/característica y selectores existentes se presentan como campos con borde, valor y flecha, no texto tipo enlace. «Buscar objeto», resumen activo y Limpiar permanecen; estados y reglas de filtrado de RC9 intactos. El icono blanco de la barra roja de **Pokédex no se cambia**, respetando la corrección ya aprobada.
+
+**Preservación:** sin modificar repositorios, índices/snapshots, identidades, schemas/migraciones Room ni datos personales. No se tocan resolución/descarga/recursos de sprites: sus faltantes quedan para después. No se autoriza captura, mapas, Rotom/RI ni otra fase.
+
+**Verificación local terminada:** tests UI actualizados a los mismos controles reales y nuevas regresiones online/offline/error/reintento, ausencia de banners de diagnóstico, copia limpia, campos vacíos ocultos, contenido inglés y datos de movimientos, descripción correcta sin hueco, botón de filtros con texto/badge/estado accesible a 280 dp y fuente 1,5×. Las comprobaciones previas de filtros/restauración/scroll/contadores/navegación siguen activas. `tools/tests/test_client_copy.py` añade guardia sobre literales de UI y permite explícitamente URLs de recursos/comentarios internos. **140 Kotlin, sin fallos/errores/omitidos; 28 Python y tres verificadores de snapshots correctos**. `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --console=plain --max-workers=1` correcto; lint sin errores (110 warnings/30 hints). `git diff --check` correcto. Instrumentación compilada, no ejecutada: `adb devices` vacío. Validación visual pendiente.
+
+**APK preparado RC10:** `RotomPedia-v3.5.0-rc10.apk`, **23995809 bytes**, SHA-256 `b8208f2a818b4b78609edaf61760be4419fee51c2ec4c9570672ac677ea45b94` y `.apk.sha256`. Paquete `com.duoc.rotompedia`, `3.5.0-rc10` / `30510 > 30509`, mínimo API 25. Build Tools 35.0.0 verifica certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, idéntico al APK RC9 cuyo hash también se comprobó. Clave privada fuera de GitHub. Publicación supeditada a repetir controles de §8.1 en Actions, sin alterar releases anteriores ni promover a estable.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -676,7 +697,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 5 de noviembre de 2026.\
-**Próxima puerta:** RC9 publicada y verificada (§4.8); esperar validación visual de ITEM-002 y aprobación del usuario antes de otro alcance. P3 sigue diferida. Nunca promover a estable automáticamente.
+**Próxima puerta:** atender las observaciones de UI de RC9 mediante RC10 (§4.9), verificar y entregar para revisión visual. Sprites faltantes y P3 siguen diferidos. Nunca promover a estable automáticamente.
 
 ---
 

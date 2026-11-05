@@ -31,8 +31,6 @@ internal fun PokemonBiologyCard(pokemon: PokemonData, speciesId: Int, speciesNam
                 Text("Altura: ${PokemonBiology.measurement(pokemon.height, "m")}")
                 Text("Peso: ${PokemonBiology.measurement(pokemon.weight, "kg")}")
             }
-            Text("PokeAPI · medidas de esta variedad", style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
             HorizontalDivider()
             abilities()
         }

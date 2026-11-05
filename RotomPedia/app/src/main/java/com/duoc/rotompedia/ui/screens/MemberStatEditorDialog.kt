@@ -712,7 +712,7 @@ internal fun MoveSlotCard(
                         )
                         Text(
                             text = if (moveName.isNullOrBlank()) "Toca para asignar un movimiento del catálogo" else
-                                "Texto guardado sin referencia única. Se conserva sin cambios; toca para revisar.",
+                                "Toca para revisar este movimiento.",
                             color = Color(0xFF666666),
                             fontSize = 11.sp
                         )

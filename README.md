@@ -28,6 +28,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **ITEM-002 publicada:** `v3.5.0-rc9` / `30509`: objetos por 8 bolsillos de referencia desde la misma fuente fijada, con búsqueda/filtros combinables y fichas/sprites existentes. Los 2223 objetos anteriores permanecen idénticos; el asset solo añade relaciones de bolsillos, sin cambios de Room ni datos personales. No certifica organización o disponibilidad por edición ni crea inventario personal. 134 Kotlin/26 Python y ambos workflows correctos; validación visual pendiente. Ver §4.8 del Plan Maestro; P3 diferida.
 
+**Corrección de interfaz preparada:** `v3.5.0-rc10` / `30510`, rama `feature/v3.5-clean-client-ui`: retirados avisos de proveedor/caché/procedencia técnica de layouts de cliente, bloques opcionales vacíos ocultos y errores breves con reintento. En objetos, botón superior «Filtros» con icono/contador y selectores con borde/flecha. Datos y trazabilidad se conservan en modelos/docs/tests; sin cambios de sprites ni datos personales. 140 Kotlin/28 Python, tres índices, lint/build y firma compatible correctos. Ver §4.9 del mismo Plan Maestro; publicación y validación visual pendientes. P3 y sprites faltantes siguen para después.
+
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
 

@@ -49,7 +49,7 @@ fun PokemonLocationsSection(pokemonId: Int) {
             TextButton(onClick = { attempt++ }) { Text("Reintentar") }
         }
         encounters == null -> CircularProgressIndicator(Modifier.size(24.dp))
-        encounters!!.isEmpty() -> Text("PokeAPI no registra encuentros salvajes para esta forma. No implica que sea imposible obtenerla.",
+        encounters!!.isEmpty() -> Text("No hay encuentros para mostrar.",
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         else -> encounters!!.forEach { encounter ->
             Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {

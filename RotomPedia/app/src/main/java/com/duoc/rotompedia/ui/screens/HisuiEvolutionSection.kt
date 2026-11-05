@@ -21,13 +21,11 @@ internal fun PokemonEvolutionSection(slug: String, speciesId: Int, entries: List
     HisuiEvolutionSection(slug, entries, onPokemonClick, onItemClick)
     var showSpecies by rememberSaveable(slug) { mutableStateOf(false) }
     if (contextual) TextButton({ showSpecies = !showSpecies }) {
-        Text(if (showSpecies) "Ocultar referencia de especie" else "Ver referencia general de la especie")
+        Text(if (showSpecies) "Ocultar línea de la especie" else "Ver línea de la especie")
     }
-    if (contextual && showSpecies) Text("Referencia de especie · no filtrada por edición",
-        style = MaterialTheme.typography.labelSmall)
     if (!contextual || showSpecies) when (state) {
         is EvolutionState.Loading -> CircularProgressIndicator(Modifier.size(24.dp))
-        is EvolutionState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error)
+        is EvolutionState.Error -> Text("No se pudo cargar la evolución.", color = MaterialTheme.colorScheme.error)
         is EvolutionState.Success -> EvolutionChainColumn(
             chain = speciesEvolutionReference(state.evolutionChain, slug), currentPokemonId = speciesId.toString(),
             onPokemonClick = onPokemonClick, onItemClick = onItemClick)
@@ -81,8 +79,6 @@ internal fun HisuiEvolutionSection(slug: String, entries: List<ExplorerPokemon>,
             }
         }
     }
-    Text("Fuentes: Serebii · Pokémon Database · Bulbapedia", style = MaterialTheme.typography.labelSmall)
-    Text("Cobertura: Arceus y Escarlata/Púrpura.", style = MaterialTheme.typography.labelSmall)
 }
 
 internal fun speciesEvolutionReference(chain: List<EvolutionStage>, slug: String): List<EvolutionStage> =

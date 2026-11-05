@@ -52,7 +52,7 @@ class ItemUiTest {
     @Test fun `local item search opens correct berry and displays reviewed Spanish effect`() {
         runBlocking { Mockito.`when`(api.getItem("168")).thenReturn(ItemDetail(168, "shuca-berry", resource("type-protection"))) }
         compose.setContent { MaterialTheme { CompetitiveItemsScreen({}, itemRepository = repo) } }
-        compose.onNodeWithText("Nombre, categoría o ID del objeto").performTextInput("acardo")
+        compose.onNodeWithText("Buscar objeto").performTextInput("acardo")
         compose.waitUntil(15_000) { compose.onAllNodesWithText("Baya Acardo").fetchSemanticsNodes().isNotEmpty() }
         Mockito.verifyNoInteractions(api)
         compose.onNodeWithText("Baya Acardo").performScrollTo().assertIsDisplayed().performClick()
@@ -67,10 +67,10 @@ class ItemUiTest {
     @Test fun `missing offline detail has explicit error and can retry without losing item identity`() {
         runBlocking { Mockito.`when`(api.getItem("168")).thenAnswer { throw java.io.IOException("offline") } }
         compose.setContent { MaterialTheme { CompetitiveItemsScreen({}, initialSlug = "shuca-berry", itemRepository = repo) } }
-        val message = "Detalle no disponible. No hay una ficha guardada utilizable; comprueba la conexión y reintenta."
+        val message = "No se pudo cargar la ficha. Comprueba tu conexión e inténtalo de nuevo."
         compose.waitUntil(15_000) { compose.onAllNodesWithText(message).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText(message).assertIsDisplayed()
-        compose.onNodeWithText("Actualizar / reintentar ficha").performClick()
+        compose.onNodeWithText("Reintentar").performClick()
         compose.waitForIdle()
         runBlocking { assertNull(db.itemDao().cached(168)) }
         compose.onAllNodesWithText("Baya Acardo").onLast().assertIsDisplayed()

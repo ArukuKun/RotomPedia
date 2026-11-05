@@ -172,7 +172,7 @@ fun PokemonDetailScreen(
                 }
                 is PokemonDetailState.Error -> {
                     Text(
-                        text = currentState.message,
+                        text = "No se pudo cargar el Pokémon. Inténtalo de nuevo.",
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -391,30 +391,7 @@ fun PokemonDetailContent(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        Text(
-            text = "Descripción de la especie (no específica de esta variedad)",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (evolutionState is EvolutionState.Success) {
-            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
-                Text(
-                    text = if (selectedEntry?.isDefault == true) evolutionState.description else
-                        "No hay una descripción verificada para esta variedad. PokeAPI ofrece textos de la especie, que pueden referirse a otra forma; por eso no se muestran aquí.",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        } else if (evolutionState is EvolutionState.Error) {
-            Text(evolutionState.message, color = MaterialTheme.colorScheme.error)
-        } else {
-            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-        }
+        PokemonSpeciesDescription(selectedEntry?.isDefault == true, evolutionState)
         Spacer(modifier = Modifier.height(16.dp))
         PokemonBiologyCard(pokemon, speciesId,
             selectedEntry?.speciesName ?: pokemon.species?.name?.replaceFirstChar { it.uppercase() } ?: "—",
@@ -791,7 +768,7 @@ fun TypeRelationsView(state: TypeRelationsState) {
             }
         }
         is TypeRelationsState.Error -> {
-            Text(text = state.message, color = MaterialTheme.colorScheme.error)
+            Text(text = "No se pudieron cargar las relaciones de tipos.", color = MaterialTheme.colorScheme.error)
         }
     }
 }

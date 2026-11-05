@@ -43,7 +43,7 @@ class AbilityCountsUiTest {
         compose.onNodeWithText("Una variedad puede figurar en ambos roles.").assertExists()
         compose.onNodeWithText("Variedad 1 · Normal · slots 1, 2 · Oculta · slot 3").assertExists()
         compose.onNodeWithTag("ability_sprite_1_1", useUnmergedTree = true).assertExists()
-        compose.onNodeWithText("Edición del texto: Sin seleccionar").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Edición del texto: Sin seleccionar").performScrollTo().performClick()
         compose.onNodeWithText(ItemLabels.version("scarlet-violet"), substring = false).performClick()
         compose.onNodeWithText("Texto actual").assertExists()
         compose.onNodeWithText("Normal: 41").assertExists()
@@ -73,6 +73,6 @@ class AbilityCountsUiTest {
         compose.onNodeWithText("Variedades asociadas · 0").assertExists()
         compose.onNodeWithText("Normal: 0").assertExists()
         compose.onNodeWithText("Oculta: 0").assertExists()
-        compose.onNodeWithText("Sin variedades documentadas en el índice incluido.").assertExists()
+        compose.onNodeWithText("No hay Pokémon para mostrar.").assertExists()
     }
 }

@@ -37,16 +37,13 @@ fun resolvedLegacyMove(name: String?): PokemonMove? {
 
 @Composable
 private fun SourceText(texts: List<ReferenceText>, group: String?, effectEs: String?, effectEn: String?) {
-    Text("Descripción por edición", fontWeight = FontWeight.Bold)
     val selected = ReferencePresentation.text(texts, group)
-    Text(when {
-        group == null -> "Selecciona una edición. No se combinan textos de juegos distintos."
-        selected == null -> "Sin texto español o inglés documentado para esta edición."
-        selected.language == "es" -> selected.text
-        else -> "Sin traducción española para esta edición. Original en inglés: ${selected.text}"
-    })
-    Text("Efecto de referencia · no histórico por edición", fontWeight = FontWeight.Bold)
-    Text(effectEs?.takeIf(String::isNotBlank) ?: effectEn?.takeIf(String::isNotBlank)?.let { "Sin efecto español verificado. Original en inglés: $it" } ?: "Sin efecto documentado en español o inglés.")
+    selected?.let {
+        Text("Descripción", fontWeight = FontWeight.Bold)
+        Text(if (it.language == "es") it.text else "Inglés: ${it.text}")
+    }
+    val effect = effectEs?.takeIf(String::isNotBlank) ?: effectEn?.takeIf(String::isNotBlank)?.let { "Inglés: $it" }
+    effect?.let { Text("Efecto", fontWeight = FontWeight.Bold); Text(it) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,12 +79,11 @@ fun ReferenceBrowserScreen(abilities: Boolean, onBack: () -> Unit, onPokemonClic
         IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver") }
     }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            OutlinedTextField(query, { query = it }, label = { Text("Buscar nombre, alias o ID") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(query, { query = it }, label = { Text("Buscar por nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             val loaded = index
-            if (error) { Text("Referencia no disponible o identidad desconocida."); TextButton({ retry++ }) { Text("Reintentar") } }
+            if (error) { Text("No se pudo cargar el contenido."); TextButton({ retry++ }) { Text("Reintentar") } }
             if (loaded == null && !error) LinearProgressIndicator(Modifier.fillMaxWidth())
             if (loaded != null) {
-                Text("Datos locales PokeAPI · revisión ${loaded.revision.take(12)}", fontSize = 11.sp)
                 if (!abilities) {
                     ItemChoice("Tipo", type, loaded.moves.map { it.type }.distinct().sorted(), ::traducirTipo) { type = it }
                     ItemChoice("Categoría", category, listOf("physical", "special", "status"), ReferencePresentation::category) { category = it }
@@ -102,7 +98,7 @@ fun ReferenceBrowserScreen(abilities: Boolean, onBack: () -> Unit, onPokemonClic
                     Text("${rows.size} habilidades · mostrando ${minOf(count, rows.size)}")
                     LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         items(rows.take(count), key = { it.id }) { row -> Card(Modifier.fillMaxWidth().clickable { ability = row }) {
-                            Column(Modifier.padding(12.dp)) { Text(row.displayName, fontWeight = FontWeight.Bold); Text("ID habilidad ${row.id} · ${if (row.mainSeries) "Serie principal" else "Fuera de serie principal"}", fontSize = 12.sp) }
+                            Column(Modifier.padding(12.dp)) { Text(row.displayName, fontWeight = FontWeight.Bold) }
                         } }
                         if (count < rows.size) item { TextButton({ count += 40 }) { Text("Cargar 40 más") } }
                     }
@@ -123,11 +119,11 @@ internal fun MoveCard(move: ReferenceMove, modifier: Modifier = Modifier, descri
     Card(modifier.fillMaxWidth().then(if (onClick == null) Modifier else Modifier.clickable(onClick = onClick))) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(move.displayName, fontWeight = FontWeight.Bold)
-            if (move.nameEs == null) Text("Nombre español no disponible · ${move.slug}", fontSize = 11.sp)
+            if (move.nameEs == null) Text("Inglés", fontSize = 11.sp)
             Text("${traducirTipo(move.type)} · ${ReferencePresentation.category(move.category)} · prioridad ${move.priority}", fontSize = 12.sp)
             Text("Pot: ${move.power ?: "—"} · Prec: ${move.accuracy?.let { "$it%" } ?: "—"} · PP: ${move.pp ?: "—"}", fontSize = 12.sp)
             annotations?.let { Text(it, fontSize = 12.sp) }
-            description?.let { Text(if (it.language == "es") it.text else "Original en inglés: ${it.text}", fontSize = 12.sp) }
+            description?.let { Text(if (it.language == "es") it.text else "Inglés: ${it.text}", fontSize = 12.sp) }
         }
     }
 }
@@ -141,25 +137,20 @@ internal fun MoveReferenceSheet(move: ReferenceMove, index: ReferenceIndex, item
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(0.9f).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(move.displayName, style = MaterialTheme.typography.titleLarge)
-            Text("${move.slug} · ID movimiento ${move.id}", fontSize = 12.sp)
             TextButton(onDismiss) { Text("Cerrar ficha") }
             MoveCard(move, onClick = null)
-            Text("Valores base actuales de la fuente. Elegir edición filtra descripción y MT, no reconstruye estadísticas históricas.", fontSize = 11.sp)
             val machineLinks = index.machines.filter { it.moveId == move.id }
             ItemChoice("Edición", selectedGroup, index.versions.sortedBy { it.order }.map { it.slug }.filter { g -> move.texts.any { it.versionGroup == g } || machineLinks.any { it.versionGroup == g } }, ItemLabels::version) { group = it }
             SourceText(move.texts, selectedGroup, move.effectEs, move.effectEn)
-            Text("Objetos MT / MO relacionados", fontWeight = FontWeight.Bold)
-            if (selectedGroup == null) Text("Selecciona una edición para consultar sus MT/MO.")
-            else {
+            if (selectedGroup != null) {
                 val links = machineLinks.filter { it.versionGroup == selectedGroup }.distinctBy { it.itemId }
-                if (links.isEmpty()) Text("Sin relación MT/MO documentada para esta edición.")
+                if (links.isNotEmpty()) Text("MT / MO", fontWeight = FontWeight.Bold)
                 links.forEach { link ->
-                    val label = items.firstOrNull { it.itemId == link.itemId }?.name ?: "Objeto ID ${link.itemId}"
-                    if (onItemClick == null) Text("$label · ficha disponible en la enciclopedia de objetos")
+                    val label = items.firstOrNull { it.itemId == link.itemId }?.name ?: "Ver objeto"
+                    if (onItemClick == null) Text(label)
                     else TextButton({ onItemClick(link.itemId) }) { Text(label) }
                 }
             }
-            Text("Fuente: CSV oficiales PokeAPI · ${index.revision.take(12)}. Sin certificación de legalidad competitiva.", fontSize = 11.sp)
         }
     }
 }
@@ -176,22 +167,19 @@ internal fun AbilityReferenceSheet(ability: ReferenceAbility, index: ReferenceIn
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(0.9f).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(ability.displayName, style = MaterialTheme.typography.titleLarge)
-            Text("${ability.slug} · ID habilidad ${ability.id}")
-            if (ability.nameEs == null) Text("Nombre español no disponible.")
+            if (ability.nameEs == null) Text("Inglés")
             AbilityNames.revision(ability)?.let { revision ->
                 Text("Antes de la novena generación: ${revision.previous}", style = MaterialTheme.typography.labelSmall)
-                Text("Nombre actual: WikiDex · español de España", style = MaterialTheme.typography.labelSmall)
             }
             TextButton(onDismiss) { Text("Cerrar ficha") }
             ItemChoice("Edición del texto", selectedGroup, ability.texts.map { it.versionGroup }.distinct(), ItemLabels::version) { group = it }
             SourceText(ability.texts, selectedGroup, ability.effectEs, ability.effectEn)
             AbilityHolderCounts(summary)
-            if (summary.holders.isEmpty()) Text("Sin variedades documentadas en el índice incluido.")
+            if (summary.holders.isEmpty()) Text("No hay Pokémon para mostrar.")
             summary.holders.take(visibleCount).forEach { holder ->
-                AbilityHolderRow(holder, pokemonLabels[holder.pokemonId] ?: "ID técnico ${holder.pokemonId}", onPokemonClick)
+                AbilityHolderRow(holder, pokemonLabels[holder.pokemonId] ?: "Nombre no disponible", onPokemonClick)
             }
             if (visibleCount < summary.total) TextButton({ count += 40 }) { Text("Cargar 40 más") }
-            Text("Fuente: PokeAPI · ${index.revision.take(12)}", fontSize = 11.sp)
         }
     }
 }
@@ -205,8 +193,6 @@ internal fun AbilityHolderCounts(summary: AbilityHolderSummary) {
         Text("Oculta: ${summary.hidden}")
     }
     if (summary.both > 0) Text("Una variedad puede figurar en ambos roles.", style = MaterialTheme.typography.labelSmall)
-    Text("Referencia actual por variedad · no por especie", style = MaterialTheme.typography.labelSmall)
-    Text("La edición seleccionada solo cambia el texto.", style = MaterialTheme.typography.labelSmall)
 }
 
 @Composable
@@ -250,7 +236,7 @@ fun MoveLearnsetPane(pokemonId: Int, modifier: Modifier = Modifier, repository: 
     LaunchedEffect(repo, pokemonId, attempt) {
         loading = true; error = null
         try { index = repo.index(); learnset = repo.learnset(pokemonId, refresh = attempt > 0) }
-        catch (e: Exception) { if (e is CancellationException) throw e; error = "No se pudo consultar el aprendizaje de esta variedad. Sin copia utilizable, se necesita conexión." }
+        catch (e: Exception) { if (e is CancellationException) throw e; error = "No se pudieron cargar los movimientos. Comprueba tu conexión e inténtalo de nuevo." }
         finally { loading = false }
     }
     val loaded = index
@@ -259,14 +245,13 @@ fun MoveLearnsetPane(pokemonId: Int, modifier: Modifier = Modifier, repository: 
     val visible = remember(loaded, query, type, category, general, learned) {
         loaded?.let { ReferencePresentation.filterMoves(it, query, type, category).filter { move -> general || move.id in learned } }.orEmpty()
     }
-    val unknown = learned.keys - loaded?.moves.orEmpty().map { it.id }.toSet()
     LazyColumn(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         item(key = "controls") {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 OutlinedTextField(query, { query = it }, label = { Text("Buscar movimiento") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
                 if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
-                TextButton({ attempt++ }) { Text("Actualizar / reintentar aprendizaje") }
+                TextButton({ attempt++ }, enabled = !loading) { Text(if (error != null) "Reintentar" else "Actualizar") }
                 if (loaded != null) {
                     ItemChoice("Edición de aprendizaje", group, ReferencePresentation.groups(loaded, rows), ItemLabels::version) { group = it; method = null }
                     ItemChoice("Método", method, rows.filter { it.versionGroup == group }.map { it.method }.distinct(), ReferencePresentation::method) { method = it }
@@ -277,19 +262,16 @@ fun MoveLearnsetPane(pokemonId: Int, modifier: Modifier = Modifier, repository: 
                     }
                     Row {
                         Checkbox(general, { general = it })
-                        Text("Catálogo general (no acredita aprendizaje)", fontSize = 11.sp)
+                        Text("Catálogo general", fontSize = 11.sp)
                     }
-                    if (unknown.isNotEmpty()) Text("Movimientos no incluidos aún en la referencia: ${unknown.sorted().joinToString()}. No se inventan sus datos.", fontSize = 11.sp)
-                    if (learnset?.offline == true) Text("No se pudo actualizar: copia guardada del aprendizaje.", fontSize = 11.sp)
-                    learnset?.let { Text("Fuente: PokeAPI pokemon/${it.data.pokemonId} · guardado ${java.time.Instant.ofEpochMilli(it.fetchedAt)}", fontSize = 10.sp) }
-                    Text("${visible.size} movimientos · mostrando ${minOf(count, visible.size)}. Sin certificación de legalidad.", fontSize = 11.sp)
-                    if (!general && group == null) Text("Selecciona una edición; no se mezclan generaciones.", fontSize = 12.sp)
+                    Text("${visible.size} movimientos · mostrando ${minOf(count, visible.size)}", fontSize = 11.sp)
+                    if (!general && group == null) Text("Selecciona una edición.", fontSize = 12.sp)
                     if (visible.isEmpty() && !loading && (general || group != null)) Text("Sin movimientos registrados con estos filtros.")
                 }
             }
         }
         items(visible.take(count), key = { it.id }) { move ->
-            val annotation = if (general) "Catálogo general, no aprendizaje verificado" else learned[move.id].orEmpty().joinToString(" · ") {
+            val annotation = if (general) null else learned[move.id].orEmpty().joinToString(" · ") {
                 "${ReferencePresentation.method(it.method)}${if (it.method == "level-up") ": nivel ${it.level}" else ""}"
             }
             MoveCard(move, description = ReferencePresentation.text(move.texts, group), annotations = annotation,
@@ -353,14 +335,12 @@ internal fun PokemonAbilitySummary(pokemonId: Int, repository: AbilityRepository
     val loaded = index
     if (loaded == null && !error) LinearProgressIndicator(Modifier.fillMaxWidth())
     if (loaded != null) {
-        if (links.isEmpty()) Text("Sin habilidades documentadas")
+        if (links.isEmpty()) Text("No hay habilidades para mostrar.")
         links.forEach { link -> loaded.abilities.firstOrNull { it.id == link.abilityId }?.let { ability ->
             TextButton({ onChoose(ability, loaded) }, modifier = Modifier.fillMaxWidth()) {
                 Text(ability.displayName + (if (link.hidden) " (oculta)" else "") +
                     (if (ability.nameEs == null) " · inglés" else ""), modifier = Modifier.fillMaxWidth())
             }
         } }
-        Text("Referencia actual · por variedad", style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

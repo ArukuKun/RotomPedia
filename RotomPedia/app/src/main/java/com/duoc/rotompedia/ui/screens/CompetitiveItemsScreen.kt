@@ -9,7 +9,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
@@ -19,6 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,12 +65,12 @@ fun CompetitiveItemsScreen(onNavigateBack: () -> Unit, onPokemonClick: (String) 
                 pocketFlow.value.pockets.none { it.id == filter.pocketId }) filter = filter.copy(pocketId = null)
             if (initialItemId > 0) {
                 selected = repository.observeItems().first().firstOrNull { it.itemId == initialItemId }
-                if (selected == null) error = "Objeto con ID desconocido. No se sustituye por otro."
+                if (selected == null) error = "No se encontró el objeto."
             } else if (initialSlug != null) {
                 selected = repository.resolve(initialSlug)
-                if (selected == null) error = "No se pudo resolver el objeto solicitado. Puedes buscarlo en el catálogo."
+                if (selected == null) error = "No se encontró el objeto. Puedes buscarlo en el catálogo."
             }
-        } catch (e: Exception) { if (e is CancellationException) throw e; error = "No se pudo preparar el índice de objetos." }
+        } catch (e: Exception) { if (e is CancellationException) throw e; error = "No se pudieron cargar los objetos." }
         finally { loading = false }
     }
     LaunchedEffect(itemRepository) {
@@ -91,30 +96,29 @@ fun CompetitiveItemsScreen(onNavigateBack: () -> Unit, onPokemonClick: (String) 
     val currentResult = browserResult?.takeIf { it.filter == filter && it.pockets == pockets }
     val result = currentResult?.rows.orEmpty()
     Scaffold(topBar = {
-        TopAppBar(title = { Text("Enciclopedia de objetos") }, navigationIcon = {
+        TopAppBar(title = { Text("Objetos", maxLines = 1, overflow = TextOverflow.Ellipsis) }, navigationIcon = {
             IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver") }
         }, actions = {
-            IconButton({ showFilters = true }) { Icon(Icons.Default.FilterList, "Filtrar objetos") }
+            ItemFilterAction(listOf(filter.category != null, filter.attribute != null, filter.editorialOnly).count { it }) { showFilters = true }
         })
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
             OutlinedTextField(filter.query, { filter = filter.copy(query = it) }, modifier = Modifier.fillMaxWidth(),
-                label = { Text("Nombre, categoría o ID del objeto") }, singleLine = true)
+                label = { Text("Buscar objeto") }, singleLine = true)
             ItemPocketTabs(pockets, if (loading) emptyList() else all, filter.pocketId) { pocket ->
                 filter = filter.copy(pocketId = pocket, category = filter.category.takeIf {
                     pocket == null || (pockets.pocket(it.orEmpty())?.id ?: ItemPocketIndex.UNKNOWN) == pocket
                 })
             }
-            Text("Bolsillos de referencia · varían según el juego", style = MaterialTheme.typography.labelSmall)
             val summary = listOfNotNull(filter.category?.let(ItemLabels::category), filter.attribute?.let(ItemLabels::attribute),
-                "Con consejo editorial".takeIf { filter.editorialOnly })
+                "Consejos de Rotom".takeIf { filter.editorialOnly })
             if (summary.isNotEmpty()) Text(summary.joinToString(" · "), style = MaterialTheme.typography.labelSmall)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("${result.size} / ${currentResult?.total ?: all.size} objetos", fontSize = 12.sp, modifier = Modifier.weight(1f))
                 TextButton({ filter = ItemFilter() }) { Text("Limpiar") }
             }
             if (loading || (currentResult == null && error == null)) LinearProgressIndicator(Modifier.fillMaxWidth())
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error); TextButton({ retry++ }) { Text("Reintentar índice") } }
+            error?.let { Text(it, color = MaterialTheme.colorScheme.error); TextButton({ retry++ }) { Text("Reintentar") } }
             if (!loading && currentResult != null && result.isEmpty() && error == null) Text("Sin objetos con estos filtros.")
             if (!loading && currentResult != null) key(filter) {
             LazyColumn(Modifier.weight(1f).testTag("item_list"), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
@@ -124,8 +128,8 @@ fun CompetitiveItemsScreen(onNavigateBack: () -> Unit, onPokemonClick: (String) 
                             ItemSprite(item.slug, modifier = Modifier.size(48.dp))
                             Column(Modifier.padding(start = 12.dp).weight(1f)) {
                                 Text(item.name, style = MaterialTheme.typography.titleMedium)
-                                Text("${ItemLabels.category(item.category)} · ID objeto ${item.itemId}", fontSize = 12.sp)
-                                if (item.nameLanguage != "es") Text("Nombre español no disponible (${item.nameLanguage})", fontSize = 11.sp)
+                                Text(ItemLabels.category(item.category), fontSize = 12.sp)
+                                if (item.nameLanguage == "en") Text("Inglés", fontSize = 11.sp)
                             }
                         }
                     }
@@ -144,13 +148,13 @@ fun CompetitiveItemsScreen(onNavigateBack: () -> Unit, onPokemonClick: (String) 
             Text("Filtros de objetos", style = MaterialTheme.typography.titleMedium)
             val categories = all.filter { filter.pocketId == null ||
                 (pockets.pocket(it.category)?.id ?: ItemPocketIndex.UNKNOWN) == filter.pocketId }.map { it.category }.distinct().sorted()
-            ItemChoice("Categoría oficial", filter.category, categories, ItemLabels::category) { filter = filter.copy(category = it) }
-            ItemChoice("Atributo documentado", filter.attribute, all.flatMap { it.attributeList }.distinct().sorted(), ItemLabels::attribute) {
+            ItemChoice("Categoría", filter.category, categories, ItemLabels::category) { filter = filter.copy(category = it) }
+            ItemChoice("Característica", filter.attribute, all.flatMap { it.attributeList }.distinct().sorted(), ItemLabels::attribute) {
                 filter = filter.copy(attribute = it)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(filter.editorialOnly, { filter = filter.copy(editorialOnly = it) })
-                Text("Con consejo editorial revisado", modifier = Modifier.weight(1f))
+                Text("Con consejos de Rotom", modifier = Modifier.weight(1f))
             }
             TextButton({ showFilters = false }) { Text("Aplicar y cerrar") }
         }
@@ -167,7 +171,7 @@ internal fun ItemPocketTabs(pockets: ItemPocketIndex, items: List<IndexedItem>, 
         }
         if (items.any { pockets.pocket(it.category) == null }) item {
             FilterChip(selected == ItemPocketIndex.UNKNOWN, { onChoose(ItemPocketIndex.UNKNOWN) },
-                label = { Text("Sin bolsillo verificado") }, modifier = Modifier.testTag("pocket_unknown"))
+                label = { Text("Otros") }, modifier = Modifier.testTag("pocket_unknown"))
         }
     }
 }
@@ -176,7 +180,18 @@ internal fun ItemPocketTabs(pockets: ItemPocketIndex, items: List<IndexedItem>, 
 internal fun ItemChoice(label: String, selected: String?, choices: List<String>, display: (String) -> String, onChoose: (String?) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
-        TextButton({ open = true }) { Text("$label: ${selected?.let(display) ?: "Sin seleccionar"}") }
+        val value = selected?.let(display) ?: "Sin seleccionar"
+        OutlinedCard(onClick = { open = true }, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            .semantics(mergeDescendants = true) { contentDescription = "$label: $value" }, shape = RoundedCornerShape(12.dp)) {
+            Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                }
+                Spacer(Modifier.width(8.dp))
+                Icon(Icons.Default.ExpandMore, null)
+            }
+        }
         DropdownMenu(open, { open = false }, modifier = Modifier.heightIn(max = 300.dp)) {
             DropdownMenuItem(text = { Text("Sin seleccionar") }, onClick = { onChoose(null); open = false })
             choices.forEach { choice -> DropdownMenuItem(text = { Text(display(choice)) }, onClick = { onChoose(choice); open = false }) }
@@ -209,7 +224,7 @@ internal fun ItemDetailSheet(item: IndexedItem, repository: ItemRepository, onDi
     LaunchedEffect(item.itemId, retry) {
         loading = true; error = null
         try { data = repository.detail(item.itemId, refresh = retry > 0) }
-        catch (e: Exception) { if (e is CancellationException) throw e; error = "Detalle no disponible. No hay una ficha guardada utilizable; comprueba la conexión y reintenta." }
+        catch (e: Exception) { if (e is CancellationException) throw e; error = "No se pudo cargar la ficha. Comprueba tu conexión e inténtalo de nuevo." }
         finally { loading = false }
     }
     // Read loading/detail state in the owning composition before the sheet's
@@ -221,73 +236,65 @@ internal fun ItemDetailSheet(item: IndexedItem, repository: ItemRepository, onDi
         Column(Modifier.fillMaxWidth().fillMaxHeight(0.9f).verticalScroll(rememberScrollState()).padding(20.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ItemSprite(item.slug, modifier = Modifier.size(64.dp), declared = currentData?.detail?.sprites?.default)
-                Column(Modifier.weight(1f)) { Text(item.name, style = MaterialTheme.typography.titleLarge); Text("${item.slug} · ID objeto ${item.itemId}", fontSize = 12.sp) }
+                Column(Modifier.weight(1f)) { Text(item.name, style = MaterialTheme.typography.titleLarge) }
                 TextButton(onDismiss) { Text("Cerrar") }
             }
             Text(ItemLabels.category(item.category))
-            pockets.pocket(item.category)?.let { Text("Bolsillo de referencia: ${it.label}", style = MaterialTheme.typography.labelSmall) }
+            pockets.pocket(item.category)?.let { Text("Bolsillo: ${it.label}", style = MaterialTheme.typography.labelSmall) }
             if (isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
             currentError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            TextButton({ retry++ }) { Text("Actualizar / reintentar ficha") }
+            TextButton({ retry++ }, enabled = !isLoading) { Text(if (currentError != null) "Reintentar" else "Actualizar") }
             currentData?.let { loaded ->
                 val detail = loaded.detail
-                Text(if (loaded.offline) "No se pudo actualizar: mostrando copia guardada." else "Ficha disponible en caché local.", fontSize = 12.sp)
-                Text("Fuente: PokeAPI · item/${detail.id} · guardado ${java.time.Instant.ofEpochMilli(loaded.fetchedAt)}", fontSize = 11.sp)
                 val machines = reference?.machines.orEmpty().filter { it.itemId == item.itemId }
                 val groups = (detail.descriptions.map { it.versionGroup.name } + detail.prices.map { it.versionGroup.name } + machines.map { it.versionGroup }).distinct().sorted()
-                ItemChoice("Edición de descripción / precio", group, groups, ItemLabels::version) { group = it }
+                if (groups.isNotEmpty()) ItemChoice("Edición", group, groups, ItemLabels::version) { group = it }
                 val description = ItemPresentation.description(detail, group)
-                Text("Descripción de juego", style = MaterialTheme.typography.titleMedium)
-                Text(when {
-                    group == null -> "Selecciona una edición para consultar su texto y precio."
-                    detail.name == "shuca-berry" && group == "x-y" -> "Texto original de X/Y conocido como inconsistente: se oculta para no atribuir un efecto incorrecto. Consulta el efecto revisado o una edición diferente."
-                    description == null -> "Sin descripción española o inglesa para esta edición."
-                    description.language == "es" -> description.text
-                    else -> "Sin traducción española para esta edición. Original en inglés: ${description.text}"
-                })
+                description?.let {
+                    Text("Descripción", style = MaterialTheme.typography.titleMedium)
+                    Text(if (it.language == "es") it.text else "Inglés: ${it.text}")
+                }
                 val effect = ItemPresentation.effect(detail)
-                Text("Efecto mecánico · fuente sin edición específica", style = MaterialTheme.typography.titleMedium)
                 if (detail.name == "shuca-berry") {
+                    Text("Efecto", style = MaterialTheme.typography.titleMedium)
                     Text(ItemEditorial.shucaEffect)
-                    Text(ItemEditorial.shucaSource, fontSize = 11.sp)
-                } else Text(when (effect?.language) {
-                    "es" -> effect.text
-                    "en" -> "Sin efecto español verificado. Original en inglés: ${effect.text}"
-                    else -> "Sin efecto documentado en español o inglés."
-                })
-                Text("Atributos documentados", style = MaterialTheme.typography.titleMedium)
-                Text(detail.attributes.map { ItemLabels.attribute(it.name) }.joinToString(" · ").ifBlank { "Sin atributos documentados; no implica que no se pueda usar o llevar." })
-                Text("Precio por edición", style = MaterialTheme.typography.titleMedium)
+                } else effect?.let {
+                    Text("Efecto", style = MaterialTheme.typography.titleMedium)
+                    Text(if (it.language == "es") it.text else "Inglés: ${it.text}")
+                }
+                if (detail.attributes.isNotEmpty()) {
+                    Text("Características", style = MaterialTheme.typography.titleMedium)
+                    Text(detail.attributes.joinToString(" · ") { ItemLabels.attribute(it.name) })
+                }
                 if (item.category == "all-machines") {
-                    Text("Movimiento de la MT / MO · depende de la edición", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                    if (reference == null) Text("Referencia de relaciones no disponible.")
-                    else if (group == null) Text("Selecciona una edición para consultar el movimiento relacionado.")
-                    else {
+                    if (reference != null && group != null) {
                         val links = machines.filter { it.versionGroup == group }.distinctBy { it.moveId }
-                        if (links.isEmpty()) Text("Sin relación documentada para esta edición.")
-                        links.forEach { link -> TextButton({ onMoveClick(link.moveId) }) { Text(reference.moves.firstOrNull { it.id == link.moveId }?.displayName ?: "Movimiento ID ${link.moveId}") } }
+                        if (links.isNotEmpty()) Text("Movimiento", fontWeight = FontWeight.Bold)
+                        links.forEach { link -> TextButton({ onMoveClick(link.moveId) }) { Text(reference.moves.firstOrNull { it.id == link.moveId }?.displayName ?: "Ver movimiento") } }
                     }
                 }
                 val prices = detail.prices.filter { it.versionGroup.name == group }
-                Text(if (prices.isEmpty()) "Sin precio contextual documentado para la edición seleccionada. No se asume que sea gratis." else prices.joinToString("\n") {
-                    "Compra: ${it.purchasePrice?.toString() ?: "sin dato"} · venta: ${it.sellPrice?.toString() ?: "sin dato"} · moneda: ${it.currency.name}"
-                })
+                if (prices.isNotEmpty()) {
+                    Text("Precio", style = MaterialTheme.typography.titleMedium)
+                    Text(prices.joinToString("\n") {
+                        "Compra: ${it.purchasePrice?.toString() ?: "—"} · venta: ${it.sellPrice?.toString() ?: "—"} · ${it.currency.name}"
+                    })
+                }
                 ItemEditorial.notes[item.slug]?.let {
-                    Text("Consejo editorial de RotomPedia · no oficial", style = MaterialTheme.typography.titleMedium)
+                    Text("Consejo de Rotom", style = MaterialTheme.typography.titleMedium)
                     Text(it)
                 }
                 TextButton({
-                    val text = "${item.name} (${item.slug})\nFuente: PokeAPI item/${item.itemId}\nEdición: ${group?.let(ItemLabels::version) ?: "no seleccionada"}\n" +
-                        (description?.let { "Texto (${it.language}): ${it.text}" } ?: "Sin descripción seleccionada")
+                    val text = "${item.name}\n${group?.let(ItemLabels::version).orEmpty()}\n" +
+                        (description?.let { if (it.language == "es") it.text else "Inglés: ${it.text}" }.orEmpty())
                     clipboard.setText(AnnotatedString(text))
-                }) { Text("Copiar ficha con procedencia") }
+                }) { Text("Copiar ficha") }
                 if (detail.holders.isNotEmpty()) {
-                    Text("Pokémon que pueden llevarlo en encuentros", style = MaterialTheme.typography.titleMedium)
-                    Text("No es una lista de Pokémon compatibles para equiparlo. Condiciones registradas por juego.", fontSize = 12.sp)
+                    Text("Lo llevan en encuentros", style = MaterialTheme.typography.titleMedium)
                     detail.holders.forEach { holder ->
                         val id = Regex("https://pokeapi.co/api/v2/pokemon/([1-9][0-9]*)/?").matchEntire(holder.pokemon.url)?.groupValues?.get(1)
                         if (id != null) TextButton({ onPokemonClick(id) }) {
-                            Text(pokemonLabels[id.toInt()] ?: "ID técnico $id · ${holder.pokemon.name}")
+                            Text(pokemonLabels[id.toInt()] ?: com.duoc.rotompedia.data.PokemonFormCatalog.displayName(holder.pokemon.name))
                         }
                         Text(holder.versions.joinToString(" · ") { "${it.version.name}: ${it.rarity}%" }, fontSize = 11.sp)
                     }
