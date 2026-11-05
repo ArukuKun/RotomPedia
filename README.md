@@ -6,9 +6,9 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 ## Estado actual y versiones
 
-**Prueba pública actual:** [pre-release `v3.5.0-rc5`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc5), con ficha biológica compacta, correcciones de Pokédex y v3.5-A/B/C integradas. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc5/RotomPedia-v3.5.0-rc5.apk). No es la versión base estable `3.5.0`; RC1–RC4 se conservan sin cambios para comparar.
+**Prueba pública actual:** [pre-release `v3.5.0-rc6`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc6), con mini sprites de portadores, formas vacías ocultas y todas las mejoras de RC5. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc6/RotomPedia-v3.5.0-rc6.apk). No es la versión base estable `3.5.0`; RC1–RC5 se conservan sin cambios para comparar.
 
-**Código publicado:** rama `feature/v3.5-pokemon-biology`, tag `v3.5.0-rc5` en `2776a61`; 100 pruebas Kotlin/23 Python, lint/build y ambos workflows correctos. Correcciones de RC4 aprobadas por el usuario; validación visual de BIO-001 en Android pendiente.
+**Código publicado:** rama `feature/v3.5-ability-sprites`, tag `v3.5.0-rc6` en `7a892df`; 105 pruebas Kotlin/23 Python, lint/build y ambos workflows correctos. RC5 aprobada en términos generales; validación visual de RC6 en Android pendiente.
 
 **Política permanente de publicación:** implementar una fase autorizada incluye permiso para commits, push, nuevo tag, GitHub Actions y **pre-release con APK descargable**, sin pedir autorización adicional. Exige verificaciones correctas, firma compatible, `versionCode` creciente, SHA-256, notas y problemas conocidos. No sobrescribir releases anteriores. **Versiones estables, cambios de firma y acciones destructivas requieren aprobación independiente**; esta política no autoriza nuevas fases. Ver §8.1 del único Plan Maestro.
 
@@ -20,7 +20,7 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **BIO-001 publicada:** `v3.5.0-rc5` / `30505`: bloque compacto de especie/categoría, altura/peso de la variedad y habilidades visibles con acceso a sus fichas existentes. Sin cambios de Room ni datos personales; medidas/categoría pueden faltar al reabrir offline. 100 pruebas Kotlin/23 Python, lint/build, snapshots y ambos workflows correctos; validación visual pendiente. Ver §4.4 del mismo Plan Maestro; P3 sigue para después.
 
-**Parche visual en preparación:** `v3.5.0-rc6` / `30506`, rama `feature/v3.5-ability-sprites`: mini sprites de la variedad exacta junto a los portadores de habilidades y sección «Formas» oculta cuando no hay alternativas. Mantiene lista completa, navegación y datos guardados; pruebas focalizadas correctas, suite final/publicación pendientes. Alcance y evidencia en §4.5 del Plan Maestro; evolución de Overqwil y P3 siguen pendientes.
+**Parche visual publicado:** `v3.5.0-rc6` / `30506`: mini sprites de la variedad exacta junto a los portadores de habilidades y sección «Formas» oculta cuando no hay alternativas. Mantiene lista completa, navegación y datos guardados; 105 Kotlin/23 Python y ambos workflows correctos, validación visual pendiente. Alcance y evidencia en §4.5 del Plan Maestro; evolución de Overqwil y P3 siguen pendientes.
 
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
@@ -115,8 +115,8 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 - Datos personales e IDs técnicos se conservan; no se usa borrado destructivo como recuperación de una migración fallida.
 - Los APK publicados de esta etapa son de validación con firma de depuración, no firma privada de producción. Consultar las notas de la release antes de actualizar; no desinstalar para forzar una actualización sin respaldo.
 - No instalar una versión antigua sobre una base ya migrada a un esquema más reciente. El código local puede adelantarse al APK público; el nombre de una versión Android no demuestra por sí solo qué hitos están publicados.
-- La pre-release actual usa `3.5.0-rc5` / `30505` (RC4: `30504`), con el mismo certificado comprobado que las RC anteriores. Incluye SHA-256; no es la versión base estable `3.5.0`. Instalar como actualización; no desinstales ni borres datos para forzarla si Android informa conflicto de firma.
-- SHA-256 de RC5: `fee07a72bd25e714d469f115a145a41b0f7b00dd1668ef85d3a12baecb8517b0`. [Verificación y publicación Actions correctas](https://github.com/ArukuKun/RotomPedia/actions/runs/41953561285); evidencias históricas conservadas en §4.1–§4.3 del plan.
+- La pre-release actual usa `3.5.0-rc6` / `30506` (RC5: `30505`), con el mismo certificado comprobado que las RC anteriores. Incluye SHA-256; no es la versión base estable `3.5.0`. Instalar como actualización; no desinstales ni borres datos para forzarla si Android informa conflicto de firma.
+- SHA-256 de RC6: `58381f67c41670f96379d45530d439a3c68c2c021fc2f7e141c5a23b0478010d`. [Verificación y publicación Actions correctas](https://github.com/ArukuKun/RotomPedia/actions/runs/41958335159); evidencias históricas conservadas en §4.1–§4.4 del plan.
 - Una posible numeración `0.x` es solo una propuesta pendiente; no renombra releases ni reduce el `versionCode`. Estables y cambios de firma siguen requiriendo aprobación.
 - Pendientes concretos: captura (`CAP-001`–`CAP-003`), validación manual del español de movimientos (`MOV-001`, implementado localmente), textos en pantallas estrechas (`UI-001`) y recursos gráficos aún ausentes. Véase el Plan Maestro, sin reabrir v3.4 completa.
 
