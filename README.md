@@ -6,6 +6,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 ## Estado actual y versiones
 
+**Prioridad actual: recuperar la identidad de Rotom.** Desarrollo funcional y cierre estable pausados para auditar/diseñar una interfaz coherente con el fondo y la cara de Rotom, apariencia Claro/Oscuro/Sistema independiente de sus seis formas y movimientos por Pokémon en cuatro páginas. [Maqueta visual HTML](docs/prototypes/rotom-identity.html) y auditoría/comparación/alcance en **§4.10 del único [Plan Maestro](docs/ROTOMPEDIA_PLAN_MAESTRO.md)**. Dirección estética bien recibida; implementación Android por hitos pendiente de aprobación, sin APK nuevo ni cambios de datos/firma. «ZIP» se refiere al proyecto actual, no a otro archivo.
+
 **Prueba pública actual:** [pre-release `v3.5.0-rc10`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc10), con interfaz sin avisos técnicos y filtros de objetos más intuitivos, sobre RC9. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc10/RotomPedia-v3.5.0-rc10.apk). No es la versión base estable `3.5.0`; RC1–RC9 se conservan sin cambios para comparar.
 
 **Código publicado:** rama `feature/v3.5-clean-client-ui`, tag `v3.5.0-rc10` en `9ff2c69`; 140 pruebas Kotlin/28 Python, lint/build y ambos workflows correctos (publicación correcta en segundo intento). Validación visual de RC10 en Android pendiente.
