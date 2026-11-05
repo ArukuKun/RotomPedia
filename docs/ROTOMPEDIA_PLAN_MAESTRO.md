@@ -2,13 +2,13 @@
 
 **Marca / proyecto:** RotomPedia\
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
-**Versión publicada actual:** **v3.5.0-rc9**, pre-release con A/B/C y objetos por bolsillos sobre RC8; validación visual de RC9 y estabilización pendientes, no versión estable.\
+**Versión publicada actual:** **v3.5.0-rc10**, pre-release con limpieza de interfaz de cliente y filtros de objetos más intuitivos sobre RC9; validación visual de RC10 y estabilización pendientes, no versión estable.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
 **Regla de alcance:** implementar solo fases autorizadas por el usuario. La política permanente de §8.1 autoriza commits, push, tags nuevos y pre-releases de esas fases sin pedir permiso adicional; no autoriza fases nuevas, versiones estables, cambios de firma ni operaciones destructivas. No modificar tags/releases anteriores.
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
-**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc9`**, rama `feature/v3.5-item-pockets`, tag en `17faea3`; 134 Kotlin/26 Python, lint/build y ambos workflows correctos. ITEM-002 entregada, pendiente de validación visual (§4.8); continuidad tras RC8 aceptada sin inferir matriz manual exhaustiva. Evidencias históricas RC2–RC8 en §4.1–§4.7 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
+**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc10`**, rama `feature/v3.5-clean-client-ui`, tag en `9ff2c69`; 140 Kotlin/28 Python, lint/build y ambos workflows correctos. Corrección de interfaz entregada, pendiente de validación visual (§4.9). Evidencias históricas RC2–RC9 en §4.1–§4.8 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron; sprites faltantes diferidos expresamente.
 
 **Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**. Las cuatro observaciones manuales de RC2 están implementadas y publicadas como `v3.5.0-rc3` / `30503` (§4.2). No se autoriza implementar conjuntamente el resto de §13 ni cambiar mapas/RI. Conservar firma compatible y versiones anteriores; `0.x` solo en evaluación.
 
@@ -530,6 +530,8 @@ En Arceus las evoluciones se eligen en el menú tras cumplir la condición, no s
 
 **APK preparado RC10:** `RotomPedia-v3.5.0-rc10.apk`, **23995809 bytes**, SHA-256 `b8208f2a818b4b78609edaf61760be4419fee51c2ec4c9570672ac677ea45b94` y `.apk.sha256`. Paquete `com.duoc.rotompedia`, `3.5.0-rc10` / `30510 > 30509`, mínimo API 25. Build Tools 35.0.0 verifica certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, idéntico al APK RC9 cuyo hash también se comprobó. Clave privada fuera de GitHub. Publicación supeditada a repetir controles de §8.1 en Actions, sin alterar releases anteriores ni promover a estable.
 
+**Entrega pública RC10:** tag inmutable `v3.5.0-rc10` en `9ff2c69`; [pre-release](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc10), `draft=false`, `prerelease=true`, no estable/Latest. Ambos workflows **success**: [Release APK 42058665480, intento 2](https://github.com/ArukuKun/RotomPedia/actions/runs/42058665480) y [Verify 42058655832](https://github.com/ArukuKun/RotomPedia/actions/runs/42058655832). El primer intento de Release agotó el límite de cinco minutos de tests tras `AppNotIdleException` en cuatro pruebas Compose; Verify pasó con el mismo commit. Se repitió únicamente el job fallido, sin omitir controles ni cambiar código/tag/APK; el segundo intento terminó correctamente y Actions verificó checksum, certificado y paquete/versión antes de publicar. Digest público idéntico al SHA-256 anterior; [APK directo](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc10/RotomPedia-v3.5.0-rc10.apk) comprobado con HTTP HEAD **200**, longitud 23995809 y MIME APK. Un observador local perdió su proceso (`Shell.NotFoundError`), sin detener la ejecución remota; estado final comprobado directamente. RC1–RC9 y sus tags/assets intactos; cierre documental posterior no modifica el tag ni el APK. Validación visual en teléfono pendiente.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -697,7 +699,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 5 de noviembre de 2026.\
-**Próxima puerta:** atender las observaciones de UI de RC9 mediante RC10 (§4.9), verificar y entregar para revisión visual. Sprites faltantes y P3 siguen diferidos. Nunca promover a estable automáticamente.
+**Próxima puerta:** RC10 publicada y verificada (§4.9); esperar revisión visual del usuario antes de otro alcance. Sprites faltantes y P3 siguen diferidos. Nunca promover a estable automáticamente.
 
 ---
 

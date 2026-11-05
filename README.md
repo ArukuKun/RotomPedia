@@ -6,9 +6,9 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 ## Estado actual y versiones
 
-**Prueba pública actual:** [pre-release `v3.5.0-rc9`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc9), con objetos por bolsillos y todas las mejoras de RC8. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc9/RotomPedia-v3.5.0-rc9.apk). No es la versión base estable `3.5.0`; RC1–RC8 se conservan sin cambios para comparar.
+**Prueba pública actual:** [pre-release `v3.5.0-rc10`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc10), con interfaz sin avisos técnicos y filtros de objetos más intuitivos, sobre RC9. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc10/RotomPedia-v3.5.0-rc10.apk). No es la versión base estable `3.5.0`; RC1–RC9 se conservan sin cambios para comparar.
 
-**Código publicado:** rama `feature/v3.5-item-pockets`, tag `v3.5.0-rc9` en `17faea3`; 134 pruebas Kotlin/26 Python, lint/build y ambos workflows correctos. Validación visual de RC9 en Android pendiente.
+**Código publicado:** rama `feature/v3.5-clean-client-ui`, tag `v3.5.0-rc10` en `9ff2c69`; 140 pruebas Kotlin/28 Python, lint/build y ambos workflows correctos (publicación correcta en segundo intento). Validación visual de RC10 en Android pendiente.
 
 **Política permanente de publicación:** implementar una fase autorizada incluye permiso para commits, push, nuevo tag, GitHub Actions y **pre-release con APK descargable**, sin pedir autorización adicional. Exige verificaciones correctas, firma compatible, `versionCode` creciente, SHA-256, notas y problemas conocidos. No sobrescribir releases anteriores. **Versiones estables, cambios de firma y acciones destructivas requieren aprobación independiente**; esta política no autoriza nuevas fases. Ver §8.1 del único Plan Maestro.
 
@@ -28,7 +28,7 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **ITEM-002 publicada:** `v3.5.0-rc9` / `30509`: objetos por 8 bolsillos de referencia desde la misma fuente fijada, con búsqueda/filtros combinables y fichas/sprites existentes. Los 2223 objetos anteriores permanecen idénticos; el asset solo añade relaciones de bolsillos, sin cambios de Room ni datos personales. No certifica organización o disponibilidad por edición ni crea inventario personal. 134 Kotlin/26 Python y ambos workflows correctos; validación visual pendiente. Ver §4.8 del Plan Maestro; P3 diferida.
 
-**Corrección de interfaz preparada:** `v3.5.0-rc10` / `30510`, rama `feature/v3.5-clean-client-ui`: retirados avisos de proveedor/caché/procedencia técnica de layouts de cliente, bloques opcionales vacíos ocultos y errores breves con reintento. En objetos, botón superior «Filtros» con icono/contador y selectores con borde/flecha. Datos y trazabilidad se conservan en modelos/docs/tests; sin cambios de sprites ni datos personales. 140 Kotlin/28 Python, tres índices, lint/build y firma compatible correctos. Ver §4.9 del mismo Plan Maestro; publicación y validación visual pendientes. P3 y sprites faltantes siguen para después.
+**Corrección de interfaz publicada:** `v3.5.0-rc10` / `30510`, rama `feature/v3.5-clean-client-ui`: retirados avisos de proveedor/caché/procedencia técnica de layouts de cliente, bloques opcionales vacíos ocultos y errores breves con reintento. En objetos, botón superior «Filtros» con icono/contador y selectores con borde/flecha. Datos y trazabilidad se conservan en modelos/docs/tests; sin cambios de sprites ni datos personales. 140 Kotlin/28 Python, tres índices, lint/build y firma compatible correctos. Ver §4.9 del mismo Plan Maestro; validación visual pendiente. P3 y sprites faltantes siguen para después.
 
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
