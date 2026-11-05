@@ -4,6 +4,8 @@ package com.duoc.rotompedia.viewmodel
 import android.util.Log
 import com.duoc.rotompedia.data.repository.*
 import com.duoc.rotompedia.data.PokemonFormCatalog
+import com.duoc.rotompedia.data.PokemonBiology
+import com.duoc.rotompedia.data.SpeciesCategoryState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -118,6 +120,9 @@ class PokemonViewModel(
 
     private val _evolutionState = MutableStateFlow<EvolutionState>(EvolutionState.Loading)
     val evolutionState: StateFlow<EvolutionState> = _evolutionState
+
+    private val _speciesCategory = MutableStateFlow(SpeciesCategoryState())
+    val speciesCategory: StateFlow<SpeciesCategoryState> = _speciesCategory
 
     private val _typeRelationsState = MutableStateFlow<TypeRelationsState>(TypeRelationsState.Loading)
     val typeRelationsState: StateFlow<TypeRelationsState> = _typeRelationsState
@@ -282,13 +287,19 @@ class PokemonViewModel(
         evolutionJob?.cancel()
         evolutionJob = viewModelScope.launch {
             _evolutionState.value = EvolutionState.Loading
+            _speciesCategory.value = SpeciesCategoryState()
             try {
-                val speciesResponse = withContext(Dispatchers.IO) {
+                val (resolvedSpeciesId, speciesResponse) = withContext(Dispatchers.IO) {
                     val pokemon = pokemonRepository.getPokemon(pokemonId)
                     val speciesId = pokemon.species?.url?.trimEnd('/')?.substringAfterLast('/')?.toIntOrNull()
                         ?: pokemonId.toInt()
-                    PokemonApi.service.getPokemonSpecies(speciesId)
+                    speciesId to PokemonApi.service.getPokemonSpecies(speciesId).also {
+                        require(it.id == null || it.id == speciesId) { "Especie de respuesta no coincidente" }
+                    }
                 }
+
+                _speciesCategory.value = SpeciesCategoryState(resolvedSpeciesId,
+                    PokemonBiology.spanishCategory(speciesResponse.genera), loading = false)
 
                 val description = speciesResponse.flavorTextEntries
                     .find { it.language.name == "es" }
@@ -310,6 +321,9 @@ class PokemonViewModel(
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 val errorMessage = "Error al cargar evolución/descripción: ${e.message}"
+                // A later evolution-chain failure must not discard an already fetched category.
+                if (_speciesCategory.value.loading) _speciesCategory.value =
+                    SpeciesCategoryState(loading = false, failed = true)
                 _evolutionState.value = EvolutionState.Error(errorMessage)
                 Log.e(TAG, errorMessage, e)
             }

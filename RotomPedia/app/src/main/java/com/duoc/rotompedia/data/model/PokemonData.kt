@@ -13,7 +13,9 @@ data class  PokemonData(
     val types: List<TypesSlot>,
     val stats: List<StatInfo>,
     val cries: CriesData? = null,
-    val species: NamedApiResource? = null
+    val species: NamedApiResource? = null,
+    val height: Int? = null, // PokeAPI: decimetres, for this exact Pokemon variety.
+    val weight: Int? = null // PokeAPI: hectograms, not kilograms.
 )
 
 @JsonClass(generateAdapter = true)
@@ -97,8 +99,13 @@ data class Stat(
 data class PokemonSpeciesResponse(
     @Json(name = "evolution_chain") val evolutionChain: EvolutionChainUrl,
     @Json(name = "flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>,
-    @Json(name = "capture_rate") val captureRate: Int? = null
+    @Json(name = "capture_rate") val captureRate: Int? = null,
+    val genera: List<PokemonGenus> = emptyList(),
+    val id: Int? = null
 )
+
+@JsonClass(generateAdapter = true)
+data class PokemonGenus(val genus: String, val language: Language)
 
 @JsonClass(generateAdapter = true)
 data class EvolutionChainUrl(

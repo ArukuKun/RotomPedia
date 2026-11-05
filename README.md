@@ -18,6 +18,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **Correcciones post-RC3 publicadas:** `v3.5.0-rc4` / `30504`: filtro en barra superior, panel sin párrafos ni categorías Cosméticos/Combate, primigenias en Megaevoluciones y Pikachu con gorra fuera de Regionales. Conserva orden regional y memoria de navegación de RC3. Nombres corregidos también en ficha; sin cambios de datos personales ni implementación P3. Evidencia y validación pendiente en §4.3 del mismo Plan Maestro.
 
+**Siguiente mejora autorizada:** tras aprobar las correcciones de RC4, el usuario autoriza BIO-001. Preparando `v3.5.0-rc5` / `30505`, rama `feature/v3.5-pokemon-biology`: bloque compacto de especie/categoría, altura/peso de la variedad y habilidades visibles con acceso a sus fichas existentes. Sin cambios de Room ni datos personales; medidas/categoría pueden faltar al reabrir offline. 100 pruebas Kotlin/23 Python, lint/build y snapshots correctos; publicación y validación visual pendientes. Ver §4.4 del mismo Plan Maestro; P3 sigue para después.
+
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
 

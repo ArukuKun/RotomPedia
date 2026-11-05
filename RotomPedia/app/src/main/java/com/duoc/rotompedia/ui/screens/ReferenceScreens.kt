@@ -279,30 +279,50 @@ fun MovePickerDialog(slotIndex: Int, pokemonId: Int, onDismiss: () -> Unit, onMo
 @Composable
 fun PokemonAbilitiesSection(pokemonId: Int, onPokemonClick: (String) -> Unit) {
     val container = AppContainer.get(LocalContext.current)
-    var expanded by remember(pokemonId) { mutableStateOf(false) }
+    var selected by remember(pokemonId) { mutableStateOf<Pair<ReferenceAbility, ReferenceIndex>?>(null) }
+    val pokemonFlow = remember(container) { container.pokemon.observeExplorer() }
+    val pokemon by pokemonFlow.collectAsState(initial = emptyList())
+    PokemonAbilitySummary(pokemonId, container.abilities) { ability, index -> selected = ability to index }
+    selected?.let { (ability, index) ->
+        AbilityReferenceSheet(ability, index,
+            pokemon.associate { row -> row.pokemonId to "${row.numberLabel} · ${row.displayName}" },
+            { selected = null }, onPokemonClick)
+    }
+}
+
+@Composable
+internal fun PokemonAbilitySummary(pokemonId: Int, repository: AbilityRepository,
+    onChoose: (ReferenceAbility, ReferenceIndex) -> Unit) {
     var index by remember(pokemonId) { mutableStateOf<ReferenceIndex?>(null) }
     var links by remember(pokemonId) { mutableStateOf<List<AbilityLink>>(emptyList()) }
     var error by remember(pokemonId) { mutableStateOf(false) }
     var retry by remember(pokemonId) { mutableIntStateOf(0) }
-    var selected by remember(pokemonId) { mutableStateOf<ReferenceAbility?>(null) }
-    val pokemonFlow = remember(container) { container.pokemon.observeExplorer() }
-    val pokemon by pokemonFlow.collectAsState(initial = emptyList())
-    LaunchedEffect(pokemonId, expanded, retry) {
-        if (expanded) try { error = false; index = container.abilities.index(); links = container.abilities.forPokemon(pokemonId) }
+    LaunchedEffect(pokemonId, repository, retry) {
+        try {
+            error = false
+            index = null
+            links = emptyList()
+            val loaded = repository.index()
+            val related = repository.forPokemon(pokemonId)
+            require(related.all { link -> link.pokemonId == pokemonId && loaded.abilities.any { it.id == link.abilityId } })
+            links = related.sortedBy { it.slot }
+            index = loaded
+        }
         catch (e: Exception) { if (e is CancellationException) throw e; error = true }
     }
-    Text("Habilidades", style = MaterialTheme.typography.titleLarge)
-    TextButton({ expanded = !expanded }) { Text(if (expanded) "Ocultar habilidades" else "Consultar habilidades") }
-    if (!expanded) return
+    Text("Habilidades", fontWeight = FontWeight.SemiBold)
     if (error) { Text("No se pudieron consultar las habilidades."); TextButton({ retry++ }) { Text("Reintentar habilidades") } }
     val loaded = index
     if (loaded == null && !error) LinearProgressIndicator(Modifier.fillMaxWidth())
     if (loaded != null) {
-        Text("Relación actual por variedad; no historial de habilidades por edición.", fontSize = 11.sp)
-        if (links.isEmpty() && !error) Text("Sin habilidades documentadas para esta variedad en el índice incluido.")
+        if (links.isEmpty()) Text("Sin habilidades documentadas")
         links.forEach { link -> loaded.abilities.firstOrNull { it.id == link.abilityId }?.let { ability ->
-            TextButton({ selected = ability }) { Text("${ability.displayName} · ${if (link.hidden) "Oculta" else "Normal"} · slot ${link.slot}") }
+            TextButton({ onChoose(ability, loaded) }, modifier = Modifier.fillMaxWidth()) {
+                Text(ability.displayName + (if (link.hidden) " (oculta)" else "") +
+                    (if (ability.nameEs == null) " · inglés" else ""), modifier = Modifier.fillMaxWidth())
+            }
         } }
-        selected?.let { AbilityReferenceSheet(it, loaded, pokemon.associate { row -> row.pokemonId to "${row.numberLabel} · ${row.displayName}" }, { selected = null }, onPokemonClick) }
+        Text("Referencia actual · por variedad", style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

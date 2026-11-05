@@ -218,6 +218,7 @@ fun PokemonDetailContent(
     val displayNumber = nationalNumberLabel(pokemonViewModel, pokemon.id)
     val indexedEntries by pokemonViewModel.explorerEntries.collectAsState()
     val selectedEntry = indexedEntries.firstOrNull { it.pokemonId == pokemon.id }
+    val speciesCategory by pokemonViewModel.speciesCategory.collectAsState()
     val displayName = PokemonFormCatalog.displayName(pokemon.name)
     val displayTypes = pokemon.types.map { it.type.name }
 
@@ -414,6 +415,12 @@ fun PokemonDetailContent(
         } else {
             CircularProgressIndicator(modifier = Modifier.size(24.dp))
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        PokemonBiologyCard(pokemon, speciesId,
+            selectedEntry?.speciesName ?: pokemon.species?.name?.replaceFirstChar { it.uppercase() } ?: "—",
+            speciesCategory, onRetryCategory = { pokemonViewModel.loadEvolutionChain(pokemon.id.toString()) }) {
+            PokemonAbilitiesSection(pokemonId = pokemon.id, onPokemonClick = onPokemonClick)
+        }
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(
@@ -531,7 +538,6 @@ fun PokemonDetailContent(
         }
         Spacer(modifier = Modifier.height(24.dp))
         PokemonMovesSection(pokemonId = pokemon.id)
-        PokemonAbilitiesSection(pokemonId = pokemon.id, onPokemonClick = onPokemonClick)
         PokemonLocationsSection(pokemonId = pokemon.id)
         Spacer(modifier = Modifier.height(16.dp))
     }

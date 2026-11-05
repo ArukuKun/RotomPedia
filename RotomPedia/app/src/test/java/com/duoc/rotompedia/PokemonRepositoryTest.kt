@@ -113,7 +113,8 @@ class PokemonRepositoryTest {
                 delay(25)
                 if (offline) error("offline")
                 return PokemonData(10033, "venusaur-mega", SpritesData(null), listOf(TypesSlot(1, TypeData("grass"))),
-                    listOf("hp", "attack", "defense", "special-attack", "special-defense", "speed").map { StatInfo(80, Stat(it)) })
+                    listOf("hp", "attack", "defense", "special-attack", "special-defense", "speed").map { StatInfo(80, Stat(it)) },
+                    height = 24, weight = 1555)
             }
         }
         try {
@@ -121,13 +122,18 @@ class PokemonRepositoryTest {
             repo.ensureIndex()
             val first = async { repo.getPokemon("venusaur-mega") }
             val second = async { repo.getPokemon("10033") }
-            assertEquals(first.await(), second.await())
+            val fresh = first.await()
+            assertEquals(fresh, second.await())
+            assertEquals(24, fresh.height)
+            assertEquals(1555, fresh.weight)
             assertEquals(1, calls.get())
             offline = true
             val fallback = repository(db, api).getPokemon("10033")
             assertEquals(10033, fallback.id)
             assertEquals("https://pokeapi.co/api/v2/pokemon-species/3/", fallback.species!!.url)
             assertEquals(80, fallback.stats.first().baseStat)
+            assertNull(fallback.height) // Legacy cache has no dimensions: never substitute base-species values.
+            assertNull(fallback.weight)
         } finally { db.close() }
     }
 
