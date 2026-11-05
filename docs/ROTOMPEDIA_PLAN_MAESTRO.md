@@ -2,13 +2,13 @@
 
 **Marca / proyecto:** RotomPedia\
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
-**Versión publicada actual:** **v3.5.0-rc4**, pre-release con A/B/C y correcciones de barra/filtros tras RC3; validación visual y estabilización pendientes, no versión estable.\
+**Versión publicada actual:** **v3.5.0-rc5**, pre-release con A/B/C, correcciones de Pokédex y BIO-001; validación visual de la ficha biológica y estabilización pendientes, no versión estable.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
 **Regla de alcance:** implementar solo fases autorizadas por el usuario. La política permanente de §8.1 autoriza commits, push, tags nuevos y pre-releases de esas fases sin pedir permiso adicional; no autoriza fases nuevas, versiones estables, cambios de firma ni operaciones destructivas. No modificar tags/releases anteriores.
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
-**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc4`**, rama `feature/v3.5-pokedex-toolbar`, tag en `2c0a9ce`; 91 Kotlin/23 Python, lint/build y ambos workflows correctos, validación visual pendiente (§4.3). Evidencias históricas RC2/RC3 en §4.1/§4.2 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
+**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc5`**, rama `feature/v3.5-pokemon-biology`, tag en `2776a61`; 100 Kotlin/23 Python, lint/build y ambos workflows correctos. RC4 aprobada por el usuario; BIO-001 implementada y pendiente de validación visual (§4.4). Evidencias históricas RC2–RC4 en §4.1–§4.3 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
 
 **Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**. Las cuatro observaciones manuales de RC2 están implementadas y publicadas como `v3.5.0-rc3` / `30503` (§4.2). No se autoriza implementar conjuntamente el resto de §13 ni cambiar mapas/RI. Conservar firma compatible y versiones anteriores; `0.x` solo en evaluación.
 
@@ -363,6 +363,10 @@ No se inicia otra mejora al completar este bloque. La nueva política de §8.1 a
 
 **APK preparado RC5:** `RotomPedia-v3.5.0-rc5.apk`, 23937709 bytes; SHA-256 `fee07a72bd25e714d469f115a145a41b0f7b00dd1668ef85d3a12baecb8517b0` y archivo `.apk.sha256`. Paquete `com.duoc.rotompedia`, versión `3.5.0-rc5` / `30505 > 30504`, mínimo API 25. Firma verificada con Build Tools 35.0.0: certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, idéntico al APK de RC4 cuyo hash también se volvió a comprobar. Clave privada fuera de GitHub. Publicar únicamente tras repetir controles de §8.1 en Actions, conservando todas las RC anteriores y sin promoción a estable.
 
+**Entrega pública RC5:** tag inmutable `v3.5.0-rc5` en `2776a61`; [pre-release](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc5), `draft=false`, `prerelease=true`, no estable/Latest. Ambos workflows **success**: [Release APK 41953561285](https://github.com/ArukuKun/RotomPedia/actions/runs/41953561285) y [Verify 41953557438](https://github.com/ArukuKun/RotomPedia/actions/runs/41953557438). Actions repitió pruebas/lint/build y verificó checksum, certificado único y paquete/versión antes de publicar automáticamente. Digest público idéntico al SHA-256 anterior; [APK directo](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc5/RotomPedia-v3.5.0-rc5.apk) comprobado con HTTP HEAD **200**, longitud 23937709 y MIME APK. RC1–RC4 y sus tags/assets intactos; documentación de cierre posterior no modifica el tag ni el APK.
+
+**Puerta manual BIO-001:** instalar sobre RC4 sin desinstalar; comparar Charizard (1,7 m/90,5 kg) con Mega Charizard X (1,7 m/110,5 kg), categoría de especie y habilidades correspondientes. Abrir/cerrar fichas normales y ocultas, cambiar variedad y probar texto grande. Comprobar favoritos/equipos previos y retorno de Pokédex. El resultado visual y la aprobación del usuario siguen pendientes; no avanzar automáticamente a otra mejora.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -500,7 +504,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 
 **Punto de partida vigente:** v3.4 terminada; v3.5-A/B/C implementadas y publicadas como **v3.5.0-rc1**, pendientes de validación manual. La preparación/implementación inicial de v3.5 de este apartado ya se cumplió; su historial técnico permanece en §11–§17.
 
-1. **Ahora: validar RC4 en el teléfono (§4.3)**: las observaciones de barra/filtros y clasificación están corregidas y entregadas. Repetir Kalos/Furfrou y retorno desde Cuadrícula, revisar icono, panel, primigenias y regionales; RC2/RC3 quedan como comparación histórica (§4.1/§4.2).
+1. **Ahora: validar BIO-001 en RC5 en el teléfono (§4.4)**: RC4 fue aprobada; ficha biológica autorizada, implementada y publicada. Revisar medidas de cada variedad, categoría de especie, habilidades/fichas y texto grande; conservar regresiones de retorno y datos previos.
 2. **Puerta manual:** presentar el resultado y completar/revisar observaciones de Android, sin declarar v3.5 estable solo por tests. Detenerse antes de otra mejora.
 3. **Seleccionar la siguiente tarea de estabilización de §13 con autorización**, acotada por módulo; no ejecutar todo el backlog ni convertirlo en requisito ilimitado que posponga mapas. Matemática de captura y selector de Balls son trabajos distintos.
 4. **v3.6: mapas**, piloto por región/juego y expansión posterior, reutilizando componentes actuales (§5). Sigue siendo la siguiente versión funcional prevista, no se renumera por el pulido de v3.5.
@@ -522,13 +526,15 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v3.5 | A/B/C publicadas como pre-release integrada; verificación local y CI correctas | `feature/v3.5-bc-encyclopedia`, `v3.5.0-rc1`, `a857f7e` | Validación manual Android pendiente (§17); base 3.5.0 aún no publicada |
 | v3.5 post-RC1 — Pokédex | Publicada como pre-release `v3.5.0-rc2`; no versión estable | `feature/v3.5-pokedex-polish`, tag en `c7010ac`, publicación Actions `41887424591` | 77 Kotlin/21 Python, firma/checksum/versión verificados; validación manual pendiente (§4.1) |
 | v3.5 post-RC2 — comodidad Pokédex | Publicada como pre-release `v3.5.0-rc3`; nueva validación pendiente | `feature/v3.5-pokedex-comfort`, tag en `4309dd8` | 86 Kotlin/23 Python, ambos CI correctos; retorno Kalos/Furfrou, vistas, Hisui y Tótem (§4.2) |
+| v3.5 post-RC3 — barra y filtros | Pre-release `v3.5.0-rc4`; correcciones aprobadas por el usuario | `feature/v3.5-pokedex-toolbar`, tag en `2c0a9ce` | 91 Kotlin/23 Python y ambos CI correctos; aprobación general sin inferir matriz manual exhaustiva (§4.3) |
+| BIO-001 — ficha biológica | Pre-release `v3.5.0-rc5`; validación visual pendiente | `feature/v3.5-pokemon-biology`, tag en `2776a61` | 100 Kotlin/23 Python, ambos CI correctos, firma compatible y enlace público verificado (§4.4) |
 | v3.6 | ⬜ Pendiente | — | Mapas por juego/región |
 | v3.7 | ⬜ Pendiente | — | Rotom contextual e interfaz |
 | Rotom Intelligence Pipeline | ⬜ Investigación y prototipo pendientes; sin iniciar | Sin rama/código de RI | Después de v3.5; integración progresiva con v3.7, sin retrasar v3.6 (§16) |
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 4 de noviembre de 2026.\
-**Próxima puerta:** el usuario descarga RC4 y valida barra, filtros, clasificación y recorridos de retorno (§4.3); después esperar autorización de otra tarea. P3 sigue diferida. Nunca promover a estable automáticamente.
+**Próxima puerta:** el usuario descarga RC5 y valida BIO-001 (§4.4); después esperar autorización de otra tarea. P3 sigue diferida. Nunca promover a estable automáticamente.
 
 ---
 
@@ -649,7 +655,7 @@ Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
 | `DEX-005` — memoria al volver de detalle; autorizado post-RC2 | Recorrido Kalos → Furfrou → Atrás pierde filtro y conserva un scroll incompatible. | §4.2: restaurar conjuntamente filtros, vista e índice/offset, cargar metadatos antes del scroller, probar navegación real y estado guardado. Cambiar filtro intencionalmente sí reinicia al comienzo. |
 | `DEX-006` — orden regional; autorizado post-RC2 | Captura de Hisui con orden nacional; el usuario pide iniciales al comienzo según su Pokédex. | §4.2: numeración regional de fuente fijada/contexto de juego, sin IDs inferidos; faltantes de Galar/DLC explícitos. Nacional normal mantiene orden nacional. |
 | `DEX-007` — categoría alternativa y Tótem; autorizado post-RC2 | Se cuestiona el cajón «Variedades estables» y Raticate Tótem duplicado. | §4.2: retirar chip general, ocultar Tótem en Pokédex sin borrar datos; conservar formas de Lycanroc, genios y Origen en fichas/picker y preservar equipos/favoritos por ID. |
-| `BIO-001` — ficha biológica compacta; **autorizada tras aprobar RC4** | Usuario acepta expresamente continuar con BIO-001; habilidades ya tienen repositorio/fichas. | Implementación y preparación RC5 en §4.4: especie/categoría, medidas de variedad y habilidades normales/`(oculta)`, conservando fichas. Suite final y validación visual pendientes; sin atribuir descripción de especie a variedad ni inventar medidas offline. |
+| `BIO-001` — ficha biológica compacta; **publicada en RC5** | Usuario acepta expresamente continuar con BIO-001 tras aprobar RC4; habilidades reutilizan repositorio/fichas. | §4.4: 100 Kotlin/23 Python y ambos CI correctos; especie/categoría, medidas de variedad y habilidades normales/`(oculta)`. Validación visual pendiente; sin atribuir descripción de especie a variedad ni inventar medidas offline. |
 | `ABIL-001` — contadores y traducciones; pendiente de autorización | Ya existe habilidad → variedades asociadas en v3.5-C. Se reportan traducciones incorrectas sin aportar aún la lista exacta de nombres. | Añadir contadores **de variedades distintas (`pokemonId`)** normales y ocultas; deduplicar cada rol, indicar que una variedad podría pertenecer a ambos si la fuente lo registra. Si se ofrecen especies, conteo separado por `speciesId`, nunca mezclar unidades. Revisar muestras/traducciones con fuentes españolas verificables, sin reemplazos inventados ni reimplementar el enlace existente. |
 | `MOV-002` — P3, símbolos y presentación; pendiente de autorización | v3.5 ya expone tipo/categoría en texto y filtros por ambos en el catálogo; no son funciones inexistentes. | Ampliación P3 en §13.1: tipo con color y símbolo Física/Especial/Estado; filas compactas responsivas, sin rehacer catálogo, fichas ni repositorio. Filtros del catálogo general separados de métodos de aprendizaje. |
 | `MOV-003` — P3, movimientos Z; pendiente de autorización e investigación de cobertura | Solicitud de filtro adicional, no nueva categoría de daño. | §13.1: conservar filtro general Z solo con relación/marcador verificable y contexto de juego; intersectar con tipo/categoría. Física, Especial y Estado siguen siendo las tres categorías de daño; Z no es una cuarta ni una pestaña de aprendizaje. |
