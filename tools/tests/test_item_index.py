@@ -31,3 +31,40 @@ class ItemIndexTests(unittest.TestCase):
         payload["items"].append(dict(payload["items"][0]))
         with self.assertRaises(ValueError):
             generator.validate(payload)
+
+    def test_pockets_cover_every_item_by_official_category_not_keyword_or_equippability(self):
+        p = generator.verify(self.envelope())
+        self.assertTrue(p['pocketsComplete'])
+        self.assertEqual(8, len(p['pockets']))
+        self.assertEqual(54, len(p['categoryPockets']))
+        mapping = {c['category']: c['pocketId'] for c in p['categoryPockets']}
+        self.assertTrue({i['category'] for i in p['items']} <= mapping.keys())
+        self.assertEqual(5, mapping['medicine'])  # Berry category, not the medicine pocket.
+        self.assertEqual(2, mapping['healing'])
+        self.assertEqual(4, mapping['all-machines'])
+        self.assertEqual(8, mapping['z-crystals'])
+        self.assertEqual(1, mapping['held-items'])
+        self.assertEqual(2, sum(i['slug'] == 'roseli-berry' for i in p['items']))
+
+    def test_invalid_pocket_relations_duplicates_and_missing_coverage_are_rejected(self):
+        for change in (
+            lambda p: p['pockets'].append(dict(p['pockets'][0])),
+            lambda p: p['categoryPockets'].append(dict(p['categoryPockets'][0])),
+            lambda p: p['categoryPockets'][0].update(pocketId=999),
+            lambda p: p['categoryPockets'].clear(),
+            lambda p: p['items'][0].update(category='unknown-future-category'),
+        ):
+            p = generator.verify(self.envelope())
+            change(p)
+            with self.assertRaises(ValueError):
+                generator.validate(p)
+
+    def test_legacy_snapshot_without_pockets_remains_valid_and_partial_coverage_is_explicit(self):
+        p = generator.verify(self.envelope())
+        for key in ('pockets', 'categoryPockets', 'pocketsComplete'):
+            p.pop(key)
+        generator.validate(p)
+        p = generator.verify(self.envelope())
+        p['pocketsComplete'] = False
+        p['items'][0]['category'] = 'unknown-future-category'
+        generator.validate(p)

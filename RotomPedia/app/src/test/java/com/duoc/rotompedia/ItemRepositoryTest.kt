@@ -74,6 +74,43 @@ class ItemRepositoryTest {
         } finally { db.close() }
     }
 
+    @Test fun `pocket metadata reloads from bundled source even when persistent index hash is current`() = runTest {
+        val db = db()
+        try {
+            val original = repo(db)
+            val pockets = original.pocketIndex()
+            val before = db.itemDao().state()
+            val reopened = repo(db)
+            assertEquals(pockets, reopened.pocketIndex())
+            assertEquals(before, db.itemDao().state())
+            assertEquals(2223, reopened.observeItems().first().size)
+            assertEquals(5, reopened.pocketIndex().pocket("medicine")!!.id)
+            Mockito.verifyNoInteractions(api)
+        } finally { db.close() }
+    }
+
+    @Test fun `corrupt pocket metadata cannot change cached items personal data or index state`() = runTest {
+        val db = db()
+        try {
+            repo(db).ensureIndex()
+            val before = db.itemDao().state()
+            val rows = db.itemDao().items()
+            val favorite = com.duoc.rotompedia.data.local.PokemonFavorito("ash", 10234, "Qwilfish de Hisui")
+            db.favoritoDao().agregarFavorito(favorite)
+            val envelope = moshi.adapter(ItemIndexEnvelope::class.java).fromJson(source())!!
+            val payload = moshi.adapter(ItemIndexPayload::class.java).fromJson(envelope.payloadJson)!!
+            val bad = payload.copy(categoryPockets = payload.categoryPockets.map { it.copy(pocketId = 999) })
+            val json = moshi.adapter(ItemIndexPayload::class.java).toJson(bad)
+            val corrupted = moshi.adapter(ItemIndexEnvelope::class.java).toJson(envelope.copy(payloadJson = json, sha256 = IndexValidator.sha256(json)))
+            val repository = DefaultItemRepository(db, api, moshi) { corrupted }
+            try { repository.ensureIndex(); fail("Invalid pockets accepted") } catch (_: IllegalArgumentException) { }
+            assertEquals(before, db.itemDao().state())
+            assertEquals(rows, db.itemDao().items())
+            assertEquals(favorite, db.favoritoDao().obtenerPorId("ash", 10234))
+            Mockito.verifyNoInteractions(api)
+        } finally { db.close() }
+    }
+
     @Test fun `wrong API identity is rejected without poisoning cache`() = runTest {
         val db = db()
         try {

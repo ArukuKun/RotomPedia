@@ -26,6 +26,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **ABIL-001 publicada:** `v3.5.0-rc8` / `30508`: total y contadores normales/ocultas por variedad distinta, sin duplicar slots ni perder roles, sprites o navegación. Revisión de los 311 nombres españoles: tres nombres anteriores se muestran actualizados (Pereza, Viscosecreción, Esclusa de Aire), con alias históricos y procedencia; no se inventan los 63 nombres ausentes. Sin cambios de snapshot, Room ni datos personales. 125 Kotlin/23 Python y ambos workflows correctos; validación visual pendiente. Ver §4.7 del Plan Maestro; P3 diferida.
 
+**ITEM-002 autorizada y en preparación:** `v3.5.0-rc9` / `30509`, rama `feature/v3.5-item-pockets`: objetos por 8 bolsillos de referencia desde la misma fuente fijada, con búsqueda/filtros combinables y fichas/sprites existentes. Los 2223 objetos anteriores permanecen idénticos; el asset solo añade relaciones de bolsillos, sin cambios de Room ni datos personales. No certifica organización o disponibilidad por edición ni crea inventario personal. Ver §4.8 del Plan Maestro; pruebas finales y publicación pendientes, P3 diferida.
+
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
 

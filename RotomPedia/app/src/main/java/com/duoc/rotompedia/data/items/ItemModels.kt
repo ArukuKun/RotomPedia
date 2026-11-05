@@ -20,7 +20,39 @@ data class ItemIndexState(@PrimaryKey val id: Int = 1, val sha256: String)
 @JsonClass(generateAdapter = true)
 data class ItemIndexEnvelope(val formatVersion: Int, val sha256: String, val payloadJson: String)
 @JsonClass(generateAdapter = true)
-data class ItemIndexPayload(val revision: String, val items: List<IndexedItem>)
+data class ItemIndexPayload(val revision: String, val items: List<IndexedItem>,
+    val pockets: List<ItemPocket> = emptyList(), val categoryPockets: List<ItemCategoryPocket> = emptyList(),
+    val pocketsComplete: Boolean = false)
+
+@JsonClass(generateAdapter = true)
+data class ItemPocket(val id: Int, val slug: String, val name: String, val nameLanguage: String) {
+    val label get() = ItemLabels.pocket(slug) ?: name
+}
+@JsonClass(generateAdapter = true)
+data class ItemCategoryPocket(val categoryId: Int, val category: String, val pocketId: Int)
+
+data class ItemPocketIndex(val pockets: List<ItemPocket> = emptyList(),
+    val categories: List<ItemCategoryPocket> = emptyList(), val complete: Boolean = false) {
+    private val pocketById = pockets.associateBy { it.id }
+    private val pocketByCategory = categories.associate { it.category to pocketById[it.pocketId] }
+    fun pocket(category: String): ItemPocket? = pocketByCategory[category]
+
+    companion object {
+        const val UNKNOWN = -1
+        fun validated(payload: ItemIndexPayload): ItemPocketIndex {
+            val pockets = payload.pockets
+            val categories = payload.categoryPockets
+            if (pockets.isEmpty() && categories.isEmpty() && !payload.pocketsComplete) return ItemPocketIndex()
+            require(pockets.isNotEmpty() && categories.isNotEmpty())
+            require(pockets.all { it.id > 0 && it.slug.isNotBlank() && it.name.isNotBlank() && it.nameLanguage.isNotBlank() })
+            require(pockets.distinctBy { it.id }.size == pockets.size && pockets.distinctBy { it.slug }.size == pockets.size)
+            require(categories.distinctBy { it.categoryId }.size == categories.size && categories.distinctBy { it.category }.size == categories.size)
+            require(categories.all { it.categoryId > 0 && it.category.isNotBlank() && it.pocketId in pockets.map(ItemPocket::id) })
+            require(!payload.pocketsComplete || payload.items.all { item -> categories.any { it.category == item.category } })
+            return ItemPocketIndex(pockets, categories, payload.pocketsComplete)
+        }
+    }
+}
 
 @JsonClass(generateAdapter = true)
 data class ItemDetail(val id: Int, val name: String, val category: NamedApiResource,

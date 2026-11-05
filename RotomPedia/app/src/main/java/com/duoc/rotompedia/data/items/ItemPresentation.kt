@@ -39,16 +39,21 @@ object ItemLabels {
     fun category(slug: String) = categories[slug] ?: "Categoría sin traducir: $slug"
     fun attribute(slug: String) = attributes[slug] ?: "Atributo sin traducir: $slug"
     fun version(slug: String) = versions[slug] ?: "Grupo: $slug"
+    fun pocket(slug: String): String? = mapOf("misc" to "Objetos", "medicine" to "Medicina",
+        "pokeballs" to "Poké Balls", "machines" to "MT / MO", "berries" to "Bayas", "mail" to "Correo",
+        "battle" to "Combate", "key" to "Objetos clave")[slug]
 }
 
-data class ItemFilter(val query: String = "", val category: String? = null, val attribute: String? = null, val editorialOnly: Boolean = false)
+data class ItemFilter(val query: String = "", val category: String? = null, val attribute: String? = null,
+    val editorialOnly: Boolean = false, val pocketId: Int? = null)
 data class ItemText(val text: String, val language: String)
 object ItemPresentation {
-    fun filter(rows: List<IndexedItem>, filter: ItemFilter): List<IndexedItem> {
+    fun filter(rows: List<IndexedItem>, filter: ItemFilter, pockets: ItemPocketIndex = ItemPocketIndex()): List<IndexedItem> {
         val words = PokemonFormCatalog.normalize(filter.query).split(Regex("\\s+")).filter(String::isNotBlank)
         return rows.filter { row ->
             val text = PokemonFormCatalog.normalize("${row.name} ${row.slug} ${row.itemId} ${ItemLabels.category(row.category)} " + row.attributeList.joinToString(" ") { ItemLabels.attribute(it) })
             words.all { it in text } && (filter.category == null || row.category == filter.category) &&
+                (filter.pocketId == null || filter.pocketId == (pockets.pocket(row.category)?.id ?: ItemPocketIndex.UNKNOWN)) &&
                 (filter.attribute == null || filter.attribute in row.attributeList) && (!filter.editorialOnly || row.slug in ItemEditorial.notes)
         }.sortedWith(compareBy<IndexedItem> { PokemonFormCatalog.normalize(it.name) }.thenBy { it.itemId })
     }

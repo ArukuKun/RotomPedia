@@ -13,6 +13,7 @@ import kotlinx.coroutines.sync.withLock
 interface ItemRepository {
     fun observeItems(): Flow<List<IndexedItem>>
     suspend fun ensureIndex()
+    suspend fun pocketIndex(): ItemPocketIndex
     suspend fun resolve(slug: String): IndexedItem?
     suspend fun detail(id: Int, refresh: Boolean = false): ItemDetailResult
 }
@@ -25,22 +26,29 @@ class DefaultItemRepository(private val db: AppDatabase, private val api: PokeAp
     private val envelopeAdapter = moshi.adapter(ItemIndexEnvelope::class.java)
     private val payloadAdapter = moshi.adapter(ItemIndexPayload::class.java)
     private val detailAdapter = moshi.adapter(ItemDetail::class.java)
+    @Volatile private var pocketMetadata = ItemPocketIndex()
+    override suspend fun pocketIndex(): ItemPocketIndex { ensureIndex(); return pocketMetadata }
     override fun observeItems() = dao.observeItems()
     override suspend fun ensureIndex() = withContext(Dispatchers.IO) {
         indexLock.withLock {
             val envelope = requireNotNull(envelopeAdapter.fromJson(bundled()))
             require(envelope.formatVersion == 1 && IndexValidator.sha256(envelope.payloadJson) == envelope.sha256)
-            if (dao.state()?.sha256 == envelope.sha256) return@withLock
             val payload = requireNotNull(payloadAdapter.fromJson(envelope.payloadJson))
             require(payload.revision.matches(Regex("[a-f0-9]{40}")) && payload.items.isNotEmpty())
             require(payload.items.distinctBy { it.itemId }.size == payload.items.size)
             require(payload.items.all { it.itemId > 0 && it.slug.isNotBlank() && it.name.isNotBlank() && it.category.isNotBlank() })
+            val pockets = ItemPocketIndex.validated(payload)
+            if (dao.state()?.sha256 == envelope.sha256) {
+                pocketMetadata = pockets
+                return@withLock
+            }
             db.withTransaction {
                 val current = payload.items.associateBy { it.itemId }
                 require(dao.items().all { current[it.itemId]?.slug == it.slug }) { "Identidad de objeto reasignada" }
                 dao.putItems(payload.items)
                 dao.putState(ItemIndexState(sha256 = envelope.sha256))
             }
+            pocketMetadata = pockets
         }
     }
     override suspend fun resolve(slug: String): IndexedItem? {
