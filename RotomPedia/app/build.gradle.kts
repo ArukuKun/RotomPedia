@@ -18,8 +18,8 @@ android {
         applicationId = "com.duoc.rotompedia"
         minSdk = 25
         targetSdk = 36
-        versionCode = 30503
-        versionName = "3.5.0-rc3"
+        versionCode = 30504
+        versionName = "3.5.0-rc4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

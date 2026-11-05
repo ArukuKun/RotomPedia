@@ -25,6 +25,9 @@ object PokemonFormCatalog {
         PokemonFormMetadata(slug, species, label, tag)
 
     val allForms = listOf(
+        form(25, "pikachu-alola-cap", "Pikachu (Gorra Alola)", "Cosmética"),
+        form(382, "kyogre-primal", "Kyogre (Regresión Primigenia)", "Primigenia"),
+        form(383, "groudon-primal", "Groudon (Regresión Primigenia)", "Primigenia"),
         form(6, "charizard-mega-x", "Mega Charizard X", "Mega"),
         form(6, "charizard-mega-y", "Mega Charizard Y", "Mega"),
         form(3, "venusaur-mega", "Mega Venusaur", "Mega"),
@@ -101,7 +104,7 @@ object PokemonFormCatalog {
         val parts = name.split('-')
         val base = parts.first().replaceFirstChar { it.uppercase() }
         val regional = mapOf("alola" to "Alola", "galar" to "Galar", "hisui" to "Hisui", "paldea" to "Paldea")
-        val region = parts.firstOrNull { it in regional }
+        val region = parts.firstOrNull { it in regional && "cap" !in parts && "cosplay" !in parts }
         when {
             "mega" in parts -> "Mega $base" + parts.last().takeIf { it == "x" || it == "y" }?.let { " ${it.uppercase()}" }.orEmpty()
             region != null -> "$base de ${regional[region]}"

@@ -322,6 +322,22 @@ No se inicia otra mejora al completar este bloque. La nueva política de §8.1 a
 
 ---
 
+### 4.3 Correcciones posteriores a RC3 — barra y filtros limpios
+
+**Alcance autorizado:** atender el reporte del usuario sobre ubicación del filtro, exceso de texto, categorías Cosméticos/Combate, primigenias y falso «Pikachu de Alola». Rama `feature/v3.5-pokedex-toolbar`, preparación `v3.5.0-rc4` / `30504`. Este apartado actualiza el contrato visual de §4.2 sin borrar su evidencia histórica. No abre P3 ni otras fases.
+
+- Icono blanco de filtros en la **barra superior original**, junto al título Pokédex; sin botón duplicado en el cuerpo. `PokedexExplorerScreen` comparte el Scaffold real entre producción y pruebas.
+- Panel sin párrafos explicativos: categorías **Nacional, Megaevoluciones, Gigamax y Regionales**, más los controles combinables existentes con títulos breves. Cosméticos y Combate se retiran de los filtros generales (también del picker), no del modelo ni de la ficha.
+- Pokédex no lista alternativas cosméticas/de combate ni Tótem; conserva las **1025 variedades predeterminadas**, incluso Aegislash. Las identidades completas siguen en índice, detalle y selector por especie/búsqueda; no se borran datos personales.
+- `kyogre-primal`/`groudon-primal` se agrupan con Megaevoluciones, exigiendo el slug canónico de variedad y forma. Siguen llamándose **Regresión Primigenia**, sin alterar `isMega=false` del origen ni inventar «Mega Groudon/Kyogre».
+- Pikachu con gorra/cosplay no tiene origen regional; `pikachu-alola-cap` conserva sus IDs y nombre **Pikachu (Gorra Alola)**, también en la ficha. Raichu de Alola y el orden regional de RC3 se conservan.
+- Retorno de ficha mantiene los siete filtros, Lista/Cuadrícula y posición exacta de RC3. Restaurar categorías retiradas vuelve a Nacional, sin filtro invisible activo.
+- Sin cambios de snapshot, Room, migraciones, cuentas, equipos, favoritos, EV/IV ni textos de movimientos guardados. P3 (§13.1), captura, mapas, Rotom contextual y RI **siguen pendientes**.
+
+**Verificación local completa:** **91 pruebas Kotlin, cero fallos/errores/omitidas; 23 Python correctas** y los tres verificadores de snapshots correctos. `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --console=plain` correcto tras la revisión adicional de nombres. Lint: cero errores, 110 advertencias y 30 sugerencias. Tests de navegación usan ahora el Scaffold real: posición del icono, ausencia de botón/prosa/categorías retiradas, restauración, recorridos Kalos/Furfrou e Hisui y offset de 18 px. Regresiones de primigenias, gorras, alternativas y nombres de ficha añadidas. `git diff --check` correcto. Publicación y validación visual en teléfono todavía pendientes; no hay dispositivo conectado.
+
+**APK preparado:** `RotomPedia-v3.5.0-rc4.apk`, 24028928 bytes; SHA-256 `daf2719958717888b7751b5a9ed9ac6e245f431d7f09cb4be7e12505f6e85c97`, archivo `.apk.sha256` separado. Paquete `com.duoc.rotompedia`, versión `3.5.0-rc4` / `30504 > 30503`, mínimo API 25. `apksigner verify --print-certs` correcto: certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, idéntico al APK RC3 cuyo hash se volvió a comprobar. Clave privada fuera de GitHub. Notas incluyen cambios, instalación sin desinstalar, recorridos manuales y problemas conocidos. Publicar solo tras repetir controles en Actions, sin modificar tags/assets previos.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.

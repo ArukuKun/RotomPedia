@@ -220,4 +220,46 @@ class PokemonExplorerTest {
             assertTrue(PokemonExplorer.filter(entries, ExplorerFilter(query = slug)).entries.any { it.slug == slug })
         }
     }
+
+    @Test fun `primal forms join Mega browsing without renaming them Mega or changing identity`() = checkEntries { entries ->
+        listOf(10077 to 382, 10078 to 383).forEach { (id, national) ->
+            val primal = entries.single { it.pokemonId == id }
+            assertEquals(VarietyCategory.MEGA, primal.category)
+            assertEquals(national, primal.nationalNumber)
+            assertTrue(primal.displayName.contains("Primigenia"))
+            assertFalse(primal.displayName.startsWith("Mega "))
+            val matching = PokemonExplorer.filter(entries, ExplorerFilter(category = VarietyCategory.MEGA,
+                query = primal.speciesName, generationId = 3), nationalOnly = true).entries
+            assertEquals(listOf(id), matching.map { it.pokemonId })
+        }
+    }
+
+    @Test fun `Pikachu hats are cosmetic not Alola varieties and genuine regional forms remain`() = checkEntries { entries ->
+        val cap = entries.single { it.slug == "pikachu-alola-cap" }
+        assertEquals(10099, cap.pokemonId)
+        assertNull(cap.regionalOrigin)
+        assertEquals(VarietyCategory.OTHER, cap.category)
+        assertTrue(cap.displayName.contains("Gorra Alola"))
+        assertFalse(cap.displayName.contains("de Alola"))
+        val alola = PokemonExplorer.filter(entries, ExplorerFilter(regionalOrigin = "alola"), nationalOnly = true).entries
+        assertTrue(alola.none { it.speciesId == 25 })
+        assertTrue(alola.any { it.slug == "raichu-alola" })
+        assertTrue(PokemonExplorer.filter(entries, ExplorerFilter(category = VarietyCategory.REGIONAL), nationalOnly = true)
+            .entries.none { it.speciesId == 25 })
+        assertTrue(PokemonExplorer.filter(entries, ExplorerFilter(query = "pikachu-alola-cap")).entries.any { it.pokemonId == 10099 })
+        assertEquals("galar", PokemonExplorer.region("darmanitan-galar-zen"))
+        assertEquals("paldea", PokemonExplorer.region("tauros-paldea-aqua-breed"))
+    }
+
+    @Test fun `battle and cosmetic alternatives stay out of Pokedex but remain selectable by identity`() = checkEntries { entries ->
+        val galar = PokemonExplorer.filter(entries, ExplorerFilter(regionalOrigin = "galar"), nationalOnly = true).entries
+        assertTrue(galar.any { it.slug == "darmanitan-galar-standard" })
+        assertTrue(galar.none { it.slug == "darmanitan-galar-zen" })
+        assertTrue(galar.all { it.category == VarietyCategory.REGIONAL })
+        assertTrue(PokemonExplorer.filter(entries, ExplorerFilter(query = "darmanitan-galar-zen"))
+            .entries.any { it.slug == "darmanitan-galar-zen" })
+        val national = PokemonExplorer.filter(entries, ExplorerFilter(), nationalOnly = true).entries
+        assertEquals(1025, national.size)
+        assertTrue(national.any { it.speciesId == 681 }) // Base Aegislash is not removed with battle alternatives.
+    }
 }

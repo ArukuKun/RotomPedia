@@ -16,6 +16,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **Observaciones de RC2:** publicadas sus correcciones en `v3.5.0-rc3` / `30503`: botón de filtros con borde e icono, filtros/vista/scroll restaurados al volver de la ficha, orden regional verificado (Hisui con sus iniciales al comienzo) y retirada del filtro general «Variedades estables» y duplicados Tótem de Pokédex, sin borrar sus identidades. 86 pruebas Kotlin/23 Python correctas; validación de teléfono pendiente. Detalles en §4.2 del único Plan Maestro. Las ausencias de numeración en Pokédex base de Galar se muestran al final y se informan, sin mezclar DLC.
 
+**Correcciones post-RC3 en preparación:** `v3.5.0-rc4` / `30504`, rama `feature/v3.5-pokedex-toolbar`: filtro en barra superior, panel sin párrafos ni categorías Cosméticos/Combate, primigenias en Megaevoluciones y Pikachu con gorra fuera de Regionales. Conserva orden regional y memoria de navegación de RC3. Nombres corregidos también en ficha; sin cambios de datos personales ni implementación P3. Ver §4.3 del mismo Plan Maestro; aún no publicada.
+
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
 

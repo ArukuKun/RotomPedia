@@ -2,12 +2,10 @@ package com.duoc.rotompedia
 
 import android.content.Context
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.StateRestorationTester
@@ -22,7 +20,7 @@ import com.duoc.rotompedia.data.index.PokemonIndexImporter
 import com.duoc.rotompedia.data.local.AppDatabase
 import com.duoc.rotompedia.data.remote.PokeApiService
 import com.duoc.rotompedia.data.repository.DefaultPokemonRepository
-import com.duoc.rotompedia.ui.screens.PokemonExplorerContent
+import com.duoc.rotompedia.ui.screens.PokedexExplorerScreen
 import com.duoc.rotompedia.ui.screens.rememberPokedexFilter
 import com.duoc.rotompedia.viewmodel.PokemonExplorerController
 import com.squareup.moshi.Moshi
@@ -66,7 +64,8 @@ class PokedexNavigationUiTest {
                         val scope = rememberCoroutineScope()
                         val explorer = remember(filters) { PokemonExplorerController(scope, repo, favorites, true, filters) }
                         controller = explorer
-                        PokemonExplorerContent(explorer, { nav.navigate("detail/${it.pokemonId}") }, Modifier.fillMaxSize())
+                        PokedexExplorerScreen(explorer, onNavigateBack = { nav.popBackStack() },
+                            onChoose = { nav.navigate("detail/${it.pokemonId}") })
                     }
                     composable("detail/{id}") { entry ->
                         Column {
@@ -141,13 +140,31 @@ class PokedexNavigationUiTest {
         compose.onNodeWithTag("pokemon_1").assertIsDisplayed()
     }
 
-    @Test fun `filter entry is a real button and stable varieties is absent in Pokedex`() {
-        compose.onNodeWithText("Filtrar").assertHasClickAction().performClick()
+    @Test fun `filter icon belongs to navigation bar and panel has no technical prose or irrelevant categories`() {
+        val title = compose.onNodeWithText("Pokédex").fetchSemanticsNode().boundsInRoot
+        val button = compose.onNodeWithContentDescription("Filtrar Pokémon").assertHasClickAction().fetchSemanticsNode().boundsInRoot
+        assertEquals(title.center.y, button.center.y, 4f)
+        assertTrue(button.left > title.right)
+        compose.onNodeWithText("Filtrar", substring = false).assertDoesNotExist()
+        compose.onNodeWithContentDescription("Filtrar Pokémon").performClick()
         compose.onNodeWithText("Filtros de Pokémon").assertExists()
         compose.onNodeWithText("Variedades estables").assertDoesNotExist()
         compose.onNodeWithText("Forma alternativa", substring = false).assertDoesNotExist()
+        compose.onNodeWithText("Combate", substring = false).assertDoesNotExist()
+        compose.onNodeWithText("Cosméticas / otras", substring = false).assertDoesNotExist()
+        compose.onNodeWithText("El listado nacional muestra", substring = true).assertDoesNotExist()
+        compose.onNodeWithText("Las formas alternativas se consultan", substring = true).assertDoesNotExist()
         compose.onNodeWithText("Megaevoluciones").assertExists()
         compose.onNodeWithText("Gigamax", substring = false).assertExists()
+    }
+
+    @Test fun `obsolete presentation category is not restored as a hidden active filter`() {
+        compose.runOnIdle { controller.filter.value = ExplorerFilter(category = VarietyCategory.BATTLE) }
+        compose.waitUntil(20_000) { controller.result.value.ready && controller.result.value.entries.size in 1..1000 }
+        restoration.emulateSavedInstanceStateRestore()
+        compose.waitUntil(20_000) { controller.result.value.ready && controller.result.value.entries.size == 1025 }
+        assertEquals(VarietyCategory.ALL, controller.filter.value.category)
+        compose.onNodeWithTag("pokemon_1").assertIsDisplayed()
     }
 
     @Test fun `all query category type egg origin generation and favorite filters survive detail`() {

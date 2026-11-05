@@ -39,4 +39,13 @@ class PokemonFormCatalogTest {
         assertEquals(3, PokemonFormCatalog.allForms.count { it.speciesId == 128 && it.nameEn.endsWith("-breed") })
     }
 
+    @Test fun `detail names distinguish Alola cap from regional forms and preserve primal names`() {
+        assertEquals("Pikachu (Gorra Alola)", PokemonFormCatalog.displayName("pikachu-alola-cap"))
+        assertEquals("Cosmética", PokemonFormCatalog.find("pikachu-alola-cap")!!.formTag)
+        assertEquals("Raichu de Alola", PokemonFormCatalog.displayName("raichu-alola"))
+        assertEquals("Kyogre (Regresión Primigenia)", PokemonFormCatalog.displayName("kyogre-primal"))
+        assertEquals("Groudon (Regresión Primigenia)", PokemonFormCatalog.displayName("groudon-primal"))
+        assertFalse(PokemonFormCatalog.displayName("pikachu-alola-cosplay").contains("de Alola"))
+    }
+
 }

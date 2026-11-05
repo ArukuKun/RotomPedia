@@ -7,6 +7,8 @@ import com.duoc.rotompedia.data.explorer.ExplorerFilter
 import com.duoc.rotompedia.data.explorer.VarietyCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 
+internal val pokedexCategories = listOf(VarietyCategory.ALL, VarietyCategory.MEGA, VarietyCategory.GMAX, VarietyCategory.REGIONAL)
+
 /** Route-local state: Navigation's SaveableStateHolder restores it BEFORE loading results.
  * Saving the filter and lazy positions separately without restoring the filter first
  * would apply a filtered-list position to the national catalogue on return.
@@ -16,7 +18,7 @@ internal val PokedexFilterSaver = listSaver<MutableStateFlow<ExplorerFilter>, An
         f.regionalOrigin.orEmpty(), f.type.orEmpty(), f.favoritesOnly, f.eggGroup.orEmpty()) } },
     restore = { values -> MutableStateFlow(ExplorerFilter(
         query = values[0] as String,
-        category = VarietyCategory.entries.firstOrNull { it.name == values[1] && it != VarietyCategory.STABLE } ?: VarietyCategory.ALL,
+        category = pokedexCategories.firstOrNull { it.name == values[1] } ?: VarietyCategory.ALL,
         generationId = (values[2] as Int).takeIf { it > 0 },
         regionalOrigin = (values[3] as String).ifBlank { null },
         type = (values[4] as String).ifBlank { null },

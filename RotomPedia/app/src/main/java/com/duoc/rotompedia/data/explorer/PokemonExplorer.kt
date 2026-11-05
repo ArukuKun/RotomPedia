@@ -38,21 +38,33 @@ data class ExplorerResult(val groups: List<ExplorerGroup> = emptyList(), val spe
 }
 
 object PokemonExplorer {
+    private val primalSlugs = setOf("kyogre-primal", "groudon-primal")
+    private val browsableForms = setOf(VarietyCategory.MEGA, VarietyCategory.GMAX, VarietyCategory.REGIONAL)
+    private fun isPrimal(variety: IndexedVariety, form: IndexedForm?): Boolean =
+        variety.slug in primalSlugs && form?.slug == variety.slug
+
     fun category(speciesSlug: String, variety: IndexedVariety, form: IndexedForm?): VarietyCategory = when {
+        // UI grouping requested by the user; upstream isMega stays false for primal forms.
+        isPrimal(variety, form) -> VarietyCategory.MEGA
         form?.isMega == true -> VarietyCategory.MEGA
         // Upstream has no is_gmax flag; require its canonical form AND variety marker.
         form?.slug?.endsWith("-gmax") == true && variety.slug.endsWith("-gmax") -> VarietyCategory.GMAX
+        "cap" in variety.slug.split('-') || "cosplay" in variety.slug.split('-') -> VarietyCategory.OTHER
         speciesSlug == "aegislash" || form?.isBattleOnly == true -> VarietyCategory.BATTLE
         region(variety.slug) != null -> VarietyCategory.REGIONAL
-        variety.slug.contains("-cap") || variety.slug.contains("-cosplay") ||
-            (speciesSlug == "pikachu" && variety.slug.substringAfter("pikachu-") in
+        (speciesSlug == "pikachu" && variety.slug.substringAfter("pikachu-") in
                 setOf("rock-star", "belle", "pop-star", "phd", "libre")) ||
             variety.slug.endsWith("-build") || variety.slug.endsWith("-mode") || variety.slug.endsWith("-starter") -> VarietyCategory.OTHER
         variety.isDefault && variety.slug == speciesSlug -> VarietyCategory.SPECIES
         form != null -> VarietyCategory.STABLE
         else -> VarietyCategory.OTHER // No invented classification when upstream flags are not yet available.
     }
-    fun region(slug: String): String? = listOf("alola", "galar", "hisui", "paldea").firstOrNull { it in slug.split('-') }
+    fun region(slug: String): String? {
+        val tokens = slug.split('-')
+        // A hat associated with a region is not a regional biological variety.
+        if ("cap" in tokens || "cosplay" in tokens) return null
+        return listOf("alola", "galar", "hisui", "paldea").firstOrNull { it in tokens }
+    }
 
     fun entries(rows: List<ExplorerSpeciesRelation>, formNames: List<IndexedName>,
         eggGroups: Map<Int, List<ExplorerEggGroup>> = emptyMap(), regionalNumbers: Map<Int, List<ExplorerDexNumber>> = emptyMap()): List<ExplorerPokemon> {
@@ -67,6 +79,7 @@ object PokemonExplorer {
                 val localized = form?.let { localizedForms[it.pokemonFormId]?.firstOrNull()?.name }
                 val name = PokemonFormCatalog.find(v.slug)?.displayName ?: when {
                     v.slug == row.species.slug -> speciesName
+                    isPrimal(v, form) -> "$speciesName (${localized ?: "Regresión Primigenia"})"
                     category == VarietyCategory.MEGA -> "Mega $speciesName" + v.slug.split('-').last().takeIf { it in listOf("x", "y", "z") }?.let { " ${it.uppercase()}" }.orEmpty()
                     category == VarietyCategory.GMAX -> "$speciesName Gigamax"
                     region(v.slug) != null -> "$speciesName de ${region(v.slug)!!.replaceFirstChar { it.uppercase() }}"
@@ -103,6 +116,7 @@ object PokemonExplorer {
                 (if (numeric != null) pokemon.nationalNumber == numeric else words.all { it in text }) &&
                     (!speciesOnly || pokemon.isDefault) &&
                     (!nationalOnly || !pokemon.isTotem) &&
+                    (!nationalOnly || pokemon.isDefault || pokemon.category in browsableForms) &&
                     (q != "mega" || pokemon.category == VarietyCategory.MEGA) &&
                     (filter.category == VarietyCategory.ALL || if (filter.category == VarietyCategory.SPECIES) pokemon.isDefault else pokemon.category == filter.category) &&
                     (filter.generationId == null || pokemon.generationId == filter.generationId) &&

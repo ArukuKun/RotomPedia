@@ -1,10 +1,8 @@
 package com.duoc.rotompedia
 
 import android.content.Context
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
@@ -15,7 +13,7 @@ import com.duoc.rotompedia.data.index.PokemonIndexImporter
 import com.duoc.rotompedia.data.local.AppDatabase
 import com.duoc.rotompedia.data.remote.PokeApiService
 import com.duoc.rotompedia.data.repository.DefaultPokemonRepository
-import com.duoc.rotompedia.ui.screens.PokemonExplorerContent
+import com.duoc.rotompedia.ui.screens.PokedexExplorerScreen
 import com.duoc.rotompedia.viewmodel.PokemonExplorerController
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -53,7 +51,7 @@ class PokedexPolishUiTest {
             controller = remember { PokemonExplorerController(scope, repo, favorites, nationalOnly = true) }
             val ids by favorites.collectAsState()
             MaterialTheme {
-                PokemonExplorerContent(controller, { chosen = it.pokemonId }, Modifier.fillMaxSize(), ids,
+                PokedexExplorerScreen(controller, onNavigateBack = {}, onChoose = { chosen = it.pokemonId }, favoriteIds = ids,
                     onFavorite = { pokemon -> favorites.value = if (pokemon.pokemonId in favorites.value) favorites.value - pokemon.pokemonId else favorites.value + pokemon.pokemonId })
             }
         }
@@ -103,7 +101,7 @@ class PokedexPolishUiTest {
     }
 
     @Test fun `Gigamax filter is available and navigates to exact variety not national id`() {
-        compose.onNodeWithText("Filtrar", substring = false).performClick()
+        compose.onNodeWithContentDescription("Filtrar Pokémon").performClick()
         compose.onNodeWithText("Gigamax", substring = false).performScrollTo().performClick()
         compose.waitUntil(20_000) { controller.result.value.entries.size == 34 }
         compose.onNodeWithText("Aplicar y cerrar").performClick()
@@ -115,7 +113,7 @@ class PokedexPolishUiTest {
     }
 
     @Test fun `egg group filter from shared Spanish metadata is interactive`() {
-        compose.onNodeWithText("Filtrar", substring = false).performClick()
+        compose.onNodeWithContentDescription("Filtrar Pokémon").performClick()
         compose.onNodeWithText("Ditto", substring = false).performScrollTo().performClick()
         compose.waitUntil(20_000) { controller.result.value.entries.map { it.slug } == listOf("ditto") }
         compose.onNodeWithText("Aplicar y cerrar").performClick()

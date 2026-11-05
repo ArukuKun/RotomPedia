@@ -39,7 +39,8 @@ fun PokemonExplorerContent(
     onChoose: (ExplorerPokemon) -> Unit,
     modifier: Modifier = Modifier,
     favoriteIds: Set<Int> = emptySet(),
-    onFavorite: ((ExplorerPokemon) -> Unit)? = null
+    onFavorite: ((ExplorerPokemon) -> Unit)? = null,
+    filterPanelState: MutableState<Boolean>? = null
 ) {
     val filters by controller.filter.collectAsState()
     val result by controller.result.collectAsState()
@@ -47,14 +48,15 @@ fun PokemonExplorerContent(
     val error by controller.failure.collectAsState()
     val entries by controller.entries.collectAsState()
     val eggGroups = remember(entries) { entries.flatMap { it.eggGroups }.distinctBy { it.slug }.sortedBy { it.label } }
-    var showFilters by rememberSaveable { mutableStateOf(false) }
+    val localFilterPanel = rememberSaveable { mutableStateOf(false) }
+    var showFilters by (filterPanelState ?: localFilterPanel)
     var grid by rememberSaveable { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(emptySet<Int>()) }
     Column(modifier) {
         OutlinedTextField(value = filters.query, onValueChange = { controller.filter.value = filters.copy(query = it) },
             label = { Text("Nombre, forma o número nacional") }, singleLine = true, modifier = Modifier.fillMaxWidth())
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = { showFilters = true },
+            if (filterPanelState == null) OutlinedButton(onClick = { showFilters = true },
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)) {
                 Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(6.dp))
@@ -62,7 +64,7 @@ fun PokemonExplorerContent(
             }
             Text(if (controller.nationalOnly) "${result.entries.size} resultados · ${result.speciesCount} especies"
                 else "${result.speciesCount} especies · ${result.variantCount} variantes", fontSize = 12.sp,
-                modifier = Modifier.padding(start = 8.dp).weight(1f))
+                modifier = Modifier.padding(vertical = 6.dp).weight(1f))
         }
         if (controller.nationalOnly) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(selected = !grid, onClick = { grid = false }, label = { Text("Lista") })
@@ -74,9 +76,9 @@ fun PokemonExplorerContent(
             "Favoritos".takeIf { filters.favoritesOnly })
         if (summary.isNotEmpty()) Text(summary.joinToString(" · "), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
         val regionalOrder = result.regionalOrder
-        Text(if (regionalOrder == null) "Orden nacional" else "Orden de ${regionalOrder.name} · ${regionalOrder.versionGroups.joinToString(" / ", transform = ItemLabels::version)}",
+        Text(if (regionalOrder == null) "Orden nacional" else "${regionalOrder.name} · ${regionalOrder.versionGroups.joinToString(" / ", transform = ItemLabels::version)}",
             fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        if (result.missingRegionalNumbers > 0) Text("${result.missingRegionalNumbers} especies sin número en esta Pokédex regional: al final, por orden nacional. No se mezclan numeraciones de DLC.", fontSize = 11.sp)
+        if (result.missingRegionalNumbers > 0) Text("${result.missingRegionalNumbers} sin número regional · al final", fontSize = 11.sp)
         if (loading || (!result.ready && error == null)) LinearProgressIndicator(Modifier.fillMaxWidth())
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         if (!loading && result.ready && result.groups.isEmpty() && error == null) {
@@ -163,30 +165,30 @@ private fun ExplorerFilters(filter: ExplorerFilter, allowFavorites: Boolean, egg
         Column(Modifier.verticalScroll(rememberScrollState()).padding(10.dp)) {
             Text("Categoría", fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                VarietyCategory.entries.filterNot { it == VarietyCategory.STABLE }.forEach { category ->
+                val categories = if (nationalOnly) pokedexCategories else
+                    listOf(VarietyCategory.ALL, VarietyCategory.SPECIES) + pokedexCategories.drop(1)
+                categories.forEach { category ->
                     FilterChip(selected = filter.category == category,
                         onClick = { onChange(filter.copy(category = category)) },
-                        label = { Text(if (nationalOnly && category == VarietyCategory.ALL) "Nacional (especies)" else category.label, fontSize = 11.sp) })
+                        label = { Text(if (nationalOnly && category == VarietyCategory.ALL) "Nacional" else category.label, fontSize = 11.sp) })
                 }
             }
-            if (nationalOnly) Text("El listado nacional muestra una entrada por especie. Elige una categoría u origen regional para consultar variedades; el número sigue siendo nacional.", fontSize = 12.sp)
-            if (nationalOnly) Text("Las formas alternativas se consultan en la ficha y el selector de equipos. Las variantes Tótem no se duplican en este listado; no se borran de los datos guardados.", fontSize = 12.sp)
-            Text("Grupo huevo (dato de especie)", fontWeight = FontWeight.Bold)
-            if (eggGroups.isEmpty()) Text("Sin grupos huevo documentados en este índice.", fontSize = 12.sp)
+            Text("Grupo huevo", fontWeight = FontWeight.Bold)
+            if (eggGroups.isEmpty()) Text("No disponible", fontSize = 12.sp)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(selected = filter.eggGroup == null, onClick = { onChange(filter.copy(eggGroup = null)) }, label = { Text("Cualquier grupo huevo") })
                 eggGroups.forEach { group ->
                     FilterChip(selected = filter.eggGroup == group.slug, onClick = { onChange(filter.copy(eggGroup = group.slug)) }, label = { Text(group.label) })
                 }
             }
-            Text("Generación de la especie", fontWeight = FontWeight.Bold)
+            Text("Generación", fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(selected = filter.generationId == null, onClick = { onChange(filter.copy(generationId = null)) }, label = { Text("Todas") })
                 generations.forEachIndexed { i, region ->
                     FilterChip(selected = filter.generationId == i + 1, onClick = { onChange(filter.copy(generationId = i + 1)) }, label = { Text(region, fontSize = 11.sp) })
                 }
             }
-            Text("Origen regional de la variante", fontWeight = FontWeight.Bold)
+            Text("Formas regionales", fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(selected = filter.regionalOrigin == null, onClick = { onChange(filter.copy(regionalOrigin = null)) }, label = { Text("Todos") })
                 listOf("alola", "galar", "hisui", "paldea").forEach { region ->
