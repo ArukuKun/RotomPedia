@@ -43,7 +43,8 @@ jobs:
 
       - name: Build Debug APK
         working-directory: ./RotomPedia
-        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --stacktrace
+        # Match local verification and avoid competing Compose/lint/build tasks on small runners.
+        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --stacktrace --max-workers=1
 
       # The runner's ephemeral debug key must never replace the installable APK.
       # A compatible, locally signed APK + checksum must already exist in a draft.

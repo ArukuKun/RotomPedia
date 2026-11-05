@@ -25,6 +25,7 @@ import com.duoc.rotompedia.data.explorer.*
 import com.duoc.rotompedia.data.items.ItemLabels
 import com.duoc.rotompedia.util.traducirTipo
 import com.duoc.rotompedia.viewmodel.*
+import com.duoc.rotompedia.ui.components.RotomFilterSheet
 
 @Composable
 fun nationalNumberLabel(viewModel: PokemonViewModel, pokemonId: Int): String {
@@ -116,8 +117,7 @@ fun PokemonExplorerContent(
             }
         }
     }
-    if (showFilters) ModalBottomSheet(onDismissRequest = { showFilters = false },
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    if (showFilters) RotomFilterSheet(onDismiss = { showFilters = false }) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(0.85f)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Filtros de Pokémon", style = MaterialTheme.typography.titleMedium)

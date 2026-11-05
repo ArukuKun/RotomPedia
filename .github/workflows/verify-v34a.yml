@@ -27,7 +27,7 @@ jobs:
       - run: chmod +x RotomPedia/gradlew
       - name: Unit, SQLite migration, lint and APK checks
         working-directory: RotomPedia
-        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --stacktrace
+        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --stacktrace --max-workers=1
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -55,13 +55,17 @@ import androidx.compose.material3.*
 import androidx.compose.ui.draw.clip
 import com.duoc.rotompedia.util.RotomForm
 import com.duoc.rotompedia.util.RotomThemeManager
+import com.duoc.rotompedia.util.RotomAppearanceManager
+import com.duoc.rotompedia.ui.components.RotomAppearanceAction
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         RotomThemeManager.init(applicationContext)
+        RotomAppearanceManager.init(applicationContext)
         setContent {
-            RotompediaTheme {
+            // Destinations migrate progressively; RotomScaffold opts into the new appearance.
+            RotompediaTheme(legacy = true) {
                 AppNavigationController()
             }
         }
@@ -301,6 +305,8 @@ fun MenuPrincipalScreen(navController: NavController, authViewModel: AuthViewMod
             }
 
             Spacer(modifier = Modifier.height(10.dp))
+
+            RotomAppearanceAction(labelled = true)
 
             TextButton(onClick = { authViewModel.cerrarSesion() }) {
                 Text("Cerrar Sesión", color = Color(0xFFFF5252), fontSize = 13.sp)

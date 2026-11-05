@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.duoc.rotompedia.data.explorer.ExplorerPokemon
 import com.duoc.rotompedia.data.explorer.ExplorerRegionalDex
 import com.duoc.rotompedia.data.images.PokemonImageStyle
+import com.duoc.rotompedia.ui.components.RotomCard
 
 /** Flat national results only. The team picker retains its grouped variety browser. */
 @Composable
@@ -58,8 +58,7 @@ private fun PokedexCard(pokemon: ExplorerPokemon, grid: Boolean, favorites: Set<
     regionalOrder: ExplorerRegionalDex?) {
     val name = if (speciesNames && pokemon.isDefault) pokemon.speciesName else pokemon.displayName
     val regionalNumber = pokemon.regionalNumbers.firstOrNull { it.dex.id == regionalOrder?.id }
-    Card(Modifier.fillMaxWidth().testTag("pokemon_${pokemon.pokemonId}").clickable { onChoose(pokemon) },
-        shape = RoundedCornerShape(14.dp), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
+    RotomCard(Modifier.fillMaxWidth().testTag("pokemon_${pokemon.pokemonId}").clickable { onChoose(pokemon) }) {
         if (grid) Column(Modifier.fillMaxWidth().padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)) {
             PokedexSprite(pokemon)

@@ -26,6 +26,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.duoc.rotompedia.R
 import com.duoc.rotompedia.viewmodel.AuthState
 import com.duoc.rotompedia.viewmodel.AuthViewModel
+import com.duoc.rotompedia.ui.components.RotomAppearanceAction
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun LoginScreen(
@@ -56,10 +59,14 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Appearance is available before login; authentication and the form remain unchanged.
+            RotomAppearanceAction(labelled = true)
+            Spacer(Modifier.height(8.dp))
             // Tarjeta contenedora con alto contraste y fondo oscuro sólido
             Card(
                 modifier = Modifier

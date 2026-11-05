@@ -2,19 +2,19 @@ package com.duoc.rotompedia.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.duoc.rotompedia.viewmodel.PokemonViewModel
 import com.duoc.rotompedia.viewmodel.PokemonViewModelFactory
 import com.duoc.rotompedia.viewmodel.PokemonExplorerController
 import com.duoc.rotompedia.data.explorer.ExplorerPokemon
+import com.duoc.rotompedia.ui.components.RotomScaffold
+import com.duoc.rotompedia.ui.components.RotomAppearanceAction
+import com.duoc.rotompedia.ui.theme.RotomDimensions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,16 +35,14 @@ fun PokedexScreen(onPokemonClick: (String) -> Unit, onNavigateBack: () -> Unit, 
 internal fun PokedexExplorerScreen(explorer: PokemonExplorerController, onNavigateBack: () -> Unit,
     onChoose: (ExplorerPokemon) -> Unit, favoriteIds: Set<Int> = emptySet(), onFavorite: ((ExplorerPokemon) -> Unit)? = null) {
     val filterPanel = rememberSaveable { mutableStateOf(false) }
-    Scaffold(topBar = {
-        TopAppBar(title = { Text("Pokédex") }, navigationIcon = {
-            IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver") }
-        }, actions = {
-            IconButton(onClick = { filterPanel.value = true }) { Icon(Icons.Default.FilterList, "Filtrar Pokémon") }
-        }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFD11527),
-            titleContentColor = Color.White, navigationIconContentColor = Color.White, actionIconContentColor = Color.White))
-    }) { padding ->
+    RotomScaffold("Pokédex", onNavigateBack, actions = {
+            RotomAppearanceAction()
+            IconButton(onClick = { filterPanel.value = true }, modifier = Modifier.size(RotomDimensions.TouchTarget)) {
+                Icon(Icons.Default.FilterList, "Filtrar Pokémon")
+            }
+    }) {
         PokemonExplorerContent(explorer, onChoose = onChoose,
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxSize(),
             favoriteIds = favoriteIds, onFavorite = onFavorite, filterPanelState = filterPanel)
     }
 }

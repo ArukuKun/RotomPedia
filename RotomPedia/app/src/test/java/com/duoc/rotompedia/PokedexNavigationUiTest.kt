@@ -140,6 +140,20 @@ class PokedexNavigationUiTest {
         compose.onNodeWithTag("pokemon_1").assertIsDisplayed()
     }
 
+    @Test fun `changing appearance preserves Kalos Furfrou filter and exact scroll position`() {
+        kalosFurfrou()
+        val before = compose.onNodeWithTag("pokemon_676").getUnclippedBoundsInRoot().top.value
+        compose.onNodeWithContentDescription("Cambiar apariencia").performClick()
+        compose.onNodeWithText("Claro", substring = false).performClick()
+        compose.onNodeWithText("Cerrar").performClick()
+        compose.onNodeWithTag("pokemon_676").assertIsDisplayed()
+        assertEquals(6, controller.filter.value.generationId)
+        assertEquals(before, compose.onNodeWithTag("pokemon_676").getUnclippedBoundsInRoot().top.value, 1f)
+        compose.onNodeWithContentDescription("Cambiar apariencia").performClick()
+        compose.onNodeWithText("Seguir configuración del sistema").performClick()
+        compose.onNodeWithText("Cerrar").performClick()
+    }
+
     @Test fun `filter icon belongs to navigation bar and panel has no technical prose or irrelevant categories`() {
         val title = compose.onNodeWithText("Pokédex").fetchSemanticsNode().boundsInRoot
         val button = compose.onNodeWithContentDescription("Filtrar Pokémon").assertHasClickAction().fetchSemanticsNode().boundsInRoot

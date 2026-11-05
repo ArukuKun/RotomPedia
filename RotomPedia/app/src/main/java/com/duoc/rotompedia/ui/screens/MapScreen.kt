@@ -40,67 +40,26 @@ import com.duoc.rotompedia.R
 import com.duoc.rotompedia.data.RegionLocationData
 import com.duoc.rotompedia.data.RouteLocation
 import com.duoc.rotompedia.util.RotomThemeManager
+import com.duoc.rotompedia.ui.components.RotomScaffold
+import com.duoc.rotompedia.ui.components.RotomCard
+import com.duoc.rotompedia.ui.components.RotomAppearanceAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapFeatureScreen(navController: NavController) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mapas Regionales") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFD11527),
-                    titleContentColor = Color.White
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.rotomfondo),
-                contentDescription = "Fondo",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-
-            // Capa semitransparente para legibilidad
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.55f))
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+    RotomScaffold("Mapas Regionales", { navController.navigateUp() }, actions = { RotomAppearanceAction() }) {
+            Column(Modifier.fillMaxSize().padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "Selecciona una Región",
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF61DAF6),
+                    color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
 
                 RegionSelectionContent(navController = navController)
             }
-        }
     }
 }
 
@@ -126,16 +85,11 @@ fun RegionSelectionContent(navController: NavController) {
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
         items(regions) { (displayName, internalName) ->
-            Card(
+            RotomCard(
                 onClick = { navController.navigate("map_viewer/$internalName") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(72.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF23272E).copy(alpha = 0.85f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    .heightIn(min = 72.dp)
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -145,7 +99,7 @@ fun RegionSelectionContent(navController: NavController) {
                         text = displayName,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF61DAF6),
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
                     )
                 }
