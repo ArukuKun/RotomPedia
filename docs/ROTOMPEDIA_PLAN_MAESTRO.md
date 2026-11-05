@@ -2,13 +2,13 @@
 
 **Marca / proyecto:** RotomPedia\
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
-**Versión publicada actual:** **v3.5.0-rc7**, pre-release con A/B/C y requisitos evolutivos de Hisui por edición sobre RC6; validación visual de RC7 y estabilización pendientes, no versión estable.\
+**Versión publicada actual:** **v3.5.0-rc8**, pre-release con A/B/C y ABIL-001 sobre RC7; validación visual de RC8 y estabilización pendientes, no versión estable.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
 **Regla de alcance:** implementar solo fases autorizadas por el usuario. La política permanente de §8.1 autoriza commits, push, tags nuevos y pre-releases de esas fases sin pedir permiso adicional; no autoriza fases nuevas, versiones estables, cambios de firma ni operaciones destructivas. No modificar tags/releases anteriores.
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
-**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc7`**, rama `feature/v3.5-hisui-evolutions`, tag en `6027026`; 117 Kotlin/23 Python, lint/build y ambos workflows correctos. RC6 aprobada por el usuario; EVO-001 ampliada entregada, pendiente de validación visual (§4.6). Evidencias históricas RC2–RC6 en §4.1–§4.5 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
+**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc8`**, rama `feature/v3.5-ability-counts`, tag en `d93350c`; 125 Kotlin/23 Python, lint/build y ambos workflows correctos. RC7 aprobada por el usuario; ABIL-001 entregada, pendiente de validación visual (§4.7). Evidencias históricas RC2–RC7 en §4.1–§4.6 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
 
 **Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**. Las cuatro observaciones manuales de RC2 están implementadas y publicadas como `v3.5.0-rc3` / `30503` (§4.2). No se autoriza implementar conjuntamente el resto de §13 ni cambiar mapas/RI. Conservar firma compatible y versiones anteriores; `0.x` solo en evaluación.
 
@@ -471,6 +471,10 @@ En Arceus las evoluciones se eligen en el menú tras cumplir la condición, no s
 
 **APK preparado RC8:** `RotomPedia-v3.5.0-rc8.apk`, 23968105 bytes; SHA-256 `94a53ce3d5974fce824335d6621d3e417ce6e92c9fa5e471b6eccc38e452fb30` y `.apk.sha256`. Paquete `com.duoc.rotompedia`, `3.5.0-rc8` / `30508 > 30507`, mínimo API 25. Build Tools 35.0.0 verifica certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, idéntico al APK RC7 cuyo hash también se comprobó. Clave privada fuera de GitHub; publicación supeditada a repetir controles de §8.1 en Actions, sin alterar releases anteriores ni promover a estable.
 
+**Entrega pública RC8:** tag inmutable `v3.5.0-rc8` en `d93350c`; [pre-release](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc8), `draft=false`, `prerelease=true`, no estable/Latest. Ambos workflows **success**: [Release APK 41967640326](https://github.com/ArukuKun/RotomPedia/actions/runs/41967640326) y [Verify 41967635287](https://github.com/ArukuKun/RotomPedia/actions/runs/41967635287). Actions repitió pruebas/lint/build y comprobó checksum, certificado único y paquete/versión antes de publicar automáticamente. Digest público idéntico al SHA-256 anterior; [APK directo](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc8/RotomPedia-v3.5.0-rc8.apk) comprobado con HTTP HEAD **200**, longitud 23968105 y MIME APK. RC1–RC7 y sus tags/assets intactos; documentación de cierre posterior no modifica el tag ni el APK.
+
+**Puerta manual RC8:** instalar sobre RC7 sin desinstalar; revisar contadores/roles de Pereza, Viscosecreción, Esclusa de Aire, Mar Llamas y Nevada, nombres actuales/anteriores en búsqueda y resumen Pokémon. Cambiar edición sin alterar contadores, cargar más de 40 variedades, navegar a regionales y probar texto grande. Comprobar equipos/favoritos previos. Validación visual pendiente; no autoriza otro alcance ni promoción a estable.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -608,7 +612,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 
 **Punto de partida vigente:** v3.4 terminada; v3.5-A/B/C implementadas y publicadas como **v3.5.0-rc1**, pendientes de validación manual. La preparación/implementación inicial de v3.5 de este apartado ya se cumplió; su historial técnico permanece en §11–§17.
 
-1. **Ahora: validar RC7 en el teléfono (§4.6)**: RC6 fue aprobada. Revisar requisitos de Hisui según edición, variedad exacta, navegación/objetos y referencia general diferenciada; conservar regresiones y datos previos.
+1. **Ahora: validar RC8 en el teléfono (§4.7)**: RC7 fue aprobada. Revisar contadores por variedad/rol, nombres y alias históricos, sprites y lista completa; conservar regresiones y datos previos.
 2. **Puerta manual:** presentar el resultado y completar/revisar observaciones de Android, sin declarar v3.5 estable solo por tests. Detenerse antes de otra mejora.
 3. **Seleccionar la siguiente tarea de estabilización de §13 con autorización**, acotada por módulo; no ejecutar todo el backlog ni convertirlo en requisito ilimitado que posponga mapas. Matemática de captura y selector de Balls son trabajos distintos.
 4. **v3.6: mapas**, piloto por región/juego y expansión posterior, reutilizando componentes actuales (§5). Sigue siendo la siguiente versión funcional prevista, no se renumera por el pulido de v3.5.
@@ -638,7 +642,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 5 de noviembre de 2026.\
-**Próxima puerta:** ABIL-001 autorizada y en preparación RC8 (§4.7); terminar verificación y entregar para validación visual. P3 sigue diferida. Nunca promover a estable automáticamente.
+**Próxima puerta:** RC8 publicada y verificada (§4.7); esperar validación visual de ABIL-001 y aprobación del usuario antes de otro alcance. P3 sigue diferida. Nunca promover a estable automáticamente.
 
 ---
 
@@ -763,7 +767,7 @@ Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
 | `ABIL-002` — mini sprites de portadores; **publicada en RC6** | El usuario solicita acompañar con sprite cada Pokémon de la lista de portadores en la ficha de habilidad. | §4.5: sprite de 40 dp por `pokemonId`, nombre/rol legibles, lista completa y navegación exacta. 105 Kotlin/23 Python y ambos CI correctos; validación visual pendiente. Contadores/traducciones de ABIL-001 siguen aparte. |
 | `EVO-001` — requisitos evolutivos de Hisui; **publicada en RC7** | Reporte inicial Overqwil en RC5; después el usuario pide todos los casos de Hisui y confirma el alcance por edición. | §4.6: 22 relaciones en Arceus y Escarlata/Púrpura, identidad exacta, condiciones y transferencia diferenciadas; 117 Kotlin/23 Python y ambos CI correctos. Validación visual pendiente; otras ediciones y P3 fuera de cobertura. |
 | `BIO-001` — ficha biológica compacta; **publicada en RC5** | Usuario acepta expresamente continuar con BIO-001 tras aprobar RC4; habilidades reutilizan repositorio/fichas. | §4.4: 100 Kotlin/23 Python y ambos CI correctos; especie/categoría, medidas de variedad y habilidades normales/`(oculta)`. Validación visual pendiente; sin atribuir descripción de especie a variedad ni inventar medidas offline. |
-| `ABIL-001` — contadores y nombres; **autorizada tras RC7** | Usuario confirma el alcance; relación habilidad → variedades y sprites ya existentes. Revisión de 311 nombres españoles identifica tres nombres anteriores a generación IX. | §4.7: total unión y contadores normales/ocultas por `pokemonId`, filas sin duplicados conservando slots, alias actuales/anteriores y fuentes. Pruebas focalizadas correctas; suite final, publicación RC8 y validación visual pendientes. Efectos sin traducción española no se inventan ni se certifican como revisados integralmente. |
+| `ABIL-001` — contadores y nombres; **publicada en RC8** | Usuario confirma el alcance; relación habilidad → variedades y sprites ya existentes. Revisión de 311 nombres españoles identifica tres nombres anteriores a generación IX. | §4.7: total unión y contadores normales/ocultas por `pokemonId`, filas sin duplicados conservando slots y alias históricos; 125 Kotlin/23 Python y ambos CI correctos. Validación visual pendiente. Efectos sin traducción española no se inventan ni se certifican como revisados integralmente. |
 | `MOV-002` — P3, símbolos y presentación; pendiente de autorización | v3.5 ya expone tipo/categoría en texto y filtros por ambos en el catálogo; no son funciones inexistentes. | Ampliación P3 en §13.1: tipo con color y símbolo Física/Especial/Estado; filas compactas responsivas, sin rehacer catálogo, fichas ni repositorio. Filtros del catálogo general separados de métodos de aprendizaje. |
 | `MOV-003` — P3, movimientos Z; pendiente de autorización e investigación de cobertura | Solicitud de filtro adicional, no nueva categoría de daño. | §13.1: conservar filtro general Z solo con relación/marcador verificable y contexto de juego; intersectar con tipo/categoría. Física, Especial y Estado siguen siendo las tres categorías de daño; Z no es una cuarta ni una pestaña de aprendizaje. |
 | `MOV-004` — P3, pantalla de aprendizaje por Pokémon; **propuesta para después** | El usuario considera poco cómoda la consulta dentro del detalle y describe como referencia un video de Incineroar en PokeInfo. | §13.1: «Consultar movimientos» abre pantalla dedicada con Nivel/Huevo/MT-MO/Tutor, edición, variedad exacta y acceso a fichas. Reutilizar aprendizaje/caché/traducciones existentes, sin límites arbitrarios ni regresión del editor. No implementar ahora. |
