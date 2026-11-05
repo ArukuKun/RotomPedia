@@ -2,13 +2,13 @@
 
 **Marca / proyecto:** RotomPedia\
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
-**Versión publicada actual:** **v3.5.0-rc3**, pre-release con A/B/C y cuatro ajustes de Pokédex tras el reporte manual de RC2; validación y estabilización pendientes, no versión estable.\
+**Versión publicada actual:** **v3.5.0-rc4**, pre-release con A/B/C y correcciones de barra/filtros tras RC3; validación visual y estabilización pendientes, no versión estable.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
 **Regla de alcance:** implementar solo fases autorizadas por el usuario. La política permanente de §8.1 autoriza commits, push, tags nuevos y pre-releases de esas fases sin pedir permiso adicional; no autoriza fases nuevas, versiones estables, cambios de firma ni operaciones destructivas. No modificar tags/releases anteriores.
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
-**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc3`**, rama `feature/v3.5-pokedex-comfort`, tag en `4309dd8`; 86 Kotlin/23 Python, lint/build y ambos workflows correctos, nueva validación manual pendiente (§4.2). Evidencia de RC2 en §4.1 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. Captura, mapas y RI no se implementaron.
+**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc4`**, rama `feature/v3.5-pokedex-toolbar`, tag en `2c0a9ce`; 91 Kotlin/23 Python, lint/build y ambos workflows correctos, validación visual pendiente (§4.3). Evidencias históricas RC2/RC3 en §4.1/§4.2 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
 
 **Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**. Las cuatro observaciones manuales de RC2 están implementadas y publicadas como `v3.5.0-rc3` / `30503` (§4.2). No se autoriza implementar conjuntamente el resto de §13 ni cambiar mapas/RI. Conservar firma compatible y versiones anteriores; `0.x` solo en evaluación.
 
@@ -338,6 +338,10 @@ No se inicia otra mejora al completar este bloque. La nueva política de §8.1 a
 
 **APK preparado:** `RotomPedia-v3.5.0-rc4.apk`, 24028928 bytes; SHA-256 `daf2719958717888b7751b5a9ed9ac6e245f431d7f09cb4be7e12505f6e85c97`, archivo `.apk.sha256` separado. Paquete `com.duoc.rotompedia`, versión `3.5.0-rc4` / `30504 > 30503`, mínimo API 25. `apksigner verify --print-certs` correcto: certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, idéntico al APK RC3 cuyo hash se volvió a comprobar. Clave privada fuera de GitHub. Notas incluyen cambios, instalación sin desinstalar, recorridos manuales y problemas conocidos. Publicar solo tras repetir controles en Actions, sin modificar tags/assets previos.
 
+**Entrega pública RC4:** tag inmutable `v3.5.0-rc4` en `2c0a9ce`; [pre-release](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc4) con `draft=false`, `prerelease=true`, sin promoción a estable/Latest. Ambos workflows **success**: [Release APK 41949731254](https://github.com/ArukuKun/RotomPedia/actions/runs/41949731254) y [Verify 41949726956](https://github.com/ArukuKun/RotomPedia/actions/runs/41949726956). Actions repitió pruebas/build y verificó certificado único, checksum y paquete/versión antes de publicar automáticamente. Digest público idéntico al SHA-256 anterior; [APK directo](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc4/RotomPedia-v3.5.0-rc4.apk) comprobado con HTTP HEAD **200**, 24028928 bytes y MIME APK. RC1–RC3 y sus tags/assets intactos. La documentación de cierre no modifica el tag ni el APK.
+
+**Puerta manual pendiente:** instalar sobre RC3 sin desinstalar, revisar barra/panel, ambas primigenias, Alola sin Pikachu con gorra, Kalos → Furfrou → Atrás e Hisui/Cuadrícula con posición conservada. Comprobar también equipos y favoritos previos. Pruebas automatizadas correctas no equivalen a validación visual en teléfono.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -475,7 +479,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 
 **Punto de partida vigente:** v3.4 terminada; v3.5-A/B/C implementadas y publicadas como **v3.5.0-rc1**, pendientes de validación manual. La preparación/implementación inicial de v3.5 de este apartado ya se cumplió; su historial técnico permanece en §11–§17.
 
-1. **Ahora: validar RC3 en el teléfono (§4.2)**: las cuatro observaciones de RC2 están corregidas y entregadas. Repetir Kalos/Furfrou y retorno desde Cuadrícula, revisar botón y orden regional; RC2 queda como comparación histórica (§4.1).
+1. **Ahora: validar RC4 en el teléfono (§4.3)**: las observaciones de barra/filtros y clasificación están corregidas y entregadas. Repetir Kalos/Furfrou y retorno desde Cuadrícula, revisar icono, panel, primigenias y regionales; RC2/RC3 quedan como comparación histórica (§4.1/§4.2).
 2. **Puerta manual:** presentar el resultado y completar/revisar observaciones de Android, sin declarar v3.5 estable solo por tests. Detenerse antes de otra mejora.
 3. **Seleccionar la siguiente tarea de estabilización de §13 con autorización**, acotada por módulo; no ejecutar todo el backlog ni convertirlo en requisito ilimitado que posponga mapas. Matemática de captura y selector de Balls son trabajos distintos.
 4. **v3.6: mapas**, piloto por región/juego y expansión posterior, reutilizando componentes actuales (§5). Sigue siendo la siguiente versión funcional prevista, no se renumera por el pulido de v3.5.
@@ -503,7 +507,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 4 de noviembre de 2026.\
-**Próxima puerta:** el usuario descarga RC3 y repite los recorridos de RC2 para validar sus correcciones (§4.2); después esperar autorización de otra tarea. Nunca promover a estable automáticamente.
+**Próxima puerta:** el usuario descarga RC4 y valida barra, filtros, clasificación y recorridos de retorno (§4.3); después esperar autorización de otra tarea. P3 sigue diferida. Nunca promover a estable automáticamente.
 
 ---
 
