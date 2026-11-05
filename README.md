@@ -6,9 +6,9 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 ## Estado actual y versiones
 
-**Prueba pública actual:** [pre-release `v3.5.0-rc6`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc6), con mini sprites de portadores, formas vacías ocultas y todas las mejoras de RC5. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc6/RotomPedia-v3.5.0-rc6.apk). No es la versión base estable `3.5.0`; RC1–RC5 se conservan sin cambios para comparar.
+**Prueba pública actual:** [pre-release `v3.5.0-rc7`](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc7), con evoluciones de Hisui por edición y todas las mejoras de RC6. [Descargar APK para Android](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc7/RotomPedia-v3.5.0-rc7.apk). No es la versión base estable `3.5.0`; RC1–RC6 se conservan sin cambios para comparar.
 
-**Código publicado:** rama `feature/v3.5-ability-sprites`, tag `v3.5.0-rc6` en `7a892df`; 105 pruebas Kotlin/23 Python, lint/build y ambos workflows correctos. RC5 aprobada en términos generales; validación visual de RC6 en Android pendiente.
+**Código publicado:** rama `feature/v3.5-hisui-evolutions`, tag `v3.5.0-rc7` en `6027026`; 117 pruebas Kotlin/23 Python, lint/build y ambos workflows correctos. RC6 aprobada por el usuario; validación visual de RC7 en Android pendiente.
 
 **Política permanente de publicación:** implementar una fase autorizada incluye permiso para commits, push, nuevo tag, GitHub Actions y **pre-release con APK descargable**, sin pedir autorización adicional. Exige verificaciones correctas, firma compatible, `versionCode` creciente, SHA-256, notas y problemas conocidos. No sobrescribir releases anteriores. **Versiones estables, cambios de firma y acciones destructivas requieren aprobación independiente**; esta política no autoriza nuevas fases. Ver §8.1 del único Plan Maestro.
 
@@ -22,7 +22,7 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 **Parche visual publicado:** `v3.5.0-rc6` / `30506`: mini sprites de la variedad exacta junto a los portadores de habilidades y sección «Formas» oculta cuando no hay alternativas. Mantiene lista completa, navegación y datos guardados; 105 Kotlin/23 Python y ambos workflows correctos, validación visual pendiente. Alcance y evidencia en §4.5 del Plan Maestro; evolución de Overqwil y P3 siguen pendientes.
 
-**Siguiente alcance autorizado:** tras aprobar RC6, el usuario amplía EVO-001 a las evoluciones especiales de Hisui. Preparando `v3.5.0-rc7` / `30507`, rama `feature/v3.5-hisui-evolutions`: 22 relaciones verificadas para Arceus y Escarlata/Púrpura, con selección de edición y variedades exactas. La referencia general de especie se conserva por separado; otras ediciones no se extrapolan. Sin cambios de datos personales ni P3. Evidencias y matriz en §4.6 del mismo Plan Maestro; verificación final y publicación pendientes.
+**EVO-001 publicada:** `v3.5.0-rc7` / `30507`: 22 relaciones de Hisui verificadas para Arceus y Escarlata/Púrpura, con selección de edición y variedades exactas. La referencia general de especie se conserva por separado; otras ediciones no se extrapolan. Sin cambios de datos personales ni P3. 117 Kotlin/23 Python y ambos workflows correctos; validación visual pendiente. Evidencias y matriz en §4.6 del mismo Plan Maestro.
 
 **Documento principal: [Plan Maestro de RotomPedia](docs/ROTOMPEDIA_PLAN_MAESTRO.md).**
 Contiene alcance, autorización, evidencias, incidencias residuales y criterios de salida. Este README es la entrada resumida y se mantiene para **todas las versiones: 3.x, 4.x y posteriores**, no un documento congelado en v3.3/v3.4.
@@ -117,8 +117,8 @@ El proyecto ha evolucionado para incluir funcionalidades avanzadas divididas en 
 - Datos personales e IDs técnicos se conservan; no se usa borrado destructivo como recuperación de una migración fallida.
 - Los APK publicados de esta etapa son de validación con firma de depuración, no firma privada de producción. Consultar las notas de la release antes de actualizar; no desinstalar para forzar una actualización sin respaldo.
 - No instalar una versión antigua sobre una base ya migrada a un esquema más reciente. El código local puede adelantarse al APK público; el nombre de una versión Android no demuestra por sí solo qué hitos están publicados.
-- La pre-release actual usa `3.5.0-rc6` / `30506` (RC5: `30505`), con el mismo certificado comprobado que las RC anteriores. Incluye SHA-256; no es la versión base estable `3.5.0`. Instalar como actualización; no desinstales ni borres datos para forzarla si Android informa conflicto de firma.
-- SHA-256 de RC6: `58381f67c41670f96379d45530d439a3c68c2c021fc2f7e141c5a23b0478010d`. [Verificación y publicación Actions correctas](https://github.com/ArukuKun/RotomPedia/actions/runs/41958335159); evidencias históricas conservadas en §4.1–§4.4 del plan.
+- La pre-release actual usa `3.5.0-rc7` / `30507` (RC6: `30506`), con el mismo certificado comprobado que las RC anteriores. Incluye SHA-256; no es la versión base estable `3.5.0`. Instalar como actualización; no desinstales ni borres datos para forzarla si Android informa conflicto de firma.
+- SHA-256 de RC7: `f8857ff5659159ab1b4c8be6a2f26b3ce062109f1f08f0cec04a15f543d1dec5`. [Verificación y publicación Actions correctas](https://github.com/ArukuKun/RotomPedia/actions/runs/41962875764); evidencias históricas conservadas en §4.1–§4.5 del plan.
 - Una posible numeración `0.x` es solo una propuesta pendiente; no renombra releases ni reduce el `versionCode`. Estables y cambios de firma siguen requiriendo aprobación.
 - Pendientes concretos: captura (`CAP-001`–`CAP-003`), validación manual del español de movimientos (`MOV-001`, implementado localmente), textos en pantallas estrechas (`UI-001`) y recursos gráficos aún ausentes. Véase el Plan Maestro, sin reabrir v3.4 completa.
 

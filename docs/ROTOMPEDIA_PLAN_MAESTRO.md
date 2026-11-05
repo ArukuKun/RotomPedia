@@ -2,13 +2,13 @@
 
 **Marca / proyecto:** RotomPedia\
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
-**Versión publicada actual:** **v3.5.0-rc6**, pre-release con A/B/C, BIO-001, sprites de portadores y formas vacías ocultas; validación visual de RC6 y estabilización pendientes, no versión estable.\
+**Versión publicada actual:** **v3.5.0-rc7**, pre-release con A/B/C y requisitos evolutivos de Hisui por edición sobre RC6; validación visual de RC7 y estabilización pendientes, no versión estable.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
 **Regla de alcance:** implementar solo fases autorizadas por el usuario. La política permanente de §8.1 autoriza commits, push, tags nuevos y pre-releases de esas fases sin pedir permiso adicional; no autoriza fases nuevas, versiones estables, cambios de firma ni operaciones destructivas. No modificar tags/releases anteriores.
 
 **Documento principal del repositorio desde el 3 de noviembre de 2026.** Se adopta el adjunto `ROTOMPEDIA_PLAN_MAESTRO_v3.4_en_adelante.md`, conservando sus fases y principios. Los apartados 11–14 incorporan el contraste con el código y la propuesta para aprobación. Los documentos de v3.3 son históricos, no el plan vigente.
 
-**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc6`**, rama `feature/v3.5-ability-sprites`, tag en `7a892df`; 105 Kotlin/23 Python, lint/build y ambos workflows correctos. RC5 aprobada en términos generales; sprites y limpieza de Formas pendientes de validación visual (§4.5). Evidencias históricas RC2–RC5 en §4.1–§4.4 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
+**Estado vigente:** v3.4-A/B/C terminadas. **Pre-release pública actual `v3.5.0-rc7`**, rama `feature/v3.5-hisui-evolutions`, tag en `6027026`; 117 Kotlin/23 Python, lint/build y ambos workflows correctos. RC6 aprobada por el usuario; EVO-001 ampliada entregada, pendiente de validación visual (§4.6). Evidencias históricas RC2–RC6 en §4.1–§4.5 y RC1 en §17. Política de §8.1: pre-releases de fases autorizadas sin otro permiso; **estables con aprobación propia**. P3, captura, mapas y RI no se implementaron.
 
 **Continuidad posterior a RC1:** este archivo es y seguirá siendo el **único Plan Maestro**. Las cuatro observaciones manuales de RC2 están implementadas y publicadas como `v3.5.0-rc3` / `30503` (§4.2). No se autoriza implementar conjuntamente el resto de §13 ni cambiar mapas/RI. Conservar firma compatible y versiones anteriores; `0.x` solo en evaluación.
 
@@ -438,6 +438,10 @@ En Arceus las evoluciones se eligen en el menú tras cumplir la condición, no s
 
 **APK preparado RC7:** `RotomPedia-v3.5.0-rc7.apk`, 24071978 bytes, SHA-256 `f8857ff5659159ab1b4c8be6a2f26b3ce062109f1f08f0cec04a15f543d1dec5`, con `.apk.sha256`. Paquete `com.duoc.rotompedia`, `3.5.0-rc7` / `30507 > 30506`, mínimo API 25. Build Tools 35.0.0 verifica certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, idéntico al APK RC6 cuyo hash también se comprobó. Clave privada fuera de GitHub. Publicación supeditada a repetir controles de §8.1 en Actions; no modificar tags/assets anteriores ni promover a estable.
 
+**Entrega pública RC7:** tag inmutable `v3.5.0-rc7` en `6027026`; [pre-release](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.5.0-rc7), `draft=false`, `prerelease=true`, no estable/Latest. Ambos workflows **success**: [Release APK 41962875764](https://github.com/ArukuKun/RotomPedia/actions/runs/41962875764) y [Verify 41962871713](https://github.com/ArukuKun/RotomPedia/actions/runs/41962871713). Actions repitió pruebas/lint/build y comprobó checksum, certificado único y paquete/versión antes de publicar automáticamente. Digest público idéntico al SHA-256 anterior; [APK directo](https://github.com/ArukuKun/RotomPedia/releases/download/v3.5.0-rc7/RotomPedia-v3.5.0-rc7.apk) comprobado con HTTP HEAD **200**, longitud 24071978 y MIME APK. RC1–RC6 y sus tags/assets intactos; documentación de cierre posterior no cambia el tag ni el APK.
+
+**Puerta manual RC7:** instalar sobre RC6 sin desinstalar; alternar edición en Overqwil, Wyrdeer y Sneasler, verificar retroceso/sexo en Basculegion, objetos/luna en Kleavor/Ursaluna y niveles/lluvia en iniciales y regionales. Comprobar navegación exacta, referencia general diferenciada y datos previos. Otras ediciones fuera de cobertura y P3 pendiente; esperar aprobación antes de otro alcance.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -575,7 +579,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 
 **Punto de partida vigente:** v3.4 terminada; v3.5-A/B/C implementadas y publicadas como **v3.5.0-rc1**, pendientes de validación manual. La preparación/implementación inicial de v3.5 de este apartado ya se cumplió; su historial técnico permanece en §11–§17.
 
-1. **Ahora: validar RC6 en el teléfono (§4.5)**: RC5 fue aprobada en términos generales. Revisar sprites de portadores, nombres/roles, navegación y Formas oculta sin alternativas; conservar regresiones de retorno y datos previos.
+1. **Ahora: validar RC7 en el teléfono (§4.6)**: RC6 fue aprobada. Revisar requisitos de Hisui según edición, variedad exacta, navegación/objetos y referencia general diferenciada; conservar regresiones y datos previos.
 2. **Puerta manual:** presentar el resultado y completar/revisar observaciones de Android, sin declarar v3.5 estable solo por tests. Detenerse antes de otra mejora.
 3. **Seleccionar la siguiente tarea de estabilización de §13 con autorización**, acotada por módulo; no ejecutar todo el backlog ni convertirlo en requisito ilimitado que posponga mapas. Matemática de captura y selector de Balls son trabajos distintos.
 4. **v3.6: mapas**, piloto por región/juego y expansión posterior, reutilizando componentes actuales (§5). Sigue siendo la siguiente versión funcional prevista, no se renumera por el pulido de v3.5.
@@ -605,7 +609,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 5 de noviembre de 2026.\
-**Próxima puerta:** EVO-001 ampliada a Hisui está autorizada y en preparación RC7 (§4.6); terminar verificación y entregar pre-release para revisión visual. P3 sigue diferida. Nunca promover a estable automáticamente.
+**Próxima puerta:** RC7 publicada y verificada (§4.6); esperar validación visual de EVO-001 y aprobación del usuario antes de otro alcance. P3 sigue diferida. Nunca promover a estable automáticamente.
 
 ---
 
@@ -728,7 +732,7 @@ Consultas de lectura a PokeAPI, sin integrar datos nuevos en la app:
 | `DEX-007` — categoría alternativa y Tótem; autorizado post-RC2 | Se cuestiona el cajón «Variedades estables» y Raticate Tótem duplicado. | §4.2: retirar chip general, ocultar Tótem en Pokédex sin borrar datos; conservar formas de Lycanroc, genios y Origen en fichas/picker y preservar equipos/favoritos por ID. |
 | `DEX-008` — sección Formas vacía; **publicada en RC6** | Tras aprobar RC5, el usuario reporta una sección sin alternativas y un aviso sobre PokeAPI en Overqwil. | §4.5: sección y espaciado propio ocultos sin alternativas; selección/identidades y reintento conservados. 105 Kotlin/23 Python y ambos CI correctos; validación visual pendiente. |
 | `ABIL-002` — mini sprites de portadores; **publicada en RC6** | El usuario solicita acompañar con sprite cada Pokémon de la lista de portadores en la ficha de habilidad. | §4.5: sprite de 40 dp por `pokemonId`, nombre/rol legibles, lista completa y navegación exacta. 105 Kotlin/23 Python y ambos CI correctos; validación visual pendiente. Contadores/traducciones de ABIL-001 siguen aparte. |
-| `EVO-001` — requisitos evolutivos de Hisui; **ampliación autorizada tras RC6** | Reporte inicial Overqwil en RC5; después el usuario pide todos los casos de Hisui y confirma el alcance por edición. | §4.6: 22 relaciones verificadas en Arceus y Escarlata/Púrpura, identidad exacta, condiciones y transferencia diferenciadas. Primera pasada focalizada correcta; suite final, publicación RC7 y validación visual pendientes. No extrapolar a otras ediciones ni implementar P3. |
+| `EVO-001` — requisitos evolutivos de Hisui; **publicada en RC7** | Reporte inicial Overqwil en RC5; después el usuario pide todos los casos de Hisui y confirma el alcance por edición. | §4.6: 22 relaciones en Arceus y Escarlata/Púrpura, identidad exacta, condiciones y transferencia diferenciadas; 117 Kotlin/23 Python y ambos CI correctos. Validación visual pendiente; otras ediciones y P3 fuera de cobertura. |
 | `BIO-001` — ficha biológica compacta; **publicada en RC5** | Usuario acepta expresamente continuar con BIO-001 tras aprobar RC4; habilidades reutilizan repositorio/fichas. | §4.4: 100 Kotlin/23 Python y ambos CI correctos; especie/categoría, medidas de variedad y habilidades normales/`(oculta)`. Validación visual pendiente; sin atribuir descripción de especie a variedad ni inventar medidas offline. |
 | `ABIL-001` — contadores y traducciones; pendiente de autorización | Ya existe habilidad → variedades asociadas en v3.5-C. Se reportan traducciones incorrectas sin aportar aún la lista exacta de nombres. | Añadir contadores **de variedades distintas (`pokemonId`)** normales y ocultas; deduplicar cada rol, indicar que una variedad podría pertenecer a ambos si la fuente lo registra. Si se ofrecen especies, conteo separado por `speciesId`, nunca mezclar unidades. Revisar muestras/traducciones con fuentes españolas verificables, sin reemplazos inventados ni reimplementar el enlace existente. |
 | `MOV-002` — P3, símbolos y presentación; pendiente de autorización | v3.5 ya expone tipo/categoría en texto y filtros por ambos en el catálogo; no son funciones inexistentes. | Ampliación P3 en §13.1: tipo con color y símbolo Física/Especial/Estado; filas compactas responsivas, sin rehacer catálogo, fichas ni repositorio. Filtros del catálogo general separados de métodos de aprendizaje. |
