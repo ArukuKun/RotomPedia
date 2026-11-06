@@ -717,6 +717,18 @@ Esta secuencia vive aquí; no cambia la numeración de v3.6/v3.7 ni asigna RC/fe
 
 **Puerta manual y límites:** no hay emulador/teléfono conectado; instrumentación compilada, no ejecutada. No afirmar que la maqueta HTML o los tests son capturas Android. La entrega integrada está publicada y verificada en CI, **no se presenta el resultado como aprobado visualmente por el usuario**. Revisar desde inicio real y formularios, claro/oscuro/sistema y formas, Pokémon→Movimientos→edición→pestañas/swipe→ficha→Atrás, filtros/scroll, equipos y favoritos previos, editores/calculadoras/líderes y texto grande/horizontal/teclado. Mapas, sprites faltantes y fases excluidas siguen fuera de esta entrega. Corregir después los puntos concretos de mejora que reporte el usuario; no volver al ritmo de una RC por dos pantallas.
 
+### 4.13 Devolución del usuario sobre RC12 — aceptación general e ideas para la versión final
+
+**Reporte posterior a la entrega:** el usuario confirma «Está todo bien», «se ven bien» y «lo que actualizaste ahora mismo está genial», y adjunta capturas de Pokédex, equipo y tabla de tipos. Se registra **aceptación visual general de lo actualizado**, no una matriz exhaustiva de pantallas/dispositivos ni certificación de ausencia de errores. Las capturas son evidencia aportada por el usuario; no se atribuye a todas la misma versión, tema o sesión sin comprobarlo. Los sprites sin cargar visibles no se diagnostican automáticamente como fallo de API, red o caché.
+
+**Pendientes solicitados expresamente para la versión final, no para otra RC inmediata:**
+
+1. **Funcionamiento sin internet — prioridad principal.** Actualmente hay índices locales y cachés parciales junto a consultas de API/recursos remotos; eso **no equivale a que toda la aplicación funcione offline**. Planificar cobertura real de datos, fichas e imágenes y dependencias de autenticación/backend, reutilizando repositorios e identidades. Antes de implementar, definir qué viene incluido y qué requiere descarga previa, actualización, espacio y comportamiento ante datos ausentes. Verificar inicio en modo avión, reapertura/proceso reiniciado, navegación y consulta sin red, conservación de equipos/favoritos y recuperación al reconectar. No prometer funcionamiento completo por haber visitado una ficha o tener un índice local. Este objetivo para la final actualiza la prioridad del backlog; no autoriza ahora descargas masivas ni otro catálogo paralelo.
+2. **Tabla de tipos con encabezados fijos en ambos ejes.** Al bajar, mantener visible la fila superior de tipos defensivos; al desplazarse a la derecha, mantener visible la primera columna de tipos atacantes. Mantener esquina Ataque/Defensa, alineación y sincronización con las celdas para saber qué relación se consulta. No cambiar multiplicadores por este ajuste. Comprobar ambos desplazamientos combinados, temas y texto grande.
+3. **Pokédex: continuidad entre Lista y Cuadrícula.** Cambiar de vista después de desplazarse no debe llevar al principio: conservar como ancla la identidad del Pokémon visible y convertir su posición entre fila y cuadrícula, sin confundir índice de fila con índice de entrada. Mantener búsqueda, filtros y orden; comprobar cambios en ambos sentidos, posición avanzada y retorno de detalle.
+
+**Alcance de esta devolución:** registrar y priorizar en este único Plan Maestro, sin implementar todavía estas ideas ni generar APK/tag/pre-release/estable por el comentario. La versión final requiere su verificación y autorización de publicación estable independiente (§8.1). Mapas interactivos y sprites mantienen sus pendientes previos; no se convierten en tareas inmediatas por las capturas.
+
 ## 5. v3.6 — Mapas interactivos inspirados en PokeInfo (PENDIENTE)
 
 **Objetivo:** transformar los mapas actuales, que tienen algunos puntos interactivos, en una herramienta útil para explorar regiones, rutas, cuevas, ciudades y encuentros por juego.
@@ -894,7 +906,7 @@ RI-4 (§16) concreta la investigación experimental de esta opción; no es requi
 | v4.x y posteriores | Sin alcance aprobado | — | Mantener el README y este plan al definir cada nueva serie; RI no tiene asignada una v4.x |
 
 **Última actualización del plan:** 5 de noviembre de 2026.\
-**Próxima puerta:** revisión visual en teléfono de la entrega integrada RC12 (§4.12), ya publicada y verificada técnicamente. Recoger mejoras concretas sin declarar aceptación ni volver a microentregas por módulo. Mapas interactivos, sprites faltantes y RI diferidos. Nunca promover a estable automáticamente.
+**Próxima puerta:** RC12 recibe aceptación visual general del usuario (§4.13), sin matriz manual exhaustiva. Ideas para la final registradas: prioridad offline, encabezados fijos de tabla de tipos y continuidad Lista/Cuadrícula. No implementarlas ni publicar otra RC automáticamente por esta devolución. Mapas interactivos, sprites faltantes y RI conservan sus pendientes. Nunca promover a estable automáticamente.
 
 ---
 
