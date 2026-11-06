@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.duoc.rotompedia.data.items.*
+import com.duoc.rotompedia.data.reference.GameContentScope
 import com.duoc.rotompedia.di.AppContainer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -250,7 +251,8 @@ internal fun ItemDetailSheet(item: IndexedItem, repository: ItemRepository, onDi
             currentData?.let { loaded ->
                 val detail = loaded.detail
                 val machines = reference?.machines.orEmpty().filter { it.itemId == item.itemId }
-                val groups = (detail.descriptions.map { it.versionGroup.name } + detail.prices.map { it.versionGroup.name } + machines.map { it.versionGroup }).distinct().sorted()
+                val groups = (detail.descriptions.map { it.versionGroup.name } + detail.prices.map { it.versionGroup.name } + machines.map { it.versionGroup })
+                    .filter(GameContentScope::allowsVersion).distinct().sorted()
                 if (groups.isNotEmpty()) ItemChoice("Edición", group, groups, ItemLabels::version) { group = it }
                 val description = ItemPresentation.description(detail, group)
                 description?.let {
@@ -292,9 +294,11 @@ internal fun ItemDetailSheet(item: IndexedItem, repository: ItemRepository, onDi
                         (description?.let { if (it.language == "es") it.text else "Inglés: ${it.text}" }.orEmpty())
                     clipboard.setText(AnnotatedString(text))
                 }) { Text("Copiar ficha") }
-                if (detail.holders.isNotEmpty()) {
+                val holders = detail.holders.map { holder -> holder.copy(versions = holder.versions.filter { GameContentScope.allowsVersion(it.version.name) }) }
+                    .filter { it.versions.isNotEmpty() }
+                if (holders.isNotEmpty()) {
                     Text("Lo llevan en encuentros", style = MaterialTheme.typography.titleMedium)
-                    detail.holders.forEach { holder ->
+                    holders.forEach { holder ->
                         val id = Regex("https://pokeapi.co/api/v2/pokemon/([1-9][0-9]*)/?").matchEntire(holder.pokemon.url)?.groupValues?.get(1)
                         if (id != null) TextButton({ onPokemonClick(id) }) {
                             Text(pokemonLabels[id.toInt()] ?: com.duoc.rotompedia.data.PokemonFormCatalog.displayName(holder.pokemon.name))

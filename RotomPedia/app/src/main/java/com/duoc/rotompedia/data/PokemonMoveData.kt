@@ -26,5 +26,5 @@ object PokemonMoveData {
         }
         changes.value++
     }
-    fun findMove(name: String): PokemonMove? = aliases[key(name)]?.singleOrNull()
+    fun findMove(name: String): PokemonMove? = aliases[key(name)]?.singleOrNull()?.takeUnless { it.type == "shadow" }
 }

@@ -258,7 +258,11 @@ fun MoveLearnsetPane(pokemonId: Int, modifier: Modifier = Modifier, repository: 
     var showFilters by remember(pokemonId) { mutableStateOf(false) }
     LaunchedEffect(repo, pokemonId, attempt) {
         loading = true; error = null
-        try { index = repo.index(); learnset = repo.learnset(pokemonId, refresh = attempt > 0) }
+        try {
+            index = GameContentScope.catalogue(repo.index())
+            val result = repo.learnset(pokemonId, refresh = attempt > 0)
+            learnset = result.copy(data = GameContentScope.learnset(result.data))
+        }
         catch (e: Exception) { if (e is CancellationException) throw e; error = "No se pudieron cargar los movimientos. Comprueba tu conexión e inténtalo de nuevo." }
         finally { loading = false }
     }

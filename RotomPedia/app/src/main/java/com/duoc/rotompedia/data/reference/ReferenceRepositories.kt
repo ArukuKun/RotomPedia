@@ -32,7 +32,7 @@ class ReferenceStore(moshi: Moshi, private val source: suspend () -> String) {
                 require((p.moves.flatMap { it.texts } + p.abilities.flatMap { it.texts }).all {
                     it.versionGroup in versions && it.language in setOf("es", "en") && it.text.isNotBlank()
                 })
-                com.duoc.rotompedia.data.PokemonMoveData.registerMoves(p.moves.map { ReferencePresentation.legacy(it) })
+                com.duoc.rotompedia.data.PokemonMoveData.registerMoves(p.moves.filter(GameContentScope::allowsMove).map { ReferencePresentation.legacy(it) })
                 cached = p
                 p
             }
@@ -48,12 +48,13 @@ class DefaultMoveRepository(private val store: ReferenceStore, private val db: A
     private val api: PokeApiService, private val pokemon: PokemonRepository, moshi: Moshi) : MoveRepository {
     private val adapter = moshi.adapter(Learnset::class.java)
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Mutex>()
-    override suspend fun index() = store.index()
+    override suspend fun index() = GameContentScope.catalogue(store.index())
     override suspend fun learnset(pokemonId: Int, refresh: Boolean): LearnsetResult = withContext(Dispatchers.IO) {
         require(pokemonId > 0)
         pokemon.ensureIndex()
         val identity = requireNotNull(pokemon.resolve(pokemonId)) { "Variedad desconocida" }
-        val knownMoves = index().moves.associateBy { it.id }
+        // Validate against the complete source even when the client hides a game/move.
+        val knownMoves = store.index().moves.associateBy { it.id }
         locks.getOrPut(pokemonId) { Mutex() }.withLock {
             val saved = db.learnsetDao().cached(pokemonId)
             val cached = saved?.let { runCatching { adapter.fromJson(it.json) }.getOrNull() }?.takeIf { data ->
@@ -92,7 +93,7 @@ interface AbilityRepository {
     suspend fun forPokemon(pokemonId: Int): List<AbilityLink>
 }
 class DefaultAbilityRepository(private val store: ReferenceStore, private val pokemon: PokemonRepository) : AbilityRepository {
-    override suspend fun index() = store.index()
+    override suspend fun index() = GameContentScope.catalogue(store.index())
     override suspend fun forPokemon(pokemonId: Int): List<AbilityLink> {
         pokemon.ensureIndex()
         requireNotNull(pokemon.resolve(pokemonId)) { "Variedad desconocida" }

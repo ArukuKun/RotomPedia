@@ -24,15 +24,15 @@ object ReferencePresentation {
         return PokemonFormCatalog.normalize(query).split(Regex("\\s+")).filter(String::isNotBlank).all { it in haystack }
     }
     fun filterMoves(index: ReferenceIndex, query: String = "", type: String? = null, category: String? = null): List<ReferenceMove> =
-        index.moves.filter { (type == null || it.type == type) && (category == null || it.category == category) &&
+        index.moves.filter { GameContentScope.allowsMove(it) && (type == null || it.type == type) && (category == null || it.category == category) &&
             matches(query, it.displayName, it.nameEn, it.slug, traducirTipo(it.type), it.id.toString()) }
             .sortedWith(compareBy<ReferenceMove> { PokemonFormCatalog.normalize(it.displayName) }.thenBy { it.id })
     fun learned(rows: List<LearnRow>, group: String?, method: String? = null): Map<Int, List<LearnRow>> =
-        if (group == null) emptyMap() else rows.filter { it.versionGroup == group && (method == null || it.method == method) }.groupBy { it.moveId }
+        if (group == null) emptyMap() else rows.filter { GameContentScope.allowsLearning(it) && it.versionGroup == group && (method == null || it.method == method) }.groupBy { it.moveId }
     fun groups(index: ReferenceIndex, rows: List<LearnRow>): List<String> {
         val available = rows.map { it.versionGroup }.toSet()
         val ordered = index.versions.sortedBy { it.order }.map { it.slug }
-        return ordered.filter { it in available } + (available - ordered.toSet()).sorted()
+        return (ordered.filter { it in available } + (available - ordered.toSet()).sorted()).filter(GameContentScope::allowsVersion)
     }
     fun legacy(move: ReferenceMove, group: String? = null): PokemonMove {
         val description = text(move.texts, group)?.let { if (it.language == "es") it.text else "Original en inglés: ${it.text}" }

@@ -43,10 +43,10 @@ internal data class LearningMove(val id: Int, val label: String, val reference: 
 internal fun learningMoves(index: ReferenceIndex, rows: List<LearnRow>, edition: String?, method: String,
     query: String, type: String?, category: String?): List<LearningMove> {
     val references = index.moves.associateBy { it.id }
-    return rows.filter { it.versionGroup == edition && it.method == method }.groupBy { it.moveId }.mapNotNull { (id, links) ->
+    return rows.filter { GameContentScope.allowsLearning(it) && it.versionGroup == edition && it.method == method }.groupBy { it.moveId }.mapNotNull { (id, links) ->
         val ref = references[id]
         val name = ref?.displayName ?: links.first().slug.split('-').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
-        if ((type != null && ref?.type != type) || (category != null && ref?.category != category) ||
+        if ((ref != null && !GameContentScope.allowsMove(ref)) || (type != null && ref?.type != type) || (category != null && ref?.category != category) ||
             !ReferencePresentation.matches(query, name, ref?.nameEn.orEmpty())) null
         else LearningMove(id, name, ref, links)
     }.sortedWith(if (method == "level-up") compareBy<LearningMove> { it.relations.minOf(LearnRow::level) }.thenBy { PokemonFormCatalog.normalize(it.label) }

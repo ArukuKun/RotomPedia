@@ -122,7 +122,7 @@ class PokedexNavigationUiTest {
         compose.onNodeWithTag("pokedex-grid").assertExists()
         compose.onNodeWithTag(tag).assertIsDisplayed()
         assertEquals(before, compose.onNodeWithTag(tag).getUnclippedBoundsInRoot().top.value, 1f)
-        assertEquals(16, controller.result.value.entries.size)
+        assertEquals(25, controller.result.value.entries.size)
     }
 
     @Test fun `saved instance restoration keeps filters before restoring scroll`() {
@@ -235,5 +235,20 @@ class PokedexNavigationUiTest {
         compose.onNodeWithText("Lista", substring = false).performClick()
         compose.onNodeWithTag("pokemon_676").assertIsDisplayed()
         assertEquals(6, controller.filter.value.generationId)
+    }
+
+    @Test fun `Hisui Wyrdeer is labeled as species and keeps filter and identity through grid detail return`() {
+        compose.runOnIdle { controller.filter.value = ExplorerFilter(regionalOrigin = "hisui", query = "wyrdeer") }
+        compose.waitUntil(20_000) { controller.result.value.ready && controller.result.value.entries.map { it.pokemonId } == listOf(899) }
+        compose.onNodeWithText("Especie de Hisui").assertIsDisplayed()
+        compose.onNodeWithText("Hisui · formas y especies").assertExists()
+        compose.onNodeWithText("Cuadrícula").performClick()
+        compose.onNodeWithText("Especie de Hisui").assertIsDisplayed()
+        compose.onNodeWithTag("pokemon_899").performClick()
+        compose.onNodeWithText("Ficha 899").assertExists()
+        compose.onNodeWithText("Volver a Pokédex").performClick()
+        compose.waitUntil(20_000) { controller.result.value.ready && compose.onAllNodesWithTag("pokedex-grid").fetchSemanticsNodes().size == 1 }
+        compose.onNodeWithTag("pokemon_899").assertIsDisplayed()
+        assertEquals("hisui", controller.filter.value.regionalOrigin)
     }
 }

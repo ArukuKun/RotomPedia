@@ -72,7 +72,8 @@ fun PokemonExplorerContent(
             FilterChip(selected = grid, onClick = { grid = true }, label = { Text("Cuadrícula") })
         }
         val summary = listOfNotNull(filters.category.takeIf { it != VarietyCategory.ALL }?.label,
-            filters.generationId?.let { "Gen. $it" }, filters.regionalOrigin?.let { "Forma de ${it.replaceFirstChar(Char::uppercase)}" },
+            filters.generationId?.let { "Gen. $it" }, filters.regionalOrigin?.let {
+                if (it == "hisui") "Hisui · formas y especies" else "Forma de ${it.replaceFirstChar(Char::uppercase)}" },
             filters.type?.let(::traducirTipo), filters.eggGroup?.let { slug -> eggGroups.firstOrNull { it.slug == slug }?.label ?: slug },
             "Favoritos".takeIf { filters.favoritesOnly })
         if (summary.isNotEmpty()) Text(summary.joinToString(" · "), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
@@ -160,7 +161,7 @@ private fun ExplorerSprite(pokemon: ExplorerPokemon) {
 @Composable
 private fun ExplorerFilters(filter: ExplorerFilter, allowFavorites: Boolean, eggGroups: List<ExplorerEggGroup>,
     nationalOnly: Boolean, onChange: (ExplorerFilter) -> Unit) {
-    val generations = listOf("Kanto", "Johto", "Hoenn", "Sinnoh", "Teselia", "Kalos", "Alola", "Galar", "Paldea")
+    val generations = listOf("Kanto", "Johto", "Hoenn", "Sinnoh", "Teselia", "Kalos", "Alola", "Galar / Hisui", "Paldea")
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(10.dp)) {
             Text("Categoría", fontWeight = FontWeight.Bold)
@@ -188,7 +189,7 @@ private fun ExplorerFilters(filter: ExplorerFilter, allowFavorites: Boolean, egg
                     FilterChip(selected = filter.generationId == i + 1, onClick = { onChange(filter.copy(generationId = i + 1)) }, label = { Text(region, fontSize = 11.sp) })
                 }
             }
-            Text("Formas regionales", fontWeight = FontWeight.Bold)
+            Text("Origen regional", fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(selected = filter.regionalOrigin == null, onClick = { onChange(filter.copy(regionalOrigin = null)) }, label = { Text("Todos") })
                 listOf("alola", "galar", "hisui", "paldea").forEach { region ->

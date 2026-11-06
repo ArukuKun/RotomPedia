@@ -81,6 +81,7 @@ private fun PokedexCard(pokemon: ExplorerPokemon, grid: Boolean, favorites: Set<
             Text(pokemon.numberLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             regionalNumber?.let { Text("${it.dex.name} #${it.number.toString().padStart(3, '0')}", fontSize = 11.sp) }
             Text(name, fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.Center)
+            pokemon.originLabel?.let { Text(it, fontSize = 11.sp, textAlign = TextAlign.Center) }
             if (showTechnicalName) Text("Forma: ${pokemon.slug}", fontSize = 10.sp, textAlign = TextAlign.Center)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 pokemon.types.forEach { BadgeTipo(it) }
@@ -93,6 +94,7 @@ private fun PokedexCard(pokemon: ExplorerPokemon, grid: Boolean, favorites: Set<
                 Text(pokemon.numberLabel, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 regionalNumber?.let { Text("${it.dex.name} #${it.number.toString().padStart(3, '0')}", fontSize = 12.sp) }
                 Text(name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                pokemon.originLabel?.let { Text(it, fontSize = 12.sp) }
                 if (showTechnicalName) Text("Forma: ${pokemon.slug}", fontSize = 11.sp)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     pokemon.types.forEach { BadgeTipo(it) }

@@ -54,6 +54,49 @@ class ReferenceRepositoryTest {
         Mockito.verifyNoInteractions(api)
     }
 
+    @Test fun `client scope removes XD and Colosseum but preserves raw snapshot and legitimate shadow named content`() = runTest {
+        val raw = store().index()
+        val visible = GameContentScope.catalogue(raw)
+        assertEquals(937, raw.moves.size)
+        assertEquals(18, raw.moves.count { it.type == "shadow" })
+        assertEquals(919, visible.moves.size)
+        assertFalse(visible.moves.any { it.type == "shadow" })
+        assertFalse(visible.versions.any { it.slug in setOf("xd", "colosseum") })
+        assertTrue(visible.moves.any { it.slug == "shadow-ball" })
+        assertTrue(visible.moves.any { it.slug == "shadow-force" })
+        assertTrue(visible.abilities.any { it.slug == "shadow-tag" })
+        assertTrue((visible.moves.flatMap { it.texts } + visible.abilities.flatMap { it.texts }).all { GameContentScope.allowsVersion(it.versionGroup) })
+        assertTrue(visible.machines.all { GameContentScope.allowsVersion(it.versionGroup) && visible.moves.any { m -> m.id == it.moveId } })
+        assertNull(PokemonMoveData.findMove("shadow-chill"))
+        assertNotNull(PokemonMoveData.findMove("shadow-ball"))
+        assertEquals(2, raw.versions.count { it.slug in setOf("xd", "colosseum") })
+        Mockito.verifyNoInteractions(api)
+    }
+
+    @Test fun `learning scope hides known excluded moves and editions but keeps unknown identities and original rows`() {
+        val rows = listOf(LearnRow(10006, "shadow-chill", "xd", "level-up", 0),
+            LearnRow(10006, "shadow-chill", "sun-moon", "tutor", 0),
+            LearnRow(247, "shadow-ball", "xd", "machine", 0),
+            LearnRow(247, "shadow-ball", "sun-moon", "machine", 0),
+            LearnRow(99999, "unknown-move", "sun-moon", "new-method", 0))
+        val raw = Learnset(10104, rows)
+        assertEquals(listOf(247, 99999), GameContentScope.learnset(raw).rows.map { it.moveId })
+        assertEquals(5, raw.rows.size)
+    }
+
+    @Test fun `hidden move identity still validates against raw source and cannot poison cache`() = runTest {
+        val db = db()
+        try {
+            val repo = moves(db)
+            val wrong = PokemonMoveEntry(resource("move", 10006, "flamethrower"),
+                listOf(MoveVersionGroupDetail(1, resource("move-learn-method", 1, "level-up"), resource("version-group", 17, "sun-moon"))))
+            Mockito.`when`(api.getPokemonWithMoves("10104")).thenReturn(data(listOf(wrong)))
+            try { repo.learnset(10104); fail("Hidden identity was reassigned") }
+            catch (_: IllegalArgumentException) { }
+            assertNull(db.learnsetDao().cached(10104))
+        } finally { db.close() }
+    }
+
     @Test fun `learnset retains more than sixty moves all methods levels and exact editions`() = runTest {
         val db = db()
         try {

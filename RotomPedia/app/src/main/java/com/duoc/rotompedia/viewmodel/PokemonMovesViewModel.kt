@@ -31,9 +31,14 @@ class PokemonMovesViewModel(
     val failed: StateFlow<Boolean> = _failed
     private var load: Job? = null
 
-    init { require(pokemonId > 0); load(false) }
+    init {
+        require(pokemonId > 0)
+        if (edition.value?.let { !GameContentScope.allowsVersion(it) } == true) setEdition(null)
+        if (type.value == "shadow") setType(null)
+        load(false)
+    }
 
-    fun setEdition(value: String?) { saved["edition"] = value }
+    fun setEdition(value: String?) { saved["edition"] = value?.takeIf(GameContentScope::allowsVersion) }
     fun setQuery(value: String) { saved["query"] = value }
     fun setType(value: String?) { saved["type"] = value }
     fun setCategory(value: String?) { saved["category"] = value }
@@ -45,8 +50,8 @@ class PokemonMovesViewModel(
         load = viewModelScope.launch {
             _loading.value = true; _failed.value = false
             try {
-                val index = repository.index()
-                val learnset = repository.learnset(pokemonId, refresh).data
+                val index = GameContentScope.catalogue(repository.index())
+                val learnset = GameContentScope.learnset(repository.learnset(pokemonId, refresh).data)
                 require(learnset.pokemonId == pokemonId)
                 _data.value = PokemonMovesData(index, learnset)
                 if (edition.value != null && learnset.rows.none { it.versionGroup == edition.value }) setEdition(null)

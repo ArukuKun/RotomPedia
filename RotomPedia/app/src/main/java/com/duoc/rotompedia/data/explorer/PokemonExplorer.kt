@@ -25,6 +25,22 @@ data class ExplorerPokemon(
     val isNamedDefault get() = isDefault && displayName != speciesName
     val isVariant get() = !isDefault || isNamedDefault
     val isTotem get() = "totem" in slug.split('-')
+    val introducedRegion: String? get() = if (HisuiIntroductions.matches(this)) "hisui" else null
+    val originLabel: String? get() = if (introducedRegion == "hisui") "Especie de Hisui"
+        else regionalOrigin?.let { "Forma de ${it.replaceFirstChar(Char::uppercase)}" }
+}
+
+/** pokemon_forms.csv introduced_in_version_group_id = legends-arceus, pinned in the master plan.
+ * Exact variety + slug: notably excludes Ursaluna Bloodmoon, introduced in The Teal Mask.
+ */
+internal object HisuiIntroductions {
+    private val varieties = mapOf(899 to "wyrdeer", 900 to "kleavor", 901 to "ursaluna", 902 to "basculegion-male",
+        903 to "sneasler", 904 to "overqwil", 905 to "enamorus-incarnate",
+        10248 to "basculegion-female", 10249 to "enamorus-therian")
+    fun matches(pokemon: ExplorerPokemon): Boolean {
+        val species = when (pokemon.pokemonId) { 10248 -> 902; 10249 -> 905; else -> pokemon.pokemonId }
+        return pokemon.speciesId == species && varieties[pokemon.pokemonId] == pokemon.slug
+    }
 }
 
 data class ExplorerFilter(val query: String = "", val category: VarietyCategory = VarietyCategory.ALL,
@@ -111,16 +127,19 @@ object PokemonExplorer {
             val primary = all.firstOrNull { it.isDefault } ?: return@mapNotNull null
             val matching = all.filter { pokemon ->
                 val text = PokemonFormCatalog.normalize(listOf(pokemon.slug, pokemon.displayName, pokemon.speciesName,
-                    pokemon.category.label, pokemon.regionalOrigin.orEmpty()).plus(pokemon.aliases)
+                    pokemon.category.label, pokemon.regionalOrigin.orEmpty(), pokemon.introducedRegion.orEmpty()).plus(pokemon.aliases)
                     .plus(pokemon.types.flatMap { listOf(it, com.duoc.rotompedia.util.traducirTipo(it)) }).joinToString(" "))
                 (if (numeric != null) pokemon.nationalNumber == numeric else words.all { it in text }) &&
                     (!speciesOnly || pokemon.isDefault) &&
                     (!nationalOnly || !pokemon.isTotem) &&
-                    (!nationalOnly || pokemon.isDefault || pokemon.category in browsableForms) &&
+                    (!nationalOnly || pokemon.isDefault || pokemon.category in browsableForms ||
+                        (filter.regionalOrigin == "hisui" && pokemon.introducedRegion == "hisui")) &&
                     (q != "mega" || pokemon.category == VarietyCategory.MEGA) &&
-                    (filter.category == VarietyCategory.ALL || if (filter.category == VarietyCategory.SPECIES) pokemon.isDefault else pokemon.category == filter.category) &&
+                    (filter.category == VarietyCategory.ALL || if (filter.category == VarietyCategory.SPECIES) pokemon.isDefault
+                        else pokemon.category == filter.category || (filter.category == VarietyCategory.REGIONAL &&
+                            filter.regionalOrigin == "hisui" && pokemon.introducedRegion == "hisui")) &&
                     (filter.generationId == null || pokemon.generationId == filter.generationId) &&
-                    (filter.regionalOrigin == null || pokemon.regionalOrigin == filter.regionalOrigin) &&
+                    (filter.regionalOrigin == null || pokemon.regionalOrigin == filter.regionalOrigin || pokemon.introducedRegion == filter.regionalOrigin) &&
                     (filter.type == null || filter.type in pokemon.types) &&
                     (filter.eggGroup == null || pokemon.eggGroups.any { it.slug == filter.eggGroup }) &&
                     (!filter.favoritesOnly || pokemon.pokemonId in favorites)

@@ -6,6 +6,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 ## Estado actual y versiones
 
+**Ajuste preparado RC14 (§4.16):** `30514`, `feature/v3.5-main-games-hisui`: Shadow/Colosseum/XD fuera del contenido seleccionable, sin borrar identidades o datos guardados; Hisui incluye las siete especies de Leyendas Arceus, con etiquetas de especie/forma. Generación VIII, catálogo nacional y distinción de Luna Carmesí intactos. **179 Kotlin/31 Python**, tres índices, lint/build y firma compatibles correctos. CI/publicación y revisión visual pendientes; RC13 sigue siendo el APK público.
+
 **Devolución sobre RC12:** el usuario aprueba en términos generales el resultado visual. Para la **versión final** quedan registradas en §4.13 del [Plan Maestro](docs/ROTOMPEDIA_PLAN_MAESTRO.md) estas ideas: funcionamiento sin internet como prioridad principal (hoy los índices/cachés solo ofrecen cobertura parcial), fila y columna de tipos fijas al desplazar la tabla, y conservar la posición al alternar Lista/Cuadrícula en Pokédex. No se implementan ni se publica otra versión por esta devolución; aceptación general no equivale a validación exhaustiva.
 
 **Ajuste §4.14 incluido en RC13:** habilidades con descripción española disponible al abrir (267 de 374; no todas traducidas), edición explícita e inglés extenso opcional; tipo y categoría de movimientos con etiquetas de color más legibles. No cambia filtros ni resuelve las traducciones pendientes.

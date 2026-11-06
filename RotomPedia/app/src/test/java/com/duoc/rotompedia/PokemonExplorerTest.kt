@@ -61,7 +61,7 @@ class PokemonExplorerTest {
         assertTrue(megas.groups.isNotEmpty())
         assertEquals(megas.groups.map { it.nationalNumber }.sorted(), megas.groups.map { it.nationalNumber })
         assertTrue(megas.groups.flatMap { it.matching }.all { it.category == VarietyCategory.MEGA })
-        assertTrue(search("hisui").groups.flatMap { it.matching }.all { it.regionalOrigin == "hisui" })
+        assertTrue(search("hisui").groups.flatMap { it.matching }.all { it.regionalOrigin == "hisui" || it.introducedRegion == "hisui" })
         val lycanroc = search("lycanroc").groups.single()
         assertEquals(3, lycanroc.matching.size)
         assertTrue(lycanroc.matching.all { it.category == VarietyCategory.STABLE })
@@ -189,9 +189,30 @@ class PokemonExplorerTest {
         assertEquals(listOf("decidueye-hisui", "typhlosion-hisui", "samurott-hisui"), result.entries.take(3).map { it.slug })
         assertEquals(listOf(724, 157, 503), result.entries.take(3).map { it.nationalNumber })
         assertEquals(listOf(3, 6, 9), result.entries.take(3).map { p -> p.regionalNumbers.single { it.dex.region == "hisui" }.number })
-        assertEquals(16, result.entries.size)
+        assertEquals(25, result.entries.size)
         assertEquals(0, result.missingRegionalNumbers)
         assertEquals((1..1025).toList(), PokemonExplorer.filter(entries, ExplorerFilter(), nationalOnly = true).entries.map { it.nationalNumber })
+    }
+
+    @Test fun `Hisui includes seven introduced species and their Arceus varieties without mislabeling regional forms`() = checkEntries { entries ->
+        val hisui = PokemonExplorer.filter(entries, ExplorerFilter(regionalOrigin = "hisui"), nationalOnly = true).entries
+        val newSpecies = hisui.filter { it.introducedRegion == "hisui" }
+        assertEquals((899..905).toSet(), newSpecies.map { it.speciesId }.toSet())
+        assertEquals(setOf(899, 900, 901, 902, 903, 904, 905, 10248, 10249), newSpecies.map { it.pokemonId }.toSet())
+        assertTrue(newSpecies.all { it.generationId == 8 && it.regionalOrigin == null && it.originLabel == "Especie de Hisui" })
+        assertEquals(16, hisui.count { it.regionalOrigin == "hisui" })
+        assertTrue(hisui.filter { it.regionalOrigin == "hisui" }.all { it.originLabel == "Forma de Hisui" })
+        assertFalse(hisui.any { it.slug == "ursaluna-bloodmoon" })
+        assertNull(entries.single { it.slug == "ursaluna-bloodmoon" }.introducedRegion)
+    }
+
+    @Test fun `Hisui combines with regional type favorite and numeric filters without changing national catalogue`() = checkEntries { entries ->
+        val filter = ExplorerFilter(regionalOrigin = "hisui", category = VarietyCategory.REGIONAL, type = "normal", favoritesOnly = true)
+        val rows = PokemonExplorer.filter(entries, filter, favorites = setOf(899), nationalOnly = true).entries
+        assertEquals(listOf("wyrdeer"), rows.map { it.slug })
+        assertEquals(listOf(899), PokemonExplorer.filter(entries, ExplorerFilter(query = "#899", regionalOrigin = "hisui"), nationalOnly = true).entries.map { it.pokemonId })
+        assertFalse(PokemonExplorer.filter(entries, ExplorerFilter(regionalOrigin = "galar"), nationalOnly = true).entries.any { it.introducedRegion == "hisui" })
+        assertEquals(1025, PokemonExplorer.filter(entries, ExplorerFilter(), nationalOnly = true).entries.size)
     }
 
     @Test fun `regional reference editions are explicit and Galar DLC absences are never invented`() = checkEntries { entries ->

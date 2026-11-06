@@ -137,4 +137,19 @@ class PokemonMovesUiTest {
         compose.onNodeWithText("Movimiento 65").assertIsDisplayed()
         assertEquals(1, repo.calls)
     }
+
+    @Test fun `XD saved filters and Shadow learning are removed without hiding legitimate or unknown moves`() {
+        val shadow = move.copy(id = 10006, slug = "shadow-chill", nameEs = "Hielo Oscuro", type = "shadow")
+        val repo = Repo(index.copy(moves = listOf(move, shadow)), rows + listOf(
+            LearnRow(10006, "shadow-chill", "x-y", "tutor", 0),
+            LearnRow(53, "flamethrower", "xd", "level-up", 1)))
+        val model = show(repo, SavedStateHandle(mapOf("edition" to "xd", "type" to "shadow")))
+        assertNull(model.edition.value)
+        assertNull(model.type.value)
+        assertFalse(model.data.value!!.index.moves.any { it.type == "shadow" })
+        assertFalse(model.data.value!!.learnset.rows.any { it.versionGroup == "xd" || it.moveId == 10006 })
+        assertTrue(model.data.value!!.learnset.rows.any { it.moveId == 99000 })
+        compose.onNodeWithText("Hielo Oscuro").assertDoesNotExist()
+        assertEquals(1, repo.calls)
+    }
 }

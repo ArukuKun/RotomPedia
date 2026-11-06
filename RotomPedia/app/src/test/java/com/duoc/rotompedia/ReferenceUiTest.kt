@@ -67,7 +67,7 @@ class ReferenceUiTest {
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Cargar 40 más"))
         compose.onNodeWithText("Cargar 40 más").performClick()
         compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
-        compose.onNodeWithText("937 movimientos · mostrando 80").assertExists()
+        compose.onNodeWithText("919 movimientos · mostrando 80").assertExists()
         compose.runOnIdle { assertEquals(1, calls) }
     }
 
