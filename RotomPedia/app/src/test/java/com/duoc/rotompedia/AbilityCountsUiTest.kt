@@ -43,8 +43,9 @@ class AbilityCountsUiTest {
         compose.onNodeWithText("Una variedad puede figurar en ambos roles.").assertExists()
         compose.onNodeWithText("Variedad 1 · Normal · slots 1, 2 · Oculta · slot 3").assertExists()
         compose.onNodeWithTag("ability_sprite_1_1", useUnmergedTree = true).assertExists()
-        compose.onNodeWithContentDescription("Edición del texto: Sin seleccionar").performScrollTo().performClick()
-        compose.onNodeWithText(ItemLabels.version("scarlet-violet"), substring = false).performClick()
+        compose.onNodeWithContentDescription("Edición del texto: ${ItemLabels.version("scarlet-violet")}").performScrollTo().performClick()
+        compose.onNode(hasText(ItemLabels.version("scarlet-violet"), substring = false) and
+            !hasContentDescription("Edición del texto: ${ItemLabels.version("scarlet-violet")}")).performClick()
         compose.onNodeWithText("Texto actual").assertExists()
         compose.onNodeWithText("Normal: 41").assertExists()
         compose.onNodeWithText("Oculta: 1").assertExists()

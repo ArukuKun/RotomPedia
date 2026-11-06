@@ -177,7 +177,7 @@ private fun LearningMoveCard(row: LearningMove, index: ReferenceIndex, edition: 
             if (row.reference == null) Text("Ficha no disponible", style = MaterialTheme.typography.labelMedium)
             else {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    BadgeTipo(row.reference.type)
+                    MoveTypeBadge(row.reference.type)
                     MoveCategoryBadge(row.reference.category)
                 }
                 Text("Potencia: ${row.reference.power ?: "—"} · Precisión: ${row.reference.accuracy?.let { "$it %" } ?: "—"}")

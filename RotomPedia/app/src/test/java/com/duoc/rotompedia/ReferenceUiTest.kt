@@ -92,7 +92,8 @@ class ReferenceUiTest {
         val ability = reference.abilities.single { it.id == 66 }
         val spanish = ability.texts.first { it.language == "es" }
         compose.setContent { MaterialTheme { AbilityReferenceSheet(ability, reference, emptyMap(), {}, {}) } }
-        compose.onNodeWithContentDescription("Edición del texto: Sin seleccionar").performScrollTo().performClick()
+        val initial = ReferencePresentation.initialAbilityTextGroup(ability, reference.versions)
+        compose.onNodeWithContentDescription("Edición del texto: ${ItemLabels.version(initial!!)}").performScrollTo().performClick()
         compose.onNodeWithText(ItemLabels.version(spanish.versionGroup)).performScrollTo().performClick()
         compose.onNodeWithText(spanish.text).performScrollTo().assertIsDisplayed()
     }
@@ -108,5 +109,47 @@ class ReferenceUiTest {
         compose.onNodeWithText("Rojo / Azul").performClick()
         compose.onNodeWithText("MT01").performScrollTo().performClick()
         compose.runOnIdle { assertEquals(305, item) }
+    }
+
+    @Test fun `ability opens sourced Spanish description with explicit edition and optional full English effect`() {
+        val ability = reference.abilities.single { it.id == 66 }
+        val group = ReferencePresentation.initialAbilityTextGroup(ability, reference.versions)!!
+        val spanish = ability.texts.single { it.versionGroup == group && it.language == "es" }
+        compose.setContent { MaterialTheme { AbilityReferenceSheet(ability, reference, emptyMap(), {}, {}) } }
+        compose.onNodeWithText(spanish.text).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("Edición del texto: ${ItemLabels.version(group)}").assertExists()
+        compose.onNodeWithText(ability.effectEn!!).assertDoesNotExist()
+        compose.onNodeWithText("Consultar texto en inglés").performScrollTo().performClick()
+        compose.onNodeWithText(ability.effectEn!!).assertExists()
+    }
+
+    @Test fun `missing Spanish is explicit and original English remains accessible without invented translation`() {
+        val ability = reference.abilities.single { it.id == 66 }.copy(
+            texts = listOf(ReferenceText("sword-shield", "en", "English description fixture")),
+            effectEs = null, effectEn = "English effect fixture")
+        compose.setContent { MaterialTheme { AbilityReferenceSheet(ability, reference, emptyMap(), {}, {}) } }
+        compose.onNodeWithText("Descripción en español pendiente para esta edición.").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("English effect fixture").assertDoesNotExist()
+        compose.onNodeWithText("Consultar texto en inglés").performScrollTo().performClick()
+        compose.onNodeWithText("Inglés: English description fixture").assertExists()
+        compose.onNodeWithText("English effect fixture").assertExists()
+    }
+
+    @Test fun `move catalogue shows distinct readable type and category labels with stats`() {
+        val move = reference.moves.single { it.id == 53 }
+        compose.setContent { MaterialTheme { MoveCard(move, onClick = {}) } }
+        compose.onNodeWithText("Fuego", substring = false).assertIsDisplayed()
+        compose.onNodeWithText("Especial", substring = false).assertIsDisplayed()
+        compose.onNodeWithText("Pot: 90 · Prec: 100% · PP: 15").assertIsDisplayed()
+    }
+
+    @Test fun `initial ability edition prefers latest sourced Spanish not a newer English text or another games text`() {
+        val ability = reference.abilities.first().copy(texts = listOf(
+            ReferenceText("x-y", "es", "Descripción anterior"),
+            ReferenceText("scarlet-violet", "en", "New English text"),
+            ReferenceText("sword-shield", "es", "Descripción española")))
+        assertEquals("sword-shield", ReferencePresentation.initialAbilityTextGroup(ability, reference.versions))
+        assertEquals("New English text", ReferencePresentation.text(ability.texts, "scarlet-violet")?.text)
+        assertNull(ReferencePresentation.initialAbilityTextGroup(ability.copy(texts = emptyList()), reference.versions))
     }
 }

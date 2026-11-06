@@ -63,6 +63,8 @@ class PokemonMovesUiTest {
         val repo = Repo(index, rows)
         val model = show(repo)
         compose.onNodeWithText("Nivel: 10, 20").assertExists()
+        compose.onNodeWithText("Fuego", substring = false).assertIsDisplayed()
+        compose.onNodeWithText("Especial", substring = false).assertIsDisplayed()
         compose.onNodeWithText("Lanzallamas", substring = false).performClick()
         compose.onNodeWithContentDescription("Edición: X / Y").assertExists()
         compose.onNodeWithText("Puede quemar.").assertExists()

@@ -30,6 +30,7 @@ import kotlinx.coroutines.CancellationException
 import coil.ImageLoader
 import coil.imageLoader
 import com.duoc.rotompedia.ui.components.MoveCategoryBadge
+import com.duoc.rotompedia.ui.components.MoveTypeBadge
 import com.duoc.rotompedia.ui.components.RotomCard
 import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
 import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
@@ -42,14 +43,25 @@ fun resolvedLegacyMove(name: String?): PokemonMove? {
 }
 
 @Composable
-private fun SourceText(texts: List<ReferenceText>, group: String?, effectEs: String?, effectEn: String?) {
+private fun SourceText(texts: List<ReferenceText>, group: String?, effectEs: String?, effectEn: String?, optionalEnglish: Boolean = false) {
+    var showEnglish by rememberSaveable(texts, group) { mutableStateOf(false) }
     val selected = ReferencePresentation.text(texts, group)
-    selected?.let {
+    selected?.takeIf { !optionalEnglish || it.language == "es" }?.let {
         Text("Descripción", fontWeight = FontWeight.Bold)
         Text(if (it.language == "es") it.text else "Inglés: ${it.text}")
     }
-    val effect = effectEs?.takeIf(String::isNotBlank) ?: effectEn?.takeIf(String::isNotBlank)?.let { "Inglés: $it" }
+    val effect = effectEs?.takeIf(String::isNotBlank) ?: effectEn?.takeIf { !optionalEnglish && it.isNotBlank() }?.let { "Inglés: $it" }
     effect?.let { Text("Efecto", fontWeight = FontWeight.Bold); Text(it) }
+    if (optionalEnglish) {
+        if (selected?.language != "es" && effectEs.isNullOrBlank()) Text("Descripción en español pendiente para esta edición.")
+        if (selected?.language == "en" || !effectEn.isNullOrBlank()) {
+            TextButton({ showEnglish = !showEnglish }) { Text(if (showEnglish) "Ocultar texto en inglés" else "Consultar texto en inglés") }
+            if (showEnglish) {
+                selected?.takeIf { it.language == "en" }?.let { Text("Inglés: ${it.text}") }
+                effectEn?.takeIf(String::isNotBlank)?.let { Text("Efecto (inglés)", fontWeight = FontWeight.Bold); Text(it) }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,6 +131,7 @@ fun ReferenceBrowserScreen(abilities: Boolean, onBack: () -> Unit, onPokemonClic
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun MoveCard(move: ReferenceMove, modifier: Modifier = Modifier, description: ReferenceText? = null,
     annotations: String? = null, onClick: (() -> Unit)?) {
@@ -126,8 +139,11 @@ internal fun MoveCard(move: ReferenceMove, modifier: Modifier = Modifier, descri
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(move.displayName, fontWeight = FontWeight.Bold)
             if (move.nameEs == null) Text("Inglés", fontSize = 11.sp)
-            Text("${traducirTipo(move.type)} · ${ReferencePresentation.category(move.category)} · prioridad ${move.priority}", fontSize = 12.sp)
-            MoveCategoryBadge(move.category)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                MoveTypeBadge(move.type)
+                MoveCategoryBadge(move.category)
+            }
+            Text("Prioridad: ${move.priority}", fontSize = 12.sp)
             Text("Pot: ${move.power ?: "—"} · Prec: ${move.accuracy?.let { "$it%" } ?: "—"} · PP: ${move.pp ?: "—"}", fontSize = 12.sp)
             annotations?.let { Text(it, fontSize = 12.sp) }
             description?.let { Text(if (it.language == "es") it.text else "Inglés: ${it.text}", fontSize = 12.sp) }
@@ -166,7 +182,7 @@ internal fun MoveReferenceSheet(move: ReferenceMove, index: ReferenceIndex, item
 @Composable
 internal fun AbilityReferenceSheet(ability: ReferenceAbility, index: ReferenceIndex, pokemonLabels: Map<Int, String>,
     onDismiss: () -> Unit, onPokemonClick: (String) -> Unit) {
-    var group by remember(ability.id) { mutableStateOf<String?>(null) }
+    var group by rememberSaveable(ability.id) { mutableStateOf(ReferencePresentation.initialAbilityTextGroup(ability, index.versions)) }
     var count by remember(ability.id) { mutableIntStateOf(40) }
     val selectedGroup = group
     val visibleCount = count
@@ -180,7 +196,7 @@ internal fun AbilityReferenceSheet(ability: ReferenceAbility, index: ReferenceIn
             }
             TextButton(onDismiss) { Text("Cerrar ficha") }
             ItemChoice("Edición del texto", selectedGroup, ability.texts.map { it.versionGroup }.distinct(), ItemLabels::version) { group = it }
-            SourceText(ability.texts, selectedGroup, ability.effectEs, ability.effectEn)
+            SourceText(ability.texts, selectedGroup, ability.effectEs, ability.effectEn, optionalEnglish = true)
             AbilityHolderCounts(summary)
             if (summary.holders.isEmpty()) Text("No hay Pokémon para mostrar.")
             summary.holders.take(visibleCount).forEach { holder ->

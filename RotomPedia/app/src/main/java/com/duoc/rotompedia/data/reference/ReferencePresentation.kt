@@ -4,6 +4,13 @@ import com.duoc.rotompedia.data.*
 import com.duoc.rotompedia.util.traducirTipo
 
 object ReferencePresentation {
+    /** Latest sourced Spanish description, not a reconstructed current/historical effect. */
+    fun initialAbilityTextGroup(ability: ReferenceAbility, versions: List<ReferenceVersion>): String? {
+        val order = versions.associate { it.slug to it.order }
+        val spanish = ability.texts.filter { it.language == "es" && it.text.isNotBlank() }
+        val available = spanish.ifEmpty { ability.texts.filter { it.text.isNotBlank() } }
+        return available.maxByOrNull { order[it.versionGroup] ?: -1 }?.versionGroup
+    }
     val methodLabels = mapOf("level-up" to "Nivel", "machine" to "MT / MO", "egg" to "Huevo", "tutor" to "Tutor",
         "light-ball-egg" to "Huevo con Bola Luminosa", "form-change" to "Cambio de forma", "zygarde-cube" to "Arca de Zygarde")
     fun method(slug: String) = methodLabels[slug] ?: "Método: $slug"
