@@ -194,4 +194,46 @@ class PokedexNavigationUiTest {
         assertEquals(expected, controller.filter.value)
         assertEquals(listOf(target.pokemonId), controller.result.value.entries.map { it.pokemonId })
     }
+
+    @Test fun `list to grid and back retains a deep Pokemon anchor not the first result`() {
+        val target = controller.result.value.entries[601]
+        val tag = "pokemon_${target.pokemonId}"
+        compose.onNodeWithTag("pokedex-list").performScrollToIndex(601)
+        compose.onNodeWithTag(tag).assertIsDisplayed()
+        compose.onNodeWithText("Cuadrícula").performClick()
+        compose.onNodeWithTag(tag).assertIsDisplayed()
+        compose.onNodeWithTag("pokemon_1").assertDoesNotExist()
+        compose.onNodeWithText("Lista", substring = false).performClick()
+        compose.onNodeWithTag(tag).assertIsDisplayed()
+        val top = compose.onNodeWithTag(tag).getUnclippedBoundsInRoot().top.value
+        val viewport = compose.onNodeWithTag("pokedex-list").getUnclippedBoundsInRoot().top.value
+        assertEquals(viewport + 8, top, 2f)
+    }
+
+    @Test fun `scrolling the grid selects its current anchor when returning to list and preserves it through detail`() {
+        compose.onNodeWithTag("pokedex-list").performScrollToIndex(301)
+        compose.onNodeWithText("Cuadrícula").performClick()
+        compose.onNodeWithTag("pokedex-grid").performScrollToIndex(801)
+        val target = controller.result.value.entries[801]
+        val tag = "pokemon_${target.pokemonId}"
+        compose.onNodeWithText("Lista", substring = false).performClick()
+        compose.onNodeWithTag(tag).assertIsDisplayed().performClick()
+        compose.onNodeWithText("Volver a Pokédex").performClick()
+        compose.waitUntil(20_000) { controller.result.value.ready &&
+            compose.onAllNodesWithTag("pokedex-list").fetchSemanticsNodes().size == 1 }
+        compose.onNodeWithTag("pokedex-list").assertExists()
+        compose.onNodeWithTag(tag).assertIsDisplayed()
+    }
+
+    @Test fun `filtered grid anchor survives restoration and return to list without changing filters`() {
+        kalosFurfrou()
+        compose.onNodeWithText("Cuadrícula").performClick()
+        compose.onNodeWithTag("pokemon_676").assertIsDisplayed()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.waitUntil(20_000) { controller.result.value.ready && controller.filter.value.generationId == 6 }
+        compose.onNodeWithTag("pokemon_676").assertIsDisplayed()
+        compose.onNodeWithText("Lista", substring = false).performClick()
+        compose.onNodeWithTag("pokemon_676").assertIsDisplayed()
+        assertEquals(6, controller.filter.value.generationId)
+    }
 }

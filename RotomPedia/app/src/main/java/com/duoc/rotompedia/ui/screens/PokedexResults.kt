@@ -13,8 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -34,6 +34,22 @@ internal fun PokedexResults(entries: List<ExplorerPokemon>, grid: Boolean, favor
     speciesNames: Boolean = true, regionalOrder: ExplorerRegionalDex? = null) {
     val listState = rememberLazyListState()
     val gridState = rememberLazyGridState()
+    var previousGrid by rememberSaveable { mutableStateOf(grid) }
+    var anchorId by rememberSaveable { mutableStateOf<Int?>(null) }
+    LaunchedEffect(grid) {
+        if (grid != previousGrid && entries.isNotEmpty()) {
+            val first = if (previousGrid) gridState.firstVisibleItemIndex else listState.firstVisibleItemIndex
+            val retained = anchorId?.let { id -> entries.indexOfFirst { it.pokemonId == id } } ?: -1
+            // A grid starts at the beginning of a row, not necessarily at the chosen anchor.
+            // Retain that identity on a round trip unless the user has moved to another row.
+            val index = if (previousGrid && retained >= 0 && retained / 3 == first / 3) retained
+                else first.coerceIn(entries.indices)
+            anchorId = entries[index].pokemonId
+            previousGrid = grid
+            // Pixel offsets belong to different-sized cards; preserve the Pokémon, not those pixels.
+            if (grid) gridState.scrollToItem(index) else listState.scrollToItem(index)
+        }
+    }
     // Some upstream variants share a localized name (e.g. two Toxtricity Gigamax).
     // Keep the verified technical identifier visible rather than invent a translation.
     val ambiguousNames = remember(entries) { entries.groupingBy { it.displayName }.eachCount().filterValues { it > 1 }.keys }
