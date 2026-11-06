@@ -1,5 +1,10 @@
 ﻿package com.duoc.rotompedia.ui.screens
 
+import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
+import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
+import com.duoc.rotompedia.ui.theme.RotomColors
+import androidx.compose.ui.text.style.TextOverflow
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -110,21 +115,15 @@ fun CatchRateCalculatorScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text("Calculadora de Captura", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        Text(
-                            "Fórmulas Oficiales Gen 8 / 9",
-                            fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.8f)
-                        )
-                    }
+                    Text("Calculadora de Captura", fontSize = 18.sp, fontWeight = FontWeight.Bold,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.White
+                            tint = RotomColors.text
                         )
                     }
                 },
@@ -141,14 +140,10 @@ fun CatchRateCalculatorScreen(
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Restablecer",
-                            tint = Color.White
+                            tint = RotomColors.text
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFD11527),
-                    titleContentColor = Color.White
-                )
+                }
             )
         }
     ) { paddingValues ->
@@ -156,7 +151,7 @@ fun CatchRateCalculatorScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFF0F1115))
+                .background(RotomColors.surface)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
@@ -166,8 +161,8 @@ fun CatchRateCalculatorScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E26)),
-                    border = BorderStroke(1.5.dp, rotomForm.primaryColor.copy(alpha = 0.6f))
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
+                    border = BorderStroke(1.5.dp, RotomColors.accent.copy(alpha = 0.6f))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -178,7 +173,7 @@ fun CatchRateCalculatorScreen(
                                 modifier = Modifier
                                     .size(76.dp)
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(Color(0xFF262A36)),
+                                    .background(RotomColors.raised),
                                 contentAlignment = Alignment.Center
                             ) {
                                 PokemonImage(
@@ -196,7 +191,7 @@ fun CatchRateCalculatorScreen(
                                     text = "${nationalNumberLabel(pokemonViewModel, selectedId)} - ${selectedName.replaceFirstChar { it.uppercase() }}",
                                     fontSize = 19.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = RotomColors.text
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -207,7 +202,7 @@ fun CatchRateCalculatorScreen(
                                         ) {
                                             Text(
                                                 text = traducirTipo(type),
-                                                color = Color.White,
+                                                color = RotomColors.text,
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
@@ -219,14 +214,14 @@ fun CatchRateCalculatorScreen(
                                 Text(
                                     text = "Ratio base: $baseCatchRate • Vel: $targetSpeed",
                                     fontSize = 12.sp,
-                                    color = Color.Gray
+                                    color = RotomColors.muted
                                 )
                             }
 
                             Button(
                                 onClick = { showPokemonPicker = true },
                                 shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = rotomForm.primaryColor)
+                                colors = ButtonDefaults.buttonColors(containerColor = RotomColors.accent)
                             ) {
                                 Text("Cambiar", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
@@ -243,7 +238,7 @@ fun CatchRateCalculatorScreen(
                             Text(
                                 text = "Ratio de captura base:",
                                 fontSize = 13.sp,
-                                color = Color.White.copy(alpha = 0.85f)
+                                color = RotomColors.text.copy(alpha = 0.85f)
                             )
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -275,7 +270,7 @@ fun CatchRateCalculatorScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF151820)),
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.surface),
                     border = BorderStroke(2.dp, getProbColor(catchResult.singleThrowProbPercent))
                 ) {
                     Column(
@@ -288,7 +283,7 @@ fun CatchRateCalculatorScreen(
                             text = "PROBABILIDAD POR LANZAMIENTO",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Gray,
+                            color = RotomColors.muted,
                             letterSpacing = 1.sp
                         )
 
@@ -304,7 +299,7 @@ fun CatchRateCalculatorScreen(
                         Text(
                             text = "~${String.format("%.1f", catchResult.expectedThrows)} ${selectedBall.displayName}s estimadas para captura",
                             fontSize = 13.sp,
-                            color = Color.White.copy(alpha = 0.85f)
+                            color = RotomColors.text.copy(alpha = 0.85f)
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
@@ -325,8 +320,8 @@ fun CatchRateCalculatorScreen(
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            color = rotomForm.primaryColor.copy(alpha = 0.12f),
-                            border = BorderStroke(1.dp, rotomForm.primaryColor.copy(alpha = 0.4f))
+                            color = RotomColors.accent.copy(alpha = 0.12f),
+                            border = BorderStroke(1.dp, RotomColors.accent.copy(alpha = 0.4f))
                         ) {
                             Row(
                                 modifier = Modifier.padding(12.dp),
@@ -337,7 +332,7 @@ fun CatchRateCalculatorScreen(
                                 Text(
                                     text = catchResult.rotomTip,
                                     fontSize = 12.sp,
-                                    color = Color.White.copy(alpha = 0.95f),
+                                    color = RotomColors.text.copy(alpha = 0.95f),
                                     lineHeight = 16.sp
                                 )
                             }
@@ -351,7 +346,7 @@ fun CatchRateCalculatorScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E26))
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -363,7 +358,7 @@ fun CatchRateCalculatorScreen(
                                 text = "Salud Restante: ${hpPercent.roundToInt()}%",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = RotomColors.text
                             )
 
                             // Barra de vida gráfica
@@ -372,7 +367,7 @@ fun CatchRateCalculatorScreen(
                                     .width(90.dp)
                                     .height(10.dp)
                                     .clip(RoundedCornerShape(5.dp))
-                                    .background(Color(0xFF333845))
+                                    .background(RotomColors.outline)
                             ) {
                                 Box(
                                     modifier = Modifier
@@ -416,14 +411,14 @@ fun CatchRateCalculatorScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E26))
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = "Problema de Estado:",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = RotomColors.text
                         )
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -433,10 +428,10 @@ fun CatchRateCalculatorScreen(
                                 Surface(
                                     onClick = { selectedStatus = status },
                                     shape = RoundedCornerShape(12.dp),
-                                    color = if (isSelected) rotomForm.primaryColor.copy(alpha = 0.25f) else Color(0xFF262A36),
+                                    color = if (isSelected) RotomColors.accent.copy(alpha = 0.25f) else RotomColors.raised,
                                     border = BorderStroke(
                                         1.dp,
-                                        if (isSelected) rotomForm.primaryColor else Color(0xFF383E4E)
+                                        if (isSelected) RotomColors.accent else RotomColors.outline
                                     )
                                 ) {
                                     Row(
@@ -447,14 +442,14 @@ fun CatchRateCalculatorScreen(
                                         Text(status.emoji, fontSize = 14.sp)
                                         Text(
                                             text = status.displayName,
-                                            color = Color.White,
+                                            color = RotomColors.text,
                                             fontSize = 12.sp,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                         )
                                         if (status.multiplier > 1.0f) {
                                             Text(
                                                 text = "${status.multiplier}x",
-                                                color = rotomForm.primaryColor,
+                                                color = RotomColors.accent,
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
@@ -472,14 +467,14 @@ fun CatchRateCalculatorScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E26))
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = "Poké Ball Utilizada:",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = RotomColors.text
                         )
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -496,10 +491,10 @@ fun CatchRateCalculatorScreen(
                                 Surface(
                                     onClick = { selectedBall = ball },
                                     shape = RoundedCornerShape(12.dp),
-                                    color = if (isSelected) rotomForm.primaryColor.copy(alpha = 0.25f) else Color(0xFF242834),
+                                    color = if (isSelected) RotomColors.accent.copy(alpha = 0.25f) else RotomColors.raised,
                                     border = BorderStroke(
                                         1.5.dp,
-                                        if (isSelected) rotomForm.primaryColor else Color(0xFF333845)
+                                        if (isSelected) RotomColors.accent else RotomColors.outline
                                     )
                                 ) {
                                     Column(modifier = Modifier.padding(10.dp)) {
@@ -510,7 +505,7 @@ fun CatchRateCalculatorScreen(
                                             Text(ball.emoji, fontSize = 16.sp)
                                             Text(
                                                 text = ball.displayName,
-                                                color = Color.White,
+                                                color = RotomColors.text,
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
@@ -518,7 +513,7 @@ fun CatchRateCalculatorScreen(
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             text = ball.description,
-                                            color = Color.Gray,
+                                            color = RotomColors.muted,
                                             fontSize = 10.sp,
                                             maxLines = 2,
                                             lineHeight = 12.sp
@@ -536,14 +531,14 @@ fun CatchRateCalculatorScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E26))
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = "Condiciones del Combate:",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = RotomColors.text
                         )
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -554,7 +549,7 @@ fun CatchRateCalculatorScreen(
                             onCheckedChange = { isFirstTurn = it }
                         )
 
-                        HorizontalDivider(color = Color(0xFF2B303D), modifier = Modifier.padding(vertical = 8.dp))
+                        HorizontalDivider(color = RotomColors.outline, modifier = Modifier.padding(vertical = 8.dp))
 
                         ConditionToggleRow(
                             title = "Es de noche o dentro de una cueva",
@@ -563,7 +558,7 @@ fun CatchRateCalculatorScreen(
                             onCheckedChange = { isNightOrCave = it }
                         )
 
-                        HorizontalDivider(color = Color(0xFF2B303D), modifier = Modifier.padding(vertical = 8.dp))
+                        HorizontalDivider(color = RotomColors.outline, modifier = Modifier.padding(vertical = 8.dp))
 
                         ConditionToggleRow(
                             title = "Especie ya registrada en la Pokédex",
@@ -572,7 +567,7 @@ fun CatchRateCalculatorScreen(
                             onCheckedChange = { isAlreadyCaught = it }
                         )
 
-                        HorizontalDivider(color = Color(0xFF2B303D), modifier = Modifier.padding(vertical = 8.dp))
+                        HorizontalDivider(color = RotomColors.outline, modifier = Modifier.padding(vertical = 8.dp))
 
                         // Slider de turnos para Turno Ball
                         Row(
@@ -581,8 +576,8 @@ fun CatchRateCalculatorScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column {
-                                Text("Turnos transcurridos: $turnsPassed", fontSize = 13.sp, color = Color.White)
-                                Text("Aumenta el poder de la Turno Ball hasta x4.0", fontSize = 11.sp, color = Color.Gray)
+                                Text("Turnos transcurridos: $turnsPassed", fontSize = 13.sp, color = RotomColors.text)
+                                Text("Aumenta el poder de la Turno Ball hasta x4.0", fontSize = 11.sp, color = RotomColors.muted)
                             }
                         }
                         Slider(
@@ -591,8 +586,8 @@ fun CatchRateCalculatorScreen(
                             valueRange = 1f..15f,
                             steps = 13,
                             colors = SliderDefaults.colors(
-                                thumbColor = rotomForm.primaryColor,
-                                activeTrackColor = rotomForm.primaryColor
+                                thumbColor = RotomColors.accent,
+                                activeTrackColor = RotomColors.accent
                             )
                         )
                     }
@@ -623,15 +618,15 @@ fun CatchRateCalculatorScreen(
 private fun StatPill(title: String, value: String) {
     Surface(
         shape = RoundedCornerShape(10.dp),
-        color = Color(0xFF222633),
-        border = BorderStroke(1.dp, Color(0xFF333848))
+        color = RotomColors.raised,
+        border = BorderStroke(1.dp, RotomColors.outline)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(title, fontSize = 11.sp, color = Color.Gray)
-            Text(value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(title, fontSize = 11.sp, color = RotomColors.muted)
+            Text(value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = RotomColors.text)
         }
     }
 }
@@ -646,15 +641,15 @@ private fun PresetHpButton(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
-        color = if (selected) Color(0xFF333D4F) else Color(0xFF222633),
-        border = BorderStroke(1.dp, if (selected) Color(0xFF61DAF6) else Color(0xFF383E50)),
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else RotomColors.raised,
+        border = BorderStroke(1.dp, if (selected) RotomColors.accent else RotomColors.outline),
         modifier = modifier
     ) {
         Text(
             text = label,
             fontSize = 11.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-            color = if (selected) Color(0xFF61DAF6) else Color.White,
+            color = if (selected) RotomColors.accent else RotomColors.text,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
             textAlign = TextAlign.Center
         )
@@ -674,8 +669,8 @@ private fun ConditionToggleRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
-            Text(subtitle, fontSize = 11.sp, color = Color.Gray)
+            Text(title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = RotomColors.text)
+            Text(subtitle, fontSize = 11.sp, color = RotomColors.muted)
         }
         Switch(
             checked = checked,

@@ -21,7 +21,7 @@ fun PokemonPickerDialog(pokemonViewModel: PokemonViewModel, onDismiss: () -> Uni
     var error by remember { mutableStateOf<String?>(null) }
     Dialog(onDismissRequest = onDismiss) {
         Card(Modifier.fillMaxWidth().fillMaxHeight(0.94f), shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))) {
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
             Column(Modifier.padding(14.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Elige un Pokémon", style = MaterialTheme.typography.titleMedium)

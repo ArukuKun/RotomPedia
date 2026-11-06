@@ -30,6 +30,9 @@ import com.duoc.rotompedia.util.getTipoColor
 import com.duoc.rotompedia.util.traducirTipo
 import com.duoc.rotompedia.viewmodel.PokemonVersusViewModel
 import com.duoc.rotompedia.viewmodel.PokemonViewModel
+import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
+import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
+import com.duoc.rotompedia.ui.theme.RotomColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,6 +55,8 @@ fun PokemonVersusScreen(
                 title = {
                     Text(
                         text = "Comparador Versus",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -64,11 +69,9 @@ fun PokemonVersusScreen(
                             tint = Color.White
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1E1E1E))
+                }
             )
-        },
-        containerColor = Color(0xFF121212)
+        }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -89,7 +92,7 @@ fun PokemonVersusScreen(
                             pokemon = p1,
                             numberLabel = p1?.let { nationalNumberLabel(pokemonViewModel, it.id) }.orEmpty(),
                             isLoading = isLoadingP1,
-                            accentColor = Color(0xFF61DAF6),
+                            accentColor = RotomColors.accent,
                             onChangeClick = { selectingForSide = 1 }
                         )
                     }
@@ -133,9 +136,9 @@ fun PokemonVersusScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1F2430)),
+                        colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
                         shape = RoundedCornerShape(14.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF61DAF6).copy(alpha = 0.5f))
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RotomColors.accent.copy(alpha = 0.5f))
                     ) {
                         Row(
                             modifier = Modifier.padding(14.dp),
@@ -148,13 +151,13 @@ fun PokemonVersusScreen(
                                     text = "Veredicto Rotom",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
-                                    color = Color(0xFF61DAF6)
+                                    color = RotomColors.accent
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = analysis!!.rotomVerdict,
                                     fontSize = 12.sp,
-                                    color = Color.White,
+                                    color = RotomColors.text,
                                     lineHeight = 16.sp
                                 )
                             }
@@ -168,14 +171,14 @@ fun PokemonVersusScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                        colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Text(
                                 text = "⚔️ Eficacia Elemental Directa",
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = RotomColors.text,
                                 fontSize = 15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -198,7 +201,7 @@ fun PokemonVersusScreen(
                                 Text(
                                     text = "⚡",
                                     fontSize = 16.sp,
-                                    color = Color.Gray,
+                                    color = RotomColors.muted,
                                     modifier = Modifier.padding(horizontal = 8.dp)
                                 )
 
@@ -222,14 +225,14 @@ fun PokemonVersusScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                        colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Text(
                                 text = "📊 Comparación de Estadísticas Base",
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = RotomColors.text,
                                 fontSize = 15.sp
                             )
                             Spacer(modifier = Modifier.height(14.dp))
@@ -262,7 +265,7 @@ fun PokemonVersusScreen(
                             // Total BST
                             val bst1 = p1Stats.values.sum()
                             val bst2 = p2Stats.values.sum()
-                            Divider(color = Color(0xFF2E2E2E), modifier = Modifier.padding(vertical = 4.dp))
+                            HorizontalDivider(color = RotomColors.outline, modifier = Modifier.padding(vertical = 4.dp))
                             StatComparisonRow(
                                 label = "TOTAL BST",
                                 val1 = bst1,
@@ -309,7 +312,7 @@ fun VersusPokemonCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onChangeClick),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
         shape = RoundedCornerShape(16.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, accentColor.copy(alpha = 0.5f))
     ) {
@@ -340,14 +343,14 @@ fun VersusPokemonCard(
                 Text(
                     text = numberLabel,
                     fontSize = 11.sp,
-                    color = Color.Gray,
+                    color = RotomColors.muted,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = pokemon.name.replaceFirstChar { it.uppercase() },
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = RotomColors.text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -363,7 +366,7 @@ fun VersusPokemonCard(
 
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = Color(0xFF2A2A2A)
+                color = RotomColors.raised
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -450,7 +453,7 @@ fun StatComparisonRow(
                 text = label,
                 fontSize = if (isTotal) 13.sp else 11.sp,
                 fontWeight = if (isTotal) FontWeight.Black else FontWeight.Bold,
-                color = if (isTotal) Color(0xFFFFD54F) else Color.Gray,
+                color = if (isTotal) RotomColors.warning else RotomColors.muted,
                 textAlign = TextAlign.Center
             )
 
@@ -477,7 +480,7 @@ fun StatComparisonRow(
                     .weight(1f)
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp))
-                    .background(Color(0xFF2A2A2A)),
+                    .background(RotomColors.raised),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Box(
@@ -497,7 +500,7 @@ fun StatComparisonRow(
                     .weight(1f)
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
-                    .background(Color(0xFF2A2A2A)),
+                    .background(RotomColors.raised),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Box(

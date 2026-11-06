@@ -38,7 +38,7 @@ internal fun PokemonFormsSection(pokemonId: Int, forms: List<PokemonFormData>, s
                     Card(onClick = { if (!selected) onFormClick(form.id) }, modifier = Modifier.width(160.dp),
                         shape = RoundedCornerShape(16.dp),
                         border = BorderStroke(if (selected) 2.dp else 1.dp,
-                            if (selected) Color(0xFF61DAF6) else MaterialTheme.colorScheme.outlineVariant),
+                            if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                         Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                             PokemonImage(pokemonId = form.id, savedUrl = form.spriteUrl,
@@ -46,7 +46,7 @@ internal fun PokemonFormsSection(pokemonId: Int, forms: List<PokemonFormData>, s
                             Text(form.formDisplayName, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                             Text(if (selected) "✓ Seleccionada" else if (form.isDefault) "Predeterminada" else
                                 PokemonFormCatalog.find(form.name)?.formTag ?: "Variante", fontSize = 12.sp,
-                                color = if (selected) Color(0xFF61DAF6) else MaterialTheme.colorScheme.onSurfaceVariant)
+                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                             form.types.forEach { Text(traducirTipo(it), fontSize = 12.sp) }
                         }
                     }

@@ -44,9 +44,9 @@ internal fun RotomBackground(sideFace: Boolean, faceWidthFraction: Float, modifi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RotomTopBar(title: String, onNavigateBack: () -> Unit, actions: @Composable RowScope.() -> Unit = {}) {
+fun RotomTopBar(title: String, onNavigateBack: (() -> Unit)?, actions: @Composable RowScope.() -> Unit = {}) {
     TopAppBar(title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) }, navigationIcon = {
-        IconButton(onClick = onNavigateBack, modifier = Modifier.size(RotomDimensions.TouchTarget)) {
+        if (onNavigateBack != null) IconButton(onClick = onNavigateBack, modifier = Modifier.size(RotomDimensions.TouchTarget)) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
         }
     }, actions = actions, colors = TopAppBarDefaults.topAppBarColors(
@@ -54,12 +54,24 @@ fun RotomTopBar(title: String, onNavigateBack: () -> Unit, actions: @Composable 
         navigationIconContentColor = Color.White, actionIconContentColor = Color.White))
 }
 
-/** Presentation boundary: the pilot uses the new theme; unmigrated routes remain explicitly legacy. */
 @Composable
-fun RotomScaffold(title: String, onNavigateBack: () -> Unit,
+fun RotomScaffold(title: String, onNavigateBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {}, content: @Composable BoxScope.() -> Unit) {
+    RotomPageScaffold(topBar = { RotomTopBar(title, onNavigateBack, actions) }) {
+        Box(Modifier.fillMaxSize(), content = content)
+    }
+}
+
+/** Shared device frame for existing screens: content receives local insets, not a second status bar. */
+@Composable
+fun RotomPageScaffold(
+    topBar: @Composable () -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
+    content: @Composable (PaddingValues) -> Unit
+) {
     RotompediaTheme {
-        Scaffold(topBar = { RotomTopBar(title, onNavigateBack, actions) }) { insets ->
+    Scaffold(topBar = topBar, floatingActionButton = floatingActionButton,
+        containerColor = LocalRotomPalette.current.frame) { insets ->
             BoxWithConstraints(Modifier.fillMaxSize().padding(insets).consumeWindowInsets(insets).imePadding()) {
                 val availableWidth = maxWidth
                 val side = maxWidth > maxHeight
@@ -67,10 +79,10 @@ fun RotomScaffold(title: String, onNavigateBack: () -> Unit,
                 RotomBackground(side, sideFraction, Modifier.fillMaxSize())
                 if (side) Row(Modifier.fillMaxSize()) {
                     Box(Modifier.width(availableWidth * sideFraction).fillMaxHeight().testTag("rotom_face"))
-                    RotomReadingPanel(Modifier.weight(1f).fillMaxHeight(), content)
+                    RotomReadingPanel(Modifier.weight(1f).fillMaxHeight()) { content(PaddingValues(0.dp)) }
                 } else Column(Modifier.fillMaxSize()) {
                     Box(Modifier.fillMaxWidth().height(availableWidth * RotomDimensions.FaceAspect).testTag("rotom_face"))
-                    RotomReadingPanel(Modifier.fillMaxWidth().weight(1f), content)
+                    RotomReadingPanel(Modifier.fillMaxWidth().weight(1f)) { content(PaddingValues(0.dp)) }
                 }
             }
         }

@@ -1,5 +1,7 @@
 ﻿package com.duoc.rotompedia.ui.screens
 
+import com.duoc.rotompedia.ui.theme.RotomColors
+
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -120,15 +122,15 @@ fun MemberStatEditorDialog(
                 .fillMaxWidth(0.95f)
                 .fillMaxHeight(0.92f),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF141414)),
-            border = BorderStroke(1.dp, rotomForm.primaryColor.copy(alpha = 0.6f))
+            colors = CardDefaults.cardColors(containerColor = RotomColors.surface),
+            border = BorderStroke(1.dp, RotomColors.accent.copy(alpha = 0.6f))
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // Header del Diálogo
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1C1C1C))
+                        .background(RotomColors.raised)
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -146,7 +148,7 @@ fun MemberStatEditorDialog(
                                 text = miembro.nombre,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
-                                color = Color.White
+                                color = RotomColors.text
                             )
                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                 BadgeTipo(tipo = miembro.tipo1)
@@ -169,7 +171,7 @@ fun MemberStatEditorDialog(
                             clipboardManager.setText(AnnotatedString(showdown))
                             Toast.makeText(context, "¡Build copiada a Showdown!", Toast.LENGTH_SHORT).show()
                         }) {
-                            Icon(Icons.Default.Share, contentDescription = "Exportar", tint = rotomForm.accentColor)
+                            Icon(Icons.Default.Share, contentDescription = "Exportar", tint = RotomColors.accent)
                         }
                         IconButton(onClick = onDismiss) {
                             Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.LightGray)
@@ -180,8 +182,8 @@ fun MemberStatEditorDialog(
                 // Pestañas: Stats (IV/EV) vs Movimientos
                 TabRow(
                     selectedTabIndex = selectedTab,
-                    containerColor = Color(0xFF1C1C1C),
-                    contentColor = rotomForm.primaryColor
+                    containerColor = RotomColors.raised,
+                    contentColor = RotomColors.accent
                 ) {
                     Tab(
                         selected = selectedTab == 0,
@@ -190,7 +192,7 @@ fun MemberStatEditorDialog(
                             Text(
                                 "📊 Stats (IV/EV)",
                                 fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedTab == 0) rotomForm.primaryColor else Color.Gray
+                                color = if (selectedTab == 0) RotomColors.accent else RotomColors.muted
                             )
                         }
                     )
@@ -202,7 +204,7 @@ fun MemberStatEditorDialog(
                             Text(
                                 "⚔️ Movimientos ($moveCount/4)",
                                 fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedTab == 1) rotomForm.primaryColor else Color.Gray
+                                color = if (selectedTab == 1) RotomColors.accent else RotomColors.muted
                             )
                         }
                     )
@@ -226,11 +228,11 @@ fun MemberStatEditorDialog(
                                 // Selector de Nivel
                                 Card(
                                     modifier = Modifier.weight(1f),
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
                                     Column(modifier = Modifier.padding(8.dp)) {
-                                        Text("Nivel", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                                        Text("Nivel", fontSize = 11.sp, color = RotomColors.muted, fontWeight = FontWeight.Bold)
                                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                             FilterChip(
                                                 selected = level == 50,
@@ -238,8 +240,8 @@ fun MemberStatEditorDialog(
                                                 label = { Text("50 (VGC)", fontSize = 10.sp) },
                                                 modifier = Modifier.height(28.dp),
                                                 colors = FilterChipDefaults.filterChipColors(
-                                                    selectedContainerColor = rotomForm.primaryColor,
-                                                    selectedLabelColor = Color.White
+                                                    selectedContainerColor = RotomColors.accent,
+                                                    selectedLabelColor = RotomColors.onAccent
                                                 )
                                             )
                                             FilterChip(
@@ -248,8 +250,8 @@ fun MemberStatEditorDialog(
                                                 label = { Text("100", fontSize = 10.sp) },
                                                 modifier = Modifier.height(28.dp),
                                                 colors = FilterChipDefaults.filterChipColors(
-                                                    selectedContainerColor = rotomForm.primaryColor,
-                                                    selectedLabelColor = Color.White
+                                                    selectedContainerColor = RotomColors.accent,
+                                                    selectedLabelColor = RotomColors.onAccent
                                                 )
                                             )
                                         }
@@ -261,15 +263,15 @@ fun MemberStatEditorDialog(
                                     modifier = Modifier
                                         .weight(1.3f)
                                         .clickable { showNaturePicker = true },
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
                                     shape = RoundedCornerShape(10.dp),
-                                    border = BorderStroke(1.dp, Color(0xFF333333))
+                                    border = BorderStroke(1.dp, RotomColors.outline)
                                 ) {
                                     Column(modifier = Modifier.padding(8.dp)) {
-                                        Text("Naturaleza", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                                        Text("Naturaleza", fontSize = 11.sp, color = RotomColors.muted, fontWeight = FontWeight.Bold)
                                         Text(
                                             text = "${selectedNature.nameEs} (${selectedNature.nameEn})",
-                                            color = rotomForm.accentColor,
+                                            color = RotomColors.accent,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp
                                         )
@@ -286,7 +288,7 @@ fun MemberStatEditorDialog(
 
                         // Presets rápidos de reparto de EVs
                         item {
-                            Text("Repartos Rápidos (Presets)", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                            Text("Repartos Rápidos (Presets)", fontSize = 11.sp, color = RotomColors.muted, fontWeight = FontWeight.Bold)
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 item {
                                     PresetChip("Sweeper Físico") {
@@ -327,12 +329,12 @@ fun MemberStatEditorDialog(
                                     text = "EVs Asignados: $totalEvs / 510",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (totalEvs > 510) Color(0xFFFF5252) else Color.White
+                                    color = if (totalEvs > 510) RotomColors.negative else RotomColors.text
                                 )
                                 Text(
                                     text = "Restantes: $remainingEvs",
                                     fontSize = 11.sp,
-                                    color = if (remainingEvs < 0) Color(0xFFFF5252) else Color(0xFF69F0AE)
+                                    color = if (remainingEvs < 0) RotomColors.negative else RotomColors.positive
                                 )
                             }
                             LinearProgressIndicator(
@@ -341,8 +343,8 @@ fun MemberStatEditorDialog(
                                     .fillMaxWidth()
                                     .height(6.dp)
                                     .clip(RoundedCornerShape(3.dp)),
-                                color = if (totalEvs > 510) Color(0xFFFF5252) else rotomForm.primaryColor,
-                                trackColor = Color(0xFF2A2A2A),
+                                color = if (totalEvs > 510) RotomColors.negative else RotomColors.accent,
+                                trackColor = RotomColors.raised,
                             )
                         }
 
@@ -438,12 +440,12 @@ fun MemberStatEditorDialog(
                                 text = "Moveset de Combate (4 Movimientos)",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = RotomColors.text
                             )
                             Text(
                                 text = "Configura los 4 ataques para cálculos de cobertura y exportación a Cobblemon/Showdown.",
                                 fontSize = 11.sp,
-                                color = Color.Gray
+                                color = RotomColors.muted
                             )
                         }
 
@@ -493,13 +495,13 @@ fun MemberStatEditorDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1C1C1C))
+                        .background(RotomColors.raised)
                         .padding(horizontal = 16.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = { onChangePokemon(miembro.slot) }) {
-                        Text("Cambiar Pokémon", color = Color(0xFFFF5252), fontSize = 12.sp)
+                        Text("Cambiar Pokémon", color = RotomColors.negative, fontSize = 12.sp)
                     }
 
                     Button(
@@ -527,10 +529,10 @@ fun MemberStatEditorDialog(
                             onSave(updated)
                             Toast.makeText(context, "¡Build y movimientos guardados!", Toast.LENGTH_SHORT).show()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = rotomForm.primaryColor),
+                        colors = ButtonDefaults.buttonColors(containerColor = RotomColors.accent),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Guardar", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("Guardar", color = RotomColors.onAccent, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -541,7 +543,7 @@ fun MemberStatEditorDialog(
     if (showNaturePicker) {
         AlertDialog(
             onDismissRequest = { showNaturePicker = false },
-            title = { Text("Elegir Naturaleza", color = Color.White, fontWeight = FontWeight.Bold) },
+            title = { Text("Elegir Naturaleza", color = RotomColors.text, fontWeight = FontWeight.Bold) },
             text = {
                 LazyColumn(
                     modifier = Modifier
@@ -555,7 +557,7 @@ fun MemberStatEditorDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) rotomForm.primaryColor.copy(alpha = 0.25f) else Color(0xFF262626))
+                                .background(if (isSelected) RotomColors.accent.copy(alpha = 0.25f) else RotomColors.raised)
                                 .clickable {
                                     selectedNature = nature
                                     showNaturePicker = false
@@ -563,11 +565,11 @@ fun MemberStatEditorDialog(
                                 .padding(8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(nature.nameEs, color = if (isSelected) rotomForm.primaryColor else Color.White, fontWeight = FontWeight.Bold)
+                            Text(nature.nameEs, color = if (isSelected) RotomColors.accent else RotomColors.text, fontWeight = FontWeight.Bold)
                             Text(
                                 if (nature.increasedStat != null) "+${nature.increasedStat.shortName}/-${nature.decreasedStat?.shortName}" else "Neutra",
                                 fontSize = 11.sp,
-                                color = Color.Gray
+                                color = RotomColors.muted
                             )
                         }
                     }
@@ -575,10 +577,10 @@ fun MemberStatEditorDialog(
             },
             confirmButton = {
                 TextButton(onClick = { showNaturePicker = false }) {
-                    Text("Cerrar", color = rotomForm.accentColor)
+                    Text("Cerrar", color = RotomColors.accent)
                 }
             },
-            containerColor = Color(0xFF1E1E1E)
+            containerColor = RotomColors.raised
         )
     }
 
@@ -627,11 +629,11 @@ internal fun MoveSlotCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (moveObj != null) Color(0xFF222630) else Color(0xFF1A1A1A)
+            containerColor = if (moveObj != null) RotomColors.raised else RotomColors.surface
         ),
         border = BorderStroke(
             1.dp,
-            if (moveObj != null) getTipoColor(moveObj.type).copy(alpha = 0.6f) else Color(0xFF333333)
+            if (moveObj != null) getTipoColor(moveObj.type).copy(alpha = 0.6f) else RotomColors.outline
         )
     ) {
         Row(
@@ -649,13 +651,13 @@ internal fun MoveSlotCard(
                     ) {
                         Text(
                             text = "Mov $slotIndex: ${moveObj.nameEs}",
-                            color = Color.White,
+                            color = RotomColors.text,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = "(${moveObj.nameEn})",
-                            color = Color.Gray,
+                            color = RotomColors.muted,
                             fontSize = 11.sp
                         )
                     }
@@ -689,31 +691,31 @@ internal fun MoveSlotCard(
                         Text(
                             text = moveObj.description,
                             fontSize = 10.sp,
-                            color = Color.Gray,
+                            color = RotomColors.muted,
                             maxLines = 1
                         )
                     }
                 }
                 IconButton(onClick = onClear) {
-                    Icon(Icons.Default.Delete, contentDescription = "Quitar", tint = Color(0xFFFF5252), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Delete, contentDescription = "Quitar", tint = RotomColors.negative, modifier = Modifier.size(18.dp))
                 }
             } else {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = rotomForm.primaryColor)
+                    Icon(Icons.Default.Add, contentDescription = null, tint = RotomColors.accent)
                     Column {
                         Text(
                             text = if (moveName.isNullOrBlank()) "Movimiento $slotIndex: (Vacío)" else "Movimiento $slotIndex: $moveName",
-                            color = Color.Gray,
+                            color = RotomColors.muted,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
                             text = if (moveName.isNullOrBlank()) "Toca para asignar un movimiento del catálogo" else
                                 "Toca para revisar este movimiento.",
-                            color = Color(0xFF666666),
+                            color = RotomColors.muted,
                             fontSize = 11.sp
                         )
                     }
@@ -746,7 +748,7 @@ private fun StatRowSlider(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
         shape = RoundedCornerShape(10.dp)
     ) {
         Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
@@ -762,9 +764,9 @@ private fun StatRowSlider(
                         color = statColor,
                         fontSize = 13.sp
                     )
-                    Text("Base: $base", fontSize = 10.sp, color = Color.Gray)
-                    if (isBoosted) Text("(+10%)", fontSize = 10.sp, color = Color(0xFF69F0AE), fontWeight = FontWeight.Bold)
-                    if (isReduced) Text("(-10%)", fontSize = 10.sp, color = Color(0xFFFF5252), fontWeight = FontWeight.Bold)
+                    Text("Base: $base", fontSize = 10.sp, color = RotomColors.muted)
+                    if (isBoosted) Text("(+10%)", fontSize = 10.sp, color = RotomColors.positive, fontWeight = FontWeight.Bold)
+                    if (isReduced) Text("(-10%)", fontSize = 10.sp, color = RotomColors.negative, fontWeight = FontWeight.Bold)
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -780,7 +782,7 @@ private fun StatRowSlider(
                         text = "$calculated",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = RotomColors.text
                     )
                 }
             }
@@ -807,7 +809,7 @@ private fun StatRowSlider(
                     text = "EV: $ev",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
+                    color = RotomColors.text,
                     modifier = Modifier.width(50.dp)
                 )
             }

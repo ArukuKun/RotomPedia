@@ -12,14 +12,10 @@ import com.duoc.rotompedia.data.remote.PokemonApi
 import kotlinx.coroutines.CancellationException
 
 @Composable
-fun PokemonMovesSection(pokemonId: Int) {
-    var expanded by remember(pokemonId) { mutableStateOf(false) }
-    Text("Movimientos", fontSize = 22.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
-    TextButton(onClick = { expanded = !expanded }) {
-        Text(if (expanded) "Ocultar movimientos" else "Consultar movimientos")
+fun PokemonMovesSection(pokemonId: Int, onMovesClick: (Int) -> Unit = {}) {
+    FilledTonalButton(onClick = { onMovesClick(pokemonId) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+        Text("Movimientos")
     }
-    if (!expanded) return
-    MoveLearnsetPane(pokemonId, modifier = Modifier.fillMaxWidth().height(560.dp))
 }
 
 @Composable

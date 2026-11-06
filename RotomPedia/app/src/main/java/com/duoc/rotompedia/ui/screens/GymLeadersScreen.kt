@@ -1,5 +1,10 @@
 package com.duoc.rotompedia.ui.screens
 
+import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
+import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
+import com.duoc.rotompedia.ui.theme.RotomColors
+import androidx.compose.ui.text.style.TextOverflow
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -89,13 +94,12 @@ fun GymLeadersScreen(
                     title = {
                         Text(
                             "Líderes: $selectedRegion",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFFE3350D) // Rojo Pokédex
-                    ),
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
@@ -115,8 +119,7 @@ fun GymLeadersScreen(
                         }
                     }
                 )
-            },
-            containerColor = Color.White
+            }
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -126,14 +129,14 @@ fun GymLeadersScreen(
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFFE3350D)
+                            color = RotomColors.accent
                     )
                 } else {
                     if (leadersList.isEmpty()) {
                         Text(
                             text = "No se encontraron líderes para $selectedRegion",
                             modifier = Modifier.align(Alignment.Center),
-                            color = Color.Gray
+                            color = RotomColors.muted
                         )
                     } else {
                         LazyVerticalGrid(
@@ -171,7 +174,7 @@ fun GymLeaderCard(
     Card(
         onClick = onClick,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
         shape = RoundedCornerShape(14.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -186,7 +189,7 @@ fun GymLeaderCard(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .background(Color(0xFFF7F7F9)),
+                    .background(RotomColors.surface),
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
@@ -208,7 +211,7 @@ fun GymLeaderCard(
                     text = leader.name,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = Color.Black,
+                    color = RotomColors.text,
                     maxLines = 1
                 )
 
@@ -216,7 +219,7 @@ fun GymLeaderCard(
                     Text(
                         text = "📍 ${leader.city}",
                         fontSize = 11.sp,
-                        color = Color.Gray,
+                        color = RotomColors.muted,
                         maxLines = 1
                     )
                 }
@@ -231,7 +234,7 @@ fun GymLeaderCard(
                     Text(
                         text = traducirTipo(leader.typeSpecialty),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
-                        color = Color.White,
+                        color = RotomColors.inkOn(getTipoColor(leader.typeSpecialty)),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -243,7 +246,7 @@ fun GymLeaderCard(
                     text = leader.badgeName,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFFD11527),
+                    color = RotomColors.accent,
                     textAlign = TextAlign.Center,
                     maxLines = 1
                 )
@@ -252,7 +255,7 @@ fun GymLeaderCard(
                     Text(
                         text = "As: ${leader.signaturePokemon}",
                         fontSize = 11.sp,
-                        color = Color(0xFF37474F),
+                        color = RotomColors.muted,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -298,7 +301,7 @@ fun GymLeaderDetailDialog(leader: GymLeader, onDismiss: () -> Unit) {
                     Text(
                         text = "Tipo " + traducirTipo(leader.typeSpecialty),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        color = Color.White,
+                        color = RotomColors.inkOn(getTipoColor(leader.typeSpecialty)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
                     )
@@ -324,7 +327,7 @@ fun GymLeaderDetailDialog(leader: GymLeader, onDismiss: () -> Unit) {
                     Text(
                         text = "⭐ Pokémon As: ${leader.signaturePokemon}",
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E88E5),
+                        color = RotomColors.accent,
                         fontSize = 14.sp
                     )
                 }

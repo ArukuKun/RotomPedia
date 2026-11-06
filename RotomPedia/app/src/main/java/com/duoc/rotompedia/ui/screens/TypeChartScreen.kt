@@ -17,16 +17,18 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,17 +43,12 @@ fun TypeChartScreen(onNavigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tabla de Tipos") },
+                title = { Text("Tabla de Tipos", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFD11527),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
+                }
             )
         }
     ) { paddingValues ->
@@ -111,7 +108,8 @@ fun HeaderCell(text: String, typeColor: Color = MaterialTheme.colorScheme.surfac
             text = text,
             fontSize = fontSize,
             fontWeight = FontWeight.Bold,
-            color = if (typeColor == MaterialTheme.colorScheme.surfaceVariant) Color.Black else Color.White,
+            color = if (typeColor == MaterialTheme.colorScheme.surfaceVariant) MaterialTheme.colorScheme.onSurface
+                else if (typeColor.luminance() > 0.179f) Color.Black else Color.White,
             textAlign = TextAlign.Center
         )
     }

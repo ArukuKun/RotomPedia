@@ -1,6 +1,10 @@
 ﻿// PokemonDetailScreen.kt
 package com.duoc.rotompedia.ui.screens
 
+import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
+import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
+import com.duoc.rotompedia.ui.theme.RotomColors
+
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.background
@@ -76,7 +80,8 @@ fun PokemonDetailScreen(
     viewModelFactory: PokemonViewModelFactory,
     onItemClick: (String) -> Unit = {},
     onPokemonClick: (String) -> Unit = {},
-    onCatchRateClick: (Int) -> Unit = {}
+    onCatchRateClick: (Int) -> Unit = {},
+    onMovesClick: (Int) -> Unit = {}
 ) {
     val pokemonViewModel: PokemonViewModel = viewModel(factory = viewModelFactory)
     var selectedPokemonId by rememberSaveable(pokemonId) { mutableStateOf(pokemonId) }
@@ -109,12 +114,6 @@ fun PokemonDetailScreen(
                         }
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1E222B),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color(0xFF61DAF6)
-                ),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -167,7 +166,8 @@ fun PokemonDetailScreen(
                         onFormClick = { selectedPokemonId = it.toString() },
                         onPokemonClick = onPokemonClick,
                         onItemClick = onItemClick,
-                        onCatchRateClick = onCatchRateClick
+                        onCatchRateClick = onCatchRateClick,
+                        onMovesClick = onMovesClick
                     )
                 }
                 is PokemonDetailState.Error -> {
@@ -192,7 +192,8 @@ fun PokemonDetailContent(
     onItemClick: (String) -> Unit = {},
     onFormClick: (Int) -> Unit = {},
     onPokemonClick: (String) -> Unit = {},
-    onCatchRateClick: (Int) -> Unit = {}
+    onCatchRateClick: (Int) -> Unit = {},
+    onMovesClick: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
     var isShiny by remember(pokemon.id) { mutableStateOf(false) }
@@ -266,12 +267,12 @@ fun PokemonDetailContent(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = "Alternar Variocolor",
                             modifier = Modifier.size(16.dp),
-                            tint = if (isShiny) Color(0xFFFFD700) else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (isShiny) RotomColors.warning else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFF263238),
-                        selectedLabelColor = Color(0xFFFFD700)
+                        selectedContainerColor = RotomColors.raised,
+                        selectedLabelColor = RotomColors.warning
                     )
                 )
             }
@@ -336,8 +337,8 @@ fun PokemonDetailContent(
                 modifier = Modifier.height(38.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = Color(0xFF263238),
-                    contentColor = Color(0xFF61DAF6)
+                    containerColor = RotomColors.raised,
+                    contentColor = RotomColors.accent
                 )
             ) {
                 Text("🎯", fontSize = 13.sp)
@@ -416,7 +417,7 @@ fun PokemonDetailContent(
                 text = "BST: $totalBst",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF61DAF6)
+                color = RotomColors.accent
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
@@ -459,7 +460,7 @@ fun PokemonDetailContent(
         Spacer(modifier = Modifier.height(24.dp))
         PokemonFormsSection(pokemon.id, availableForms, formsState,
             onRetry = { pokemonViewModel.loadFormVarieties(speciesId) }, onFormClick = onFormClick)
-        PokemonMovesSection(pokemonId = pokemon.id)
+        PokemonMovesSection(pokemonId = pokemon.id, onMovesClick = onMovesClick)
         PokemonLocationsSection(pokemonId = pokemon.id)
         Spacer(modifier = Modifier.height(16.dp))
     }
@@ -495,7 +496,7 @@ fun TypeChip(originalType: String, translatedType: String) {
     ) {
         Text(
             text = translatedType.uppercase(),
-            color = Color.White,
+            color = RotomColors.inkOn(typeColor),
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
@@ -668,7 +669,7 @@ fun TypeRelationsView(state: TypeRelationsState) {
                     Text(
                         text = "Superdébil contra (4x):",
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFD32F2F),
+                        color = RotomColors.negative,
                         fontSize = 14.sp
                     )
                     FlowRow(
@@ -702,7 +703,7 @@ fun TypeRelationsView(state: TypeRelationsState) {
                     Text(
                         text = "Inmune a (0x):",
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF757575),
+                        color = RotomColors.muted,
                         fontSize = 14.sp
                     )
                     FlowRow(
@@ -719,7 +720,7 @@ fun TypeRelationsView(state: TypeRelationsState) {
                     Text(
                         text = "Resistente a (½x):",
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF2E7D32),
+                        color = RotomColors.positive,
                         fontSize = 14.sp
                     )
                     FlowRow(
@@ -736,7 +737,7 @@ fun TypeRelationsView(state: TypeRelationsState) {
                     Text(
                         text = "Superresistente a (¼x):",
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1B5E20),
+                        color = RotomColors.positive,
                         fontSize = 14.sp
                     )
                     FlowRow(
@@ -814,11 +815,11 @@ fun RotomDialogueBox(
             },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDevFav) Color(0xFF231F15) else Color(0xFF1E1E1E).copy(alpha = 0.95f)
+            containerColor = RotomColors.raised
         ),
         border = androidx.compose.foundation.BorderStroke(
             if (isDevFav) 1.5.dp else 1.dp,
-            if (isDevFav) Color(0xFFFFD700) else rotomForm.primaryColor.copy(alpha = 0.7f)
+            if (isDevFav) RotomColors.warning else RotomColors.accent.copy(alpha = 0.7f)
         )
     ) {
         Row(
@@ -829,8 +830,8 @@ fun RotomDialogueBox(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
-                    .background(if (isDevFav) Color(0xFFFFD700).copy(alpha = 0.2f) else rotomForm.primaryColor.copy(alpha = 0.2f))
-                    .border(1.dp, if (isDevFav) Color(0xFFFFD700) else rotomForm.primaryColor, CircleShape),
+                    .background(if (isDevFav) RotomColors.warning.copy(alpha = 0.2f) else RotomColors.accent.copy(alpha = 0.2f))
+                    .border(1.dp, if (isDevFav) RotomColors.warning else RotomColors.accent, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = if (isDevFav) "✨" else rotomForm.iconEmoji, fontSize = 24.sp)
@@ -847,13 +848,13 @@ fun RotomDialogueBox(
                     Text(
                         text = if (isDevFav) "✨ RotomDex • Favorito del Dev" else "RotomDex (${rotomForm.displayName})",
                         fontWeight = FontWeight.Bold,
-                        color = if (isDevFav) Color(0xFFFFD700) else rotomForm.primaryColor,
+                        color = if (isDevFav) RotomColors.warning else RotomColors.accent,
                         fontSize = 12.sp
                     )
                     Text(
                         text = "Toca para más 💬",
                         fontSize = 10.sp,
-                        color = Color.Gray
+                        color = RotomColors.muted
                     )
                 }
 
@@ -861,7 +862,7 @@ fun RotomDialogueBox(
 
                 Text(
                     text = comments.getOrElse(currentIndex) { comments.firstOrNull() ?: "" },
-                    color = Color.White,
+                    color = RotomColors.text,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
                 )

@@ -1,5 +1,8 @@
 package com.duoc.rotompedia.ui.screens
 
+import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
+import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

@@ -52,6 +52,9 @@ import com.duoc.rotompedia.util.traducirTipo
 import com.duoc.rotompedia.viewmodel.PokemonViewModel
 import com.duoc.rotompedia.viewmodel.TeamBuilderViewModel
 import com.duoc.rotompedia.viewmodel.allPokemonTypes
+import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
+import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
+import com.duoc.rotompedia.ui.theme.RotomColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -79,8 +82,10 @@ fun TeamBuilderScreen(
                 title = {
                     Text(
                         text = if (selectedEquipoId == null) "Constructor de Equipos" else selectedEquipo?.equipo?.nombre ?: "Mi Equipo",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = RotomColors.text
                     )
                 },
                 navigationIcon = {
@@ -94,7 +99,7 @@ fun TeamBuilderScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.White
+                            tint = RotomColors.text
                         )
                     }
                 },
@@ -106,28 +111,24 @@ fun TeamBuilderScreen(
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Eliminar Equipo",
-                                tint = Color(0xFFFF5252)
+                                tint = RotomColors.negative
                             )
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1E1E1E)
-                )
+                }
             )
         },
         floatingActionButton = {
             if (selectedEquipoId == null) {
                 FloatingActionButton(
                     onClick = { showCreateDialog = true },
-                    containerColor = Color(0xFFFF6D00),
-                    contentColor = Color.White
+                    containerColor = RotomColors.accent,
+                    contentColor = RotomColors.onAccent
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Nuevo Equipo")
                 }
             }
-        },
-        containerColor = Color(0xFF121212)
+        }
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -154,13 +155,13 @@ fun TeamBuilderScreen(
                                 text = "¡Aún no tienes ningún equipo!",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = RotomColors.text
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Pulsa el botón + para armar tu primer equipo de 6 Pokémon y analizar sus debilidades.",
                                 fontSize = 14.sp,
-                                color = Color.Gray,
+                                color = RotomColors.muted,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -227,7 +228,7 @@ fun TeamBuilderScreen(
         var teamName by remember { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
-            title = { Text("Nuevo Equipo Pokémon", color = Color.White) },
+            title = { Text("Nuevo Equipo Pokémon", color = RotomColors.text) },
             text = {
                 OutlinedTextField(
                     value = teamName,
@@ -236,9 +237,9 @@ fun TeamBuilderScreen(
                     placeholder = { Text("Ej: Aventura Paldea, Competitivo...") },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color(0xFFFF6D00)
+                        focusedTextColor = RotomColors.text,
+                        unfocusedTextColor = RotomColors.text,
+                        focusedBorderColor = RotomColors.accent
                     )
                 )
             },
@@ -250,17 +251,17 @@ fun TeamBuilderScreen(
                             showCreateDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6D00))
+                    colors = ButtonDefaults.buttonColors(containerColor = RotomColors.accent)
                 ) {
-                    Text("Crear", color = Color.White)
+                    Text("Crear", color = RotomColors.onAccent)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCreateDialog = false }) {
-                    Text("Cancelar", color = Color.Gray)
+                    Text("Cancelar", color = RotomColors.muted)
                 }
             },
-            containerColor = Color(0xFF242424)
+            containerColor = RotomColors.raised
         )
     }
 
@@ -301,7 +302,7 @@ fun TeamListItemCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+        colors = CardDefaults.cardColors(containerColor = RotomColors.raised)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -313,13 +314,13 @@ fun TeamListItemCard(
                     text = item.equipo.nombre,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = RotomColors.text
                 )
                 Text(
                     text = "${item.miembros.size} / 6",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFFF6D00)
+                    color = RotomColors.accent
                 )
             }
 
@@ -337,10 +338,10 @@ fun TeamListItemCard(
                             .weight(1f)
                             .aspectRatio(1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF2A2A2A))
+                            .background(RotomColors.raised)
                             .border(
                                 1.dp,
-                                if (miembro != null) getTipoColor(miembro.tipo1) else Color(0xFF3A3A3A),
+                                if (miembro != null) getTipoColor(miembro.tipo1) else RotomColors.outline,
                                 RoundedCornerShape(8.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -355,7 +356,7 @@ fun TeamListItemCard(
                         } else {
                             Text(
                                 text = "+",
-                                color = Color.Gray,
+                                color = RotomColors.muted,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -395,7 +396,7 @@ fun TeamDetailContent(
                     text = "Miembros (${equipoConMiembros.miembros.size}/6)",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = RotomColors.text
                 )
 
                 if (equipoConMiembros.miembros.isNotEmpty()) {
@@ -419,7 +420,7 @@ fun TeamDetailContent(
                         },
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF61DAF6))
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = RotomColors.accent)
                     ) {
                         Text("Exportar Showdown", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
@@ -465,13 +466,13 @@ fun TeamDetailContent(
             Spacer(modifier = Modifier.height(4.dp))
             ScrollableTabRow(
                 selectedTabIndex = selectedAnalysisTab,
-                containerColor = Color(0xFF1E1E1E),
-                contentColor = Color(0xFFFF6D00),
+                containerColor = RotomColors.raised,
+                contentColor = RotomColors.accent,
                 edgePadding = 4.dp,
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[selectedAnalysisTab]),
-                        color = Color(0xFFFF6D00)
+                        color = RotomColors.accent
                     )
                 }
             ) {
@@ -483,7 +484,7 @@ fun TeamDetailContent(
                             Text(
                                 text = title,
                                 fontWeight = if (selectedAnalysisTab == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedAnalysisTab == index) Color(0xFFFF6D00) else Color.Gray,
+                                color = if (selectedAnalysisTab == index) RotomColors.accent else RotomColors.muted,
                                 fontSize = 12.sp
                             )
                         }
@@ -534,7 +535,7 @@ fun TeamDetailContent(
 fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -542,12 +543,12 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                 text = "Tabla de Daño Recibido (Damage Taken)",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = RotomColors.text
             )
             Text(
                 text = "Evalúa debilidades críticas x4 y resistencias para equilibrar el equipo.",
                 fontSize = 11.sp,
-                color = Color.Gray
+                color = RotomColors.muted
             )
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -575,7 +576,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                 text = "Tipo",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Gray
+                                color = RotomColors.muted
                             )
                         }
 
@@ -593,7 +594,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                         modifier = Modifier
                                             .size(34.dp)
                                             .clip(CircleShape)
-                                            .background(Color(0xFF2A2A2A))
+                                            .background(RotomColors.raised)
                                             .border(1.dp, getTipoColor(m.tipo1), CircleShape),
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -609,8 +610,8 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                         modifier = Modifier
                                             .size(34.dp)
                                             .clip(CircleShape)
-                                            .background(Color(0xFF242424))
-                                            .border(1.dp, Color(0xFF383838), CircleShape),
+                                            .background(RotomColors.raised)
+                                            .border(1.dp, RotomColors.outline, CircleShape),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
@@ -625,7 +626,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                         }
                     }
 
-                    HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
+                    HorizontalDivider(color = RotomColors.outline, thickness = 1.dp)
 
                     // 18 filas: una por cada tipo atacante
                     TypeEffectiveness.ALL_TYPES.forEach { attackingType ->
@@ -650,7 +651,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                     text = traducirTipo(attackingType),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White,
+                                    color = RotomColors.text,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -688,17 +689,17 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                             modifier = Modifier
                                                 .fillMaxSize()
                                                 .clip(RoundedCornerShape(4.dp))
-                                                .background(Color(0xFF161616)),
+                                                .background(RotomColors.surface),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Text(text = "-", fontSize = 11.sp, color = Color(0xFF383838))
+                                            Text(text = "-", fontSize = 11.sp, color = RotomColors.muted)
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
+                    HorizontalDivider(color = RotomColors.outline, thickness = 1.dp)
 
                     // Filas de Resumen por Miembro (Debilidades y Resistencias)
                     // Fila: Debilidad crítica (x4)
@@ -713,7 +714,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                 .width(68.dp)
                                 .height(26.dp)
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(Color(0xFF3E1A1A))
+                                .background(RotomColors.negativePanel)
                                 .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 4.dp),
                             contentAlignment = Alignment.Center
@@ -722,7 +723,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                 text = "\u26A0 Debil. x4",
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFF5252),
+                                color = RotomColors.negative,
                                 maxLines = 1
                             )
                         }
@@ -740,8 +741,8 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                     val count4x = TypeEffectiveness.ALL_TYPES.count {
                                         TypeEffectiveness.getDualMultiplier(it, m.tipo1, m.tipo2) >= 3.9f
                                     }
-                                    val bg = if (count4x > 0) Color(0xFFD32F2F) else Color(0xFF1E1E1E)
-                                    val fg = if (count4x > 0) Color.White else Color.Gray
+                                    val bg = if (count4x > 0) Color(0xFFD32F2F) else RotomColors.raised
+                                    val fg = if (count4x > 0) Color.White else RotomColors.muted
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
@@ -761,10 +762,10 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                         modifier = Modifier
                                             .fillMaxSize()
                                             .clip(RoundedCornerShape(4.dp))
-                                            .background(Color(0xFF161616)),
+                                            .background(RotomColors.surface),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = "-", fontSize = 11.sp, color = Color(0xFF383838))
+                                        Text(text = "-", fontSize = 11.sp, color = RotomColors.muted)
                                     }
                                 }
                             }
@@ -783,7 +784,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                 .width(68.dp)
                                 .height(26.dp)
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(Color(0xFF37221A))
+                                .background(RotomColors.warning.copy(alpha = 0.12f))
                                 .border(1.dp, Color(0xFFE64A19), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 4.dp),
                             contentAlignment = Alignment.Center
@@ -792,7 +793,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                 text = "\uD83D\uDD34 Debil. x2",
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFF8A65),
+                                color = RotomColors.warning,
                                 maxLines = 1
                             )
                         }
@@ -811,8 +812,8 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                         val mult = TypeEffectiveness.getDualMultiplier(it, m.tipo1, m.tipo2)
                                         mult in 1.9f..2.1f
                                     }
-                                    val bg = if (count2x > 0) Color(0xFFE64A19) else Color(0xFF1E1E1E)
-                                    val fg = if (count2x > 0) Color.White else Color.Gray
+                                    val bg = if (count2x > 0) Color(0xFFE64A19) else RotomColors.raised
+                                    val fg = if (count2x > 0) Color.White else RotomColors.muted
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
@@ -832,10 +833,10 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                         modifier = Modifier
                                             .fillMaxSize()
                                             .clip(RoundedCornerShape(4.dp))
-                                            .background(Color(0xFF161616)),
+                                            .background(RotomColors.surface),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = "-", fontSize = 11.sp, color = Color(0xFF383838))
+                                        Text(text = "-", fontSize = 11.sp, color = RotomColors.muted)
                                     }
                                 }
                             }
@@ -854,7 +855,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                 .width(68.dp)
                                 .height(26.dp)
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(Color(0xFF1A3320))
+                                .background(RotomColors.positive.copy(alpha = 0.12f))
                                 .border(1.dp, Color(0xFF2E7D32), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 4.dp),
                             contentAlignment = Alignment.Center
@@ -863,7 +864,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                 text = "\uD83D\uDFE2 Resist.",
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF69F0AE),
+                                color = RotomColors.positive,
                                 maxLines = 1
                             )
                         }
@@ -882,8 +883,8 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                         val mult = TypeEffectiveness.getDualMultiplier(it, m.tipo1, m.tipo2)
                                         mult <= 0.55f
                                     }
-                                    val bg = if (countResist > 0) Color(0xFF2E7D32) else Color(0xFF1E1E1E)
-                                    val fg = if (countResist > 0) Color.White else Color.Gray
+                                    val bg = if (countResist > 0) Color(0xFF2E7D32) else RotomColors.raised
+                                    val fg = if (countResist > 0) Color.White else RotomColors.muted
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
@@ -903,10 +904,10 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
                                         modifier = Modifier
                                             .fillMaxSize()
                                             .clip(RoundedCornerShape(4.dp))
-                                            .background(Color(0xFF161616)),
+                                            .background(RotomColors.surface),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = "-", fontSize = 11.sp, color = Color(0xFF383838))
+                                        Text(text = "-", fontSize = 11.sp, color = RotomColors.muted)
                                     }
                                 }
                             }
@@ -916,7 +917,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
+            HorizontalDivider(color = RotomColors.outline, thickness = 1.dp)
             Spacer(modifier = Modifier.height(8.dp))
 
             // Leyenda de Multiplicadores
@@ -928,7 +929,7 @@ fun TeamDamageTakenMatrix(members: List<MiembroEquipo>) {
             ) {
                 LegendBadge(text = "4", label = "x4", bg = Color(0xFFD32F2F), fg = Color.White)
                 LegendBadge(text = "2", label = "x2", bg = Color(0xFFE64A19), fg = Color.White)
-                LegendBadge(text = "-", label = "x1", bg = Color(0xFF232323), fg = Color.Gray)
+                LegendBadge(text = "-", label = "x1", bg = RotomColors.raised, fg = RotomColors.muted)
                 LegendBadge(text = "\u00BD", label = "x0.5", bg = Color(0xFF2E7D32), fg = Color.White)
                 LegendBadge(text = "\u00BC", label = "x0.25", bg = Color(0xFF1B5E20), fg = Color.White)
                 LegendBadge(text = "0", label = "Inmune", bg = Color(0xFF283593), fg = Color.White)
@@ -947,14 +948,14 @@ fun TeamMacroSummary(
         if (analysis.criticalWeaknesses.isNotEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF3E1A1A)),
+                colors = CardDefaults.cardColors(containerColor = RotomColors.negativePanel),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
                         text = "⚠️ Alerta de Debilidad Crítica",
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFF5252),
+                        color = RotomColors.negative,
                         fontSize = 14.sp
                     )
                     Text(
@@ -969,14 +970,14 @@ fun TeamMacroSummary(
         // Resumen de Cobertura Ofensiva
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+            colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
             shape = RoundedCornerShape(12.dp)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = "Cobertura Ofensiva Super-Eficaz: ${analysis.offensiveCoverage.size} / 18 tipos",
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = RotomColors.text,
                     fontSize = 14.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -987,7 +988,7 @@ fun TeamMacroSummary(
                     Text(
                         text = "Sin cobertura súper-eficaz contra: ${analysis.uncoveredOffense.joinToString(", ") { traducirTipo(it) }}",
                         fontSize = 11.sp,
-                        color = Color.Gray
+                        color = RotomColors.muted
                     )
                 }
             }
@@ -996,14 +997,14 @@ fun TeamMacroSummary(
         // Matriz de Debilidades Defensivas del Equipo
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+            colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
             shape = RoundedCornerShape(12.dp)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = "Vulnerabilidad Defensiva por Tipo",
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = RotomColors.text,
                     fontSize = 14.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -1021,10 +1022,10 @@ fun TeamMacroSummary(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF2A2A2A))
+                                    .background(RotomColors.raised)
                                     .border(
                                         1.dp,
-                                        if (item.weakCount >= 2) Color(0xFFFF5252) else Color.Transparent,
+                                        if (item.weakCount >= 2) RotomColors.negative else Color.Transparent,
                                         RoundedCornerShape(8.dp)
                                     )
                                     .padding(6.dp)
@@ -1045,7 +1046,7 @@ fun TeamMacroSummary(
                                             Text(
                                                 text = "🔴 ${item.weakCount}",
                                                 fontSize = 10.sp,
-                                                color = Color(0xFFFF5252),
+                                                color = RotomColors.negative,
                                                 fontWeight = FontWeight.Bold
                                             )
                                         }
@@ -1053,7 +1054,7 @@ fun TeamMacroSummary(
                                             Text(
                                                 text = "🟢 ${item.resistCount + item.immuneCount}",
                                                 fontSize = 10.sp,
-                                                color = Color(0xFF69F0AE),
+                                                color = RotomColors.positive,
                                                 fontWeight = FontWeight.Bold
                                             )
                                         }
@@ -1061,7 +1062,7 @@ fun TeamMacroSummary(
                                             Text(
                                                 text = "⚪ 0",
                                                 fontSize = 10.sp,
-                                                color = Color.Gray
+                                                color = RotomColors.muted
                                             )
                                         }
                                     }
@@ -1083,11 +1084,11 @@ fun TeamBaseStatsTab(members: List<MiembroEquipo>) {
     if (members.isEmpty()) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+            colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
             shape = RoundedCornerShape(12.dp)
         ) {
             Box(modifier = Modifier.padding(24.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Agrega miembros para comparar estadísticas del equipo.", color = Color.Gray, fontSize = 13.sp)
+                Text("Agrega miembros para comparar estadísticas del equipo.", color = RotomColors.muted, fontSize = 13.sp)
             }
         }
         return
@@ -1095,7 +1096,7 @@ fun TeamBaseStatsTab(members: List<MiembroEquipo>) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -1103,7 +1104,7 @@ fun TeamBaseStatsTab(members: List<MiembroEquipo>) {
                 text = "Comparativa de Estadísticas Base (BST)",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = RotomColors.text
             )
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -1114,7 +1115,7 @@ fun TeamBaseStatsTab(members: List<MiembroEquipo>) {
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF2A2A2A))
+                        .background(RotomColors.raised)
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -1131,7 +1132,7 @@ fun TeamBaseStatsTab(members: List<MiembroEquipo>) {
                                 text = m.nombre,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = RotomColors.text
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
@@ -1159,7 +1160,7 @@ fun TeamBaseStatsTab(members: List<MiembroEquipo>) {
                 text = "Promedio BST del equipo: $avgBst",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF61DAF6)
+                color = RotomColors.accent
             )
         }
     }
@@ -1173,11 +1174,11 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
     if (members.isEmpty()) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+            colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
             shape = RoundedCornerShape(12.dp)
         ) {
             Box(modifier = Modifier.padding(24.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Agrega miembros para visualizar sus movimientos asignados.", color = Color.Gray, fontSize = 13.sp)
+                Text("Agrega miembros para visualizar sus movimientos asignados.", color = RotomColors.muted, fontSize = 13.sp)
             }
         }
         return
@@ -1185,7 +1186,7 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -1193,12 +1194,12 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
                 text = "Movimientos Asignados del Equipo (4 por Pokémon)",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = RotomColors.text
             )
             Text(
                 text = "Toca cualquier Pokémon en los slots principales para editar o cambiar sus movimientos.",
                 fontSize = 11.sp,
-                color = Color.Gray
+                color = RotomColors.muted
             )
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -1209,7 +1210,7 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF262626))
+                        .background(RotomColors.raised)
                         .padding(8.dp)
                 ) {
                     Row(
@@ -1229,13 +1230,13 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
                                 text = m.nombre,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = RotomColors.text
                             )
                         }
                         Text(
                             text = "${moves.size}/4 movimientos",
                             fontSize = 10.sp,
-                            color = if (moves.size == 4) Color(0xFF69F0AE) else Color(0xFFFFB74D),
+                            color = if (moves.size == 4) RotomColors.positive else RotomColors.warning,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -1246,7 +1247,7 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
                         Text(
                             text = "⚠️ Sin movimientos configurados. Toca la tarjeta del Pokémon para seleccionarlos.",
                             fontSize = 10.sp,
-                            color = Color.Gray,
+                            color = RotomColors.muted,
                             modifier = Modifier.padding(vertical = 2.dp)
                         )
                     } else {
@@ -1268,7 +1269,7 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
                                         modifier = Modifier
                                             .weight(1f)
                                             .clip(RoundedCornerShape(6.dp))
-                                            .background(Color(0xFF1E1E1E))
+                                            .background(RotomColors.raised)
                                             .border(1.dp, getTipoColor(moveType).copy(alpha = 0.5f), RoundedCornerShape(6.dp))
                                             .padding(6.dp)
                                     ) {
@@ -1282,7 +1283,7 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
                                                     text = moveName,
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = Color.White,
+                                                    color = RotomColors.text,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis,
                                                     modifier = Modifier.weight(1f)
@@ -1299,7 +1300,7 @@ fun TeamMovesTab(members: List<MiembroEquipo>) {
                                                 Text(
                                                     text = "Pot $powerStr • Prec $accStr",
                                                     fontSize = 8.sp,
-                                                    color = Color.Gray
+                                                    color = RotomColors.muted
                                                 )
                                             }
                                         }
@@ -1349,7 +1350,7 @@ fun LegendBadge(text: String, label: String, bg: Color, fg: Color) {
             Text(text, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = fg)
         }
         Spacer(modifier = Modifier.width(3.dp))
-        Text(label, fontSize = 10.sp, color = Color.Gray)
+        Text(label, fontSize = 10.sp, color = RotomColors.muted)
     }
 }
 
@@ -1367,11 +1368,11 @@ fun TeamSlotCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (miembro != null) Color(0xFF242424) else Color(0xFF1C1C1C)
+            containerColor = if (miembro != null) RotomColors.raised else RotomColors.surface
         ),
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
-            if (miembro != null) getTipoColor(miembro.tipo1).copy(alpha = 0.6f) else Color(0xFF333333)
+            if (miembro != null) getTipoColor(miembro.tipo1).copy(alpha = 0.6f) else RotomColors.outline
         )
     ) {
         if (miembro != null) {
@@ -1408,14 +1409,14 @@ fun TeamSlotCard(
                         text = miembro.nombre,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = RotomColors.text,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = "Nv.${miembro.level} • ${miembro.nature}",
                         fontSize = 9.sp,
-                        color = Color(0xFF61DAF6),
+                        color = RotomColors.accent,
                         fontWeight = FontWeight.SemiBold
                     )
                     val totalEvs = miembro.evHp + miembro.evAtk + miembro.evDef + miembro.evSpa + miembro.evSpd + miembro.evSpe
@@ -1427,12 +1428,12 @@ fun TeamSlotCard(
                         Text(
                             text = "EVs: $totalEvs/510",
                             fontSize = 8.sp,
-                            color = if (totalEvs > 510) Color(0xFFFF5252) else Color(0xFF69F0AE)
+                            color = if (totalEvs > 510) RotomColors.negative else RotomColors.positive
                         )
                         Text(
                             text = "• ⚔️ $movesCount/4",
                             fontSize = 8.sp,
-                            color = if (movesCount == 4) Color(0xFF69F0AE) else Color(0xFFFFB74D),
+                            color = if (movesCount == 4) RotomColors.positive else RotomColors.warning,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -1452,14 +1453,14 @@ fun TeamSlotCard(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Agregar",
-                    tint = Color(0xFFFF6D00),
+                    tint = RotomColors.accent,
                     modifier = Modifier.size(28.dp)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Slot ${slotIndex + 1}",
                     fontSize = 12.sp,
-                    color = Color.Gray,
+                    color = RotomColors.muted,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -1473,13 +1474,13 @@ fun BadgeTipo(tipo: String) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
-            .background(color.copy(alpha = 0.85f))
+            .background(color)
             .padding(horizontal = 4.dp, vertical = 1.dp)
     ) {
         Text(
             text = traducirTipo(tipo),
-            fontSize = 9.sp,
-            color = Color.White,
+            fontSize = 11.sp,
+            color = RotomColors.inkOn(color),
             fontWeight = FontWeight.Bold
         )
     }

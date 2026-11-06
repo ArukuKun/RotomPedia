@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -28,6 +29,11 @@ import com.duoc.rotompedia.util.traducirTipo
 import kotlinx.coroutines.CancellationException
 import coil.ImageLoader
 import coil.imageLoader
+import com.duoc.rotompedia.ui.components.MoveCategoryBadge
+import com.duoc.rotompedia.ui.components.RotomCard
+import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
+import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
+import androidx.compose.runtime.saveable.rememberSaveable
 
 @Composable
 fun resolvedLegacyMove(name: String?): PokemonMove? {
@@ -75,7 +81,7 @@ fun ReferenceBrowserScreen(abilities: Boolean, onBack: () -> Unit, onPokemonClic
             if ((initialMoveId > 0 && move == null) || (initialAbilityId > 0 && ability == null)) error = true
         } catch (e: Exception) { if (e is CancellationException) throw e; error = true }
     }
-    Scaffold(topBar = { TopAppBar(title = { Text(if (abilities) "Habilidades" else "Movimientos") }, navigationIcon = {
+    Scaffold(topBar = { TopAppBar(title = { Text(if (abilities) "Habilidades" else "Movimientos", maxLines = 1, overflow = TextOverflow.Ellipsis) }, navigationIcon = {
         IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver") }
     }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -116,11 +122,12 @@ fun ReferenceBrowserScreen(abilities: Boolean, onBack: () -> Unit, onPokemonClic
 @Composable
 internal fun MoveCard(move: ReferenceMove, modifier: Modifier = Modifier, description: ReferenceText? = null,
     annotations: String? = null, onClick: (() -> Unit)?) {
-    Card(modifier.fillMaxWidth().then(if (onClick == null) Modifier else Modifier.clickable(onClick = onClick))) {
+    RotomCard(modifier.fillMaxWidth().then(if (onClick == null) Modifier else Modifier.clickable(onClick = onClick))) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(move.displayName, fontWeight = FontWeight.Bold)
             if (move.nameEs == null) Text("Inglés", fontSize = 11.sp)
             Text("${traducirTipo(move.type)} · ${ReferencePresentation.category(move.category)} · prioridad ${move.priority}", fontSize = 12.sp)
+            MoveCategoryBadge(move.category)
             Text("Pot: ${move.power ?: "—"} · Prec: ${move.accuracy?.let { "$it%" } ?: "—"} · PP: ${move.pp ?: "—"}", fontSize = 12.sp)
             annotations?.let { Text(it, fontSize = 12.sp) }
             description?.let { Text(if (it.language == "es") it.text else "Inglés: ${it.text}", fontSize = 12.sp) }
@@ -131,8 +138,8 @@ internal fun MoveCard(move: ReferenceMove, modifier: Modifier = Modifier, descri
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun MoveReferenceSheet(move: ReferenceMove, index: ReferenceIndex, items: List<IndexedItem> = emptyList(),
-    onDismiss: () -> Unit, onItemClick: ((Int) -> Unit)? = null) {
-    var group by remember(move.id) { mutableStateOf<String?>(null) }
+    onDismiss: () -> Unit, onItemClick: ((Int) -> Unit)? = null, initialGroup: String? = null) {
+    var group by rememberSaveable(move.id) { mutableStateOf(initialGroup) }
     val selectedGroup = group
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(0.9f).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

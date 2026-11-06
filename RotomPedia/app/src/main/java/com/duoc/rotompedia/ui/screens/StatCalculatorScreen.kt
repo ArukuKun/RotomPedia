@@ -1,5 +1,9 @@
 package com.duoc.rotompedia.ui.screens
 
+import com.duoc.rotompedia.ui.components.RotomPageScaffold as Scaffold
+import com.duoc.rotompedia.ui.components.RotomPageTopBar as TopAppBar
+import com.duoc.rotompedia.ui.theme.RotomColors
+
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -117,14 +121,16 @@ fun StatCalculatorScreen(
                 title = {
                     Text(
                         text = "Calculadora de Stats (IV/EV)",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = Color.White
+                        color = RotomColors.text
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = RotomColors.text)
                     }
                 },
                 actions = {
@@ -139,13 +145,11 @@ fun StatCalculatorScreen(
                         clipboardManager.setText(AnnotatedString(showdownText))
                         Toast.makeText(context, "¡Build copiada al portapapeles para Showdown!", Toast.LENGTH_SHORT).show()
                     }) {
-                        Icon(Icons.Default.Share, contentDescription = "Copiar Showdown", tint = rotomForm.accentColor)
+                        Icon(Icons.Default.Share, contentDescription = "Copiar Showdown", tint = RotomColors.accent)
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF141414))
+                }
             )
-        },
-        containerColor = Color(0xFF0F0F0F)
+        }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -161,8 +165,8 @@ fun StatCalculatorScreen(
                         .fillMaxWidth()
                         .clickable { showPokemonPicker = true },
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1C)),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, rotomForm.primaryColor.copy(alpha = 0.5f))
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, RotomColors.accent.copy(alpha = 0.5f))
                 ) {
                     Row(
                         modifier = Modifier
@@ -174,7 +178,7 @@ fun StatCalculatorScreen(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF262626)),
+                                .background(RotomColors.raised),
                             contentAlignment = Alignment.Center
                         ) {
                             PokemonImage(
@@ -193,13 +197,13 @@ fun StatCalculatorScreen(
                                     text = "${nationalNumberLabel(pokemonViewModel, selectedId)} $selectedName",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = RotomColors.text
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Icon(
                                     Icons.Default.Edit,
                                     contentDescription = "Cambiar",
-                                    tint = rotomForm.accentColor,
+                                    tint = RotomColors.accent,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -213,7 +217,7 @@ fun StatCalculatorScreen(
                             Text(
                                 text = "BST Base: ${baseStats.total} pts",
                                 fontSize = 11.sp,
-                                color = Color.Gray
+                                color = RotomColors.muted
                             )
                         }
                     }
@@ -225,7 +229,7 @@ fun StatCalculatorScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1C))
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised)
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
                         Row(
@@ -233,15 +237,15 @@ fun StatCalculatorScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Nivel de Batalla", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 14.sp)
+                            Text("Nivel de Batalla", fontWeight = FontWeight.Bold, color = RotomColors.text, fontSize = 14.sp)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 FilterChip(
                                     selected = level == 50,
                                     onClick = { level = 50 },
                                     label = { Text("Nivel 50 (VGC)") },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = rotomForm.primaryColor,
-                                        selectedLabelColor = Color.White
+                                        selectedContainerColor = RotomColors.accent,
+                                        selectedLabelColor = RotomColors.onAccent
                                     )
                                 )
                                 FilterChip(
@@ -249,15 +253,15 @@ fun StatCalculatorScreen(
                                     onClick = { level = 100 },
                                     label = { Text("Nivel 100") },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = rotomForm.primaryColor,
-                                        selectedLabelColor = Color.White
+                                        selectedContainerColor = RotomColors.accent,
+                                        selectedLabelColor = RotomColors.onAccent
                                     )
                                 )
                             }
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
-                        HorizontalDivider(color = Color(0xFF2B2B2B))
+                        HorizontalDivider(color = RotomColors.outline)
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Row(
@@ -268,16 +272,16 @@ fun StatCalculatorScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("Naturaleza", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 14.sp)
+                                Text("Naturaleza", fontWeight = FontWeight.Bold, color = RotomColors.text, fontSize = 14.sp)
                                 Text(
                                     text = selectedNature.displayName,
                                     fontSize = 12.sp,
-                                    color = rotomForm.accentColor
+                                    color = RotomColors.accent
                                 )
                             }
                             OutlinedButton(
                                 onClick = { showNatureDialog = true },
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = rotomForm.accentColor)
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = RotomColors.accent)
                             ) {
                                 Text("Cambiar")
                             }
@@ -291,7 +295,7 @@ fun StatCalculatorScreen(
                 Text(
                     text = "Presets Competitivos Rápidos",
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = RotomColors.text,
                     fontSize = 14.sp
                 )
                 Spacer(modifier = Modifier.height(6.dp))
@@ -333,19 +337,19 @@ fun StatCalculatorScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1C))
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Total EVs Usados:", fontSize = 12.sp, color = Color.Gray)
+                            Text("Total EVs Usados:", fontSize = 12.sp, color = RotomColors.muted)
                             Text(
                                 text = "$totalEvs / 510 EVs (${remainingEvs} restantes)",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (totalEvs > 510) Color(0xFFFF5252) else Color(0xFF69F0AE)
+                                color = if (totalEvs > 510) RotomColors.negative else RotomColors.positive
                             )
                         }
                         Spacer(modifier = Modifier.height(6.dp))
@@ -356,8 +360,8 @@ fun StatCalculatorScreen(
                                 .fillMaxWidth()
                                 .height(8.dp)
                                 .clip(RoundedCornerShape(4.dp)),
-                            color = if (totalEvs > 510) Color(0xFFFF5252) else rotomForm.primaryColor,
-                            trackColor = Color(0xFF2A2A2A)
+                            color = if (totalEvs > 510) RotomColors.negative else RotomColors.accent,
+                            trackColor = RotomColors.raised
                         )
                     }
                 }
@@ -368,7 +372,7 @@ fun StatCalculatorScreen(
                 Text(
                     text = "Ajuste de IVs (0-31) y EVs (0-252)",
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = RotomColors.text,
                     fontSize = 15.sp
                 )
             }
@@ -462,8 +466,8 @@ fun StatCalculatorScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, rotomForm.primaryColor.copy(alpha = 0.5f))
+                    colors = CardDefaults.cardColors(containerColor = RotomColors.raised),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, RotomColors.accent.copy(alpha = 0.5f))
                 ) {
                     Row(
                         modifier = Modifier
@@ -474,13 +478,13 @@ fun StatCalculatorScreen(
                     ) {
                         Text(
                             text = "Estadística Total (BST Calculado):",
-                            color = Color.White,
+                            color = RotomColors.text,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                         Text(
                             text = "${calculated.totalBST} pts",
-                            color = rotomForm.accentColor,
+                            color = RotomColors.accent,
                             fontWeight = FontWeight.Black,
                             fontSize = 18.sp
                         )
@@ -494,7 +498,7 @@ fun StatCalculatorScreen(
     if (showNatureDialog) {
         AlertDialog(
             onDismissRequest = { showNatureDialog = false },
-            title = { Text("Seleccionar Naturaleza", color = Color.White, fontWeight = FontWeight.Bold) },
+            title = { Text("Seleccionar Naturaleza", color = RotomColors.text, fontWeight = FontWeight.Bold) },
             text = {
                 LazyColumn(
                     modifier = Modifier
@@ -508,8 +512,8 @@ fun StatCalculatorScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) rotomForm.primaryColor.copy(alpha = 0.25f) else Color(0xFF262626))
-                                .border(1.dp, if (isSelected) rotomForm.primaryColor else Color.Transparent, RoundedCornerShape(8.dp))
+                                .background(if (isSelected) RotomColors.accent.copy(alpha = 0.25f) else RotomColors.raised)
+                                .border(1.dp, if (isSelected) RotomColors.accent else Color.Transparent, RoundedCornerShape(8.dp))
                                 .clickable {
                                     selectedNature = nature
                                     showNatureDialog = false
@@ -520,13 +524,13 @@ fun StatCalculatorScreen(
                         ) {
                             Text(
                                 text = nature.nameEs,
-                                color = if (isSelected) rotomForm.primaryColor else Color.White,
+                                color = if (isSelected) RotomColors.accent else RotomColors.text,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = if (nature.increasedStat == null) "Neutra" else "+${nature.increasedStat.shortName} / -${nature.decreasedStat?.shortName}",
                                 fontSize = 11.sp,
-                                color = if (nature.increasedStat != null) Color(0xFF69F0AE) else Color.Gray
+                                color = if (nature.increasedStat != null) RotomColors.positive else RotomColors.muted
                             )
                         }
                     }
@@ -534,10 +538,10 @@ fun StatCalculatorScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showNatureDialog = false }) {
-                    Text("Cerrar", color = rotomForm.accentColor)
+                    Text("Cerrar", color = RotomColors.accent)
                 }
             },
-            containerColor = Color(0xFF1E1E1E)
+            containerColor = RotomColors.raised
         )
     }
 
@@ -562,8 +566,8 @@ fun StatCalculatorScreen(
 fun PresetChip(text: String, onClick: () -> Unit) {
     SuggestionChip(
         onClick = onClick,
-        label = { Text(text, fontSize = 11.sp, color = Color.White) },
-        colors = SuggestionChipDefaults.suggestionChipColors(containerColor = Color(0xFF262626))
+        label = { Text(text, fontSize = 11.sp, color = RotomColors.text) },
+        colors = SuggestionChipDefaults.suggestionChipColors(containerColor = RotomColors.raised)
     )
 }
 
@@ -581,15 +585,15 @@ fun StatRowControl(
 ) {
     val mult = nature.getMultiplier(statType)
     val statColor = when {
-        mult > 1.0f -> Color(0xFF69F0AE) // Verde si sube
-        mult < 1.0f -> Color(0xFFFF5252) // Rojo si baja
-        else -> Color.White
+        mult > 1.0f -> RotomColors.positive // Verde si sube
+        mult < 1.0f -> RotomColors.negative // Rojo si baja
+        else -> RotomColors.text
     }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF181818))
+        colors = CardDefaults.cardColors(containerColor = RotomColors.surface)
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Row(
@@ -599,14 +603,14 @@ fun StatRowControl(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = label, fontWeight = FontWeight.Bold, color = statColor, fontSize = 13.sp)
-                    if (mult > 1.0f) Text(" ▲", color = Color(0xFF69F0AE), fontSize = 10.sp)
-                    if (mult < 1.0f) Text(" ▼", color = Color(0xFFFF5252), fontSize = 10.sp)
+                    if (mult > 1.0f) Text(" ▲", color = RotomColors.positive, fontSize = 10.sp)
+                    if (mult < 1.0f) Text(" ▼", color = RotomColors.negative, fontSize = 10.sp)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "(Base: $baseStat)", fontSize = 10.sp, color = Color.Gray)
+                    Text(text = "(Base: $baseStat)", fontSize = 10.sp, color = RotomColors.muted)
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "Final: ", fontSize = 11.sp, color = Color.Gray)
+                    Text(text = "Final: ", fontSize = 11.sp, color = RotomColors.muted)
                     Text(
                         text = "$finalStat",
                         fontWeight = FontWeight.Black,
@@ -633,7 +637,7 @@ fun StatRowControl(
                     colors = SliderDefaults.colors(
                         thumbColor = statColor,
                         activeTrackColor = statColor,
-                        inactiveTrackColor = Color(0xFF2A2A2A)
+                        inactiveTrackColor = RotomColors.raised
                     )
                 )
                 Spacer(modifier = Modifier.width(4.dp))
@@ -650,7 +654,7 @@ fun StatRowControl(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "IV: $iv / 31", fontSize = 10.sp, color = Color.Gray)
+                Text(text = "IV: $iv / 31", fontSize = 10.sp, color = RotomColors.muted)
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     FilterChip(
                         selected = iv == 31,
@@ -675,11 +679,11 @@ fun TinyStatButton(text: String, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
-            .background(Color(0xFF2A2A2A))
+            .background(RotomColors.raised)
             .clickable(onClick = onClick)
             .padding(horizontal = 6.dp, vertical = 2.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = text, fontSize = 9.sp, color = Color.White, fontWeight = FontWeight.Bold)
+        Text(text = text, fontSize = 9.sp, color = RotomColors.text, fontWeight = FontWeight.Bold)
     }
 }
