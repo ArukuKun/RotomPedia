@@ -35,6 +35,24 @@ class AppContainer private constructor(context: Context) {
     val moves: com.duoc.rotompedia.data.reference.MoveRepository = com.duoc.rotompedia.data.reference.DefaultMoveRepository(
         reference, database, PokemonApi.service, pokemon, moshi)
     val abilities: com.duoc.rotompedia.data.reference.AbilityRepository = com.duoc.rotompedia.data.reference.DefaultAbilityRepository(reference, pokemon)
+    /** Hoenn/Esmeralda: verified PokeAPI encounter snapshot, not geographic coordinates. */
+    val hoennPilot = com.duoc.rotompedia.data.maps.LocationPilotStore(
+        moshi,
+        source = {
+            withContext(Dispatchers.IO) {
+                application.assets.open("hoenn-emerald-location-pilot.json").bufferedReader().use { it.readText() }
+            }
+        },
+        pokemonIdentity = {
+            withContext(Dispatchers.IO) {
+                val raw = application.assets.open("pokemon-index.json").bufferedReader().use { it.readText() }
+                val e = requireNotNull(moshi.adapter(com.duoc.rotompedia.data.index.IndexEnvelope::class.java).fromJson(raw))
+                val p = requireNotNull(moshi.adapter(com.duoc.rotompedia.data.index.IndexPayload::class.java).fromJson(e.payloadJson))
+                com.duoc.rotompedia.data.index.IndexValidator.validate(e, p)
+                e.contentSha256 to p.varieties.map { it.pokemonId }.toSet()
+            }
+        }
+    )
     private val indexFailure = MutableStateFlow<String?>(null)
     val indexImportError = indexFailure.asStateFlow()
 

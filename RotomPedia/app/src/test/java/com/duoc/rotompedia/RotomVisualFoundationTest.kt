@@ -38,6 +38,7 @@ class RotomVisualFoundationTest {
     @Before fun resetPreferences() {
         context.getSharedPreferences("rotom_appearance_prefs", Context.MODE_PRIVATE).edit().clear().commit()
         context.getSharedPreferences("rotom_theme_prefs", Context.MODE_PRIVATE).edit().clear().commit()
+        context.getSharedPreferences("rotompedia_map_navigation", Context.MODE_PRIVATE).edit().clear().commit()
         RotomAppearanceManager.init(context)
         RotomThemeManager.init(context)
     }
@@ -145,7 +146,6 @@ class RotomVisualFoundationTest {
             val nav = rememberNavController()
             RotompediaTheme(legacy = true) { NavHost(nav, startDestination = "maps") {
                 composable("maps") { MapFeatureScreen(nav) }
-                composable("map_viewer/kanto") { Text("Kanto conservado") }
             } }
         }
         compose.onNodeWithContentDescription("Cambiar apariencia").performClick()
@@ -154,6 +154,8 @@ class RotomVisualFoundationTest {
         assertEquals(RotomForm.FRIO, RotomThemeManager.currentForm.value)
         compose.onNodeWithText("Cerrar").performClick()
         compose.onNodeWithText("Kanto", substring = false).performClick()
-        compose.onNodeWithText("Kanto conservado").assertExists()
+        compose.onNodeWithText("Mapa de Kanto", substring = true).assertExists()
+        compose.onNodeWithContentDescription("Volver").performClick()
+        compose.onNodeWithText("Elige una región").assertExists()
     }
 }

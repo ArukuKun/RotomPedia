@@ -12,6 +12,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.duoc.rotompedia.data.maps.MapRegionCatalogue
+import com.duoc.rotompedia.data.maps.LastMapRegionStore
+import com.duoc.rotompedia.ui.theme.RotompediaTheme
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,39 +49,73 @@ import com.duoc.rotompedia.ui.components.RotomScaffold
 import com.duoc.rotompedia.ui.components.RotomCard
 import com.duoc.rotompedia.ui.components.RotomAppearanceAction
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Regional-map entry point.
+ * - Never invent a default map on first use: show the region selector (Kanto first).
+ * - On later visits resume the last region chosen by the user.
+ * - Back from a viewer always goes to the selector, avoiding an automatic-resume loop.
+ * - No new NavHost destinations or account/Room changes are required.
+ */
 @Composable
 fun MapFeatureScreen(navController: NavController) {
-    RotomScaffold("Mapas Regionales", { navController.navigateUp() }, actions = { RotomAppearanceAction() }) {
-            Column(Modifier.fillMaxSize().padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    val context = LocalContext.current
+    val history = remember(context) { LastMapRegionStore(context.applicationContext) }
+    var openRegion by rememberSaveable { mutableStateOf(history.lastOpenedRegion()) }
+    val showSelector = { openRegion = null }
+
+    // Internal back returns to the region selector; the selector's back exits Mapas.
+    BackHandler(enabled = openRegion != null, onBack = showSelector)
+
+    if (openRegion != null) {
+        key(openRegion) {
+            if (openRegion == "hoenn") {
+                VerifiedHoennMapScreen(
+                    onNavigateBack = showSelector,
+                    onPokemonClick = { navController.navigate("pokemon_detail/$it") }
+                )
+            } else {
+                // Other regions retain the previous viewer until their atlas is rebuilt.
+                RotompediaTheme(legacy = true) {
+                    MapViewerScreen(
+                        region = requireNotNull(openRegion),
+                        onNavigateBack = showSelector,
+                        onPokemonClick = { navController.navigate("pokemon_detail/$it") }
+                    )
+                }
+            }
+        }
+    } else {
+        RotomScaffold("Mapas Regionales", { navController.navigateUp() },
+            actions = { RotomAppearanceAction() }) {
+            Column(Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "Selecciona una Región",
+                    text = "Elige una región",
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
-
-                RegionSelectionContent(navController = navController)
+                Text(
+                    text = "Cada región tiene su mapa. Los encuentros y objetos se consultan por edición dentro de cada zona.",
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 14.dp)
+                )
+                RegionSelectionContent(onRegionSelected = { region ->
+                    // Saving happens only after a user chooses an available region.
+                    history.rememberRegion(region)
+                    openRegion = region
+                })
             }
+        }
     }
 }
 
 @Composable
-fun RegionSelectionContent(navController: NavController) {
-    val regions = listOf(
-        "Kanto" to "kanto",
-        "Johto" to "johto",
-        "Hoenn" to "hoenn",
-        "Sinnoh" to "sinnoh",
-        "Teselia (Unova)" to "teselia",
-        "Kalos" to "kalos",
-        "Alola" to "alola",
-        "Galar" to "galar",
-        "Paldea" to "paldea"
-    )
-
+fun RegionSelectionContent(onRegionSelected: (String) -> Unit) {
+    val regions = MapRegionCatalogue.regions
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxWidth(),
@@ -84,22 +123,32 @@ fun RegionSelectionContent(navController: NavController) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
-        items(regions) { (displayName, internalName) ->
+        items(regions, key = { it.slug }) { region ->
             RotomCard(
-                onClick = { navController.navigate("map_viewer/$internalName") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 72.dp)
+                onClick = if (!region.available) null else { { onRegionSelected(region.slug) } },
+                modifier = Modifier.fillMaxWidth().heightIn(min = if (region.slug == "kanto") 84.dp else 72.dp)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = displayName,
-                        fontSize = 17.sp,
+                        text = region.name,
+                        fontSize = if (region.slug == "kanto") 20.sp else 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = when (region.slug) {
+                            "kanto" -> "Primera región · mapa clásico"
+                            "hoenn" -> "Piloto interactivo"
+                            "hisui" -> "En preparación"
+                            else -> "Mapa anterior · por rehacer"
+                        },
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -132,7 +181,7 @@ fun MapViewerScreen(
     // Datos de rutas y ubicaciones interactivas
     val locations = remember(region) { RegionLocationData.getLocationsForRegion(region) }
     var selectedLocation by remember { mutableStateOf<RouteLocation?>(null) }
-    var showPins by remember { mutableStateOf(true) }
+    var showPins by remember { mutableStateOf(false) } // Legacy coordinates have not been audited
 
     // Estados para zoom y paneo
     var scale by remember { mutableFloatStateOf(1f) }
@@ -156,7 +205,7 @@ fun MapViewerScreen(
                         Text("Mapa de $displayName", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         if (locations.isNotEmpty()) {
                             Text(
-                                "${locations.size} puntos interactivos",
+                                "${locations.size} puntos históricos sin verificar",
                                 fontSize = 11.sp,
                                 color = Color.White.copy(alpha = 0.8f)
                             )
@@ -404,7 +453,7 @@ fun MapViewerScreen(
                     ) {
                         Text("⚡", fontSize = 16.sp)
                         Text(
-                            text = "Kanto cuenta con radar completo. ¡Rutas de $displayName en próxima expansión!",
+                            text = "Cartografía histórica: encuentros y pines de $displayName pendientes de verificar.",
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 12.sp
                         )

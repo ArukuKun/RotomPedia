@@ -4,6 +4,7 @@ package com.duoc.rotompedia.data.reference
 object GameContentScope {
     fun allowsVersion(slug: String) = slug != "colosseum" && slug != "xd"
     fun allowsMove(move: ReferenceMove) = move.type != "shadow"
+    fun allowsEncounterMethod(slug: String) = slug.split('-').none { it == "colosseum" || it == "xd" }
     // Reviewed against the pinned reference; do not exclude legitimate Shadow Ball/Force/Tag.
     private val shadowSlugs = listOf("shadow-rush", "shadow-blast", "shadow-blitz", "shadow-bolt", "shadow-break",
         "shadow-chill", "shadow-end", "shadow-fire", "shadow-rave", "shadow-storm", "shadow-wave", "shadow-down",

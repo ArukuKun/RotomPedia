@@ -93,6 +93,12 @@ fun LocationDetailBottomSheet(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "Datos históricos del mapa anterior: coordenadas, encuentros y objetos aún no auditados por edición.",
+                fontSize = 12.sp,
+                color = rotomForm.accentColor
+            )
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Descripción y Lore del lugar
             Card(
@@ -159,7 +165,7 @@ fun LocationDetailBottomSheet(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Zona urbana protegida. No se registran encuentros de Pokémon salvajes.",
+                        text = "No hay registros verificados para esta zona. No implica ausencia de Pokémon.",
                         fontSize = 12.sp,
                         color = Color.Gray
                     )

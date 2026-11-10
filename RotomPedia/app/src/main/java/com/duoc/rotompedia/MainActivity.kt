@@ -120,7 +120,14 @@ fun AppNavigationController() {
             entry.arguments?.getString("region")?.let { region ->
                 // Existing cartography is explicitly deferred, not presented as rebuilt or verified.
                 RotompediaTheme(legacy = true) {
-                    MapViewerScreen(region, { navController.popBackStack() }, { navController.navigate("pokemon_detail/$it") })
+                    if (region == "hoenn") {
+                        VerifiedHoennMapScreen(
+                            onNavigateBack = { navController.popBackStack() },
+                            onPokemonClick = { navController.navigate("pokemon_detail/$it") }
+                        )
+                    } else {
+                        MapViewerScreen(region, { navController.popBackStack() }, { navController.navigate("pokemon_detail/$it") })
+                    }
                 }
             }
         }
