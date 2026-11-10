@@ -51,7 +51,11 @@ android {
     testOptions.unitTests.all {
         it.systemProperty("rotompedia.schemaDir", "$projectDir/schemas")
         // Bound CI/local runs even if a Compose idling loop never completes.
-        it.timeout.set(Duration.ofMinutes(5))
+        // 5 minutes was too tight for GitHub-hosted runners: RC13's passing run already
+        // took 4m22s, and with 202 tests the task died with "Timeout has been exceeded"
+        // before finishing. 15 minutes keeps the runaway-loop guard while letting the
+        // full suite complete on slow shared runners.
+        it.timeout.set(Duration.ofMinutes(15))
     }
     sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
     sourceSets.getByName("test").assets.srcDir("$projectDir/schemas")
