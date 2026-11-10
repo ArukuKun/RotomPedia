@@ -1,7 +1,7 @@
 name: Verify RotomPedia
 on:
   push:
-    branches: ['feature/v3.4-*', 'feature/v3.5-*']
+    branches: ['feature/v3.4-*', 'feature/v3.5-*', 'feature/v3.6-*']
   pull_request:
     branches: [Main]
   workflow_dispatch:
@@ -19,6 +19,7 @@ jobs:
       - run: python tools/generate_pokemon_index.py --verify-only
       - run: python tools/generate_item_index.py --verify-only
       - run: python tools/generate_reference_index.py --verify-only
+      - run: python tools/generate_location_index.py --verify-only RotomPedia/app/src/main/assets/hoenn-emerald-location-pilot.json
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

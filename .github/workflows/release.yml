@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -40,6 +41,7 @@ jobs:
           python tools/generate_pokemon_index.py --verify-only
           python tools/generate_item_index.py --verify-only
           python tools/generate_reference_index.py --verify-only
+          python tools/generate_location_index.py --verify-only RotomPedia/app/src/main/assets/hoenn-emerald-location-pilot.json
 
       - name: Build Debug APK
         working-directory: ./RotomPedia
@@ -54,8 +56,9 @@ jobs:
           name: RotomPedia-tag-validation-only
           path: RotomPedia/app/build/outputs/apk/debug/app-debug.apk
 
+      # Only a pre-release tag can publish; workflow_dispatch from a branch must stay verification-only.
       - name: Verify compatible signed assets and publish pre-release only
-        if: ${{ contains(github.ref_name, '-') }}
+        if: ${{ startsWith(github.ref_name, 'v') && contains(github.ref_name, '-') }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}

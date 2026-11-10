@@ -18,3 +18,6 @@ local.properties
 .cache/pokeapi-index/
 **/__pycache__/
 .kotlin/
+# Local IDE workspace and the script's signing output (APK/checksum are never source).
+/.idea/
+/release-candidate-output/
