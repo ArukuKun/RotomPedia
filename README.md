@@ -6,6 +6,8 @@ El proyecto nació en la asignatura "Desarrollo de Aplicaciones Móviles" (DSY11
 
 ## Estado actual y versiones
 
+**Entrega de revisión RC2 en preparación (§5.11):** `3.6.0-rc2` / `30602`, compilación release local, 214 Kotlin/44 Python e índices correctos y certificado original verificado. Incluye diseño aprobado y atlas provisional, sin completar todavía Kanto/otras ediciones. Notas en [RELEASE_V3_6_0_RC2.md](docs/RELEASE_V3_6_0_RC2.md); pendiente publicación verificada por Actions. No reemplaza assets de RC1.
+
 **Pre-release pública:** [v3.6.0-rc1](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.6.0-rc1), `30601`, publicada el 10 nov 2026 con firma compatible con RC14 y Actions verdes (§5.8). **v3.5 no tiene versión estable publicada**: RC14 se conserva como referencia histórica/de compatibilidad; no se renumeran sus RC ni se promueve ninguna a estable.
 **Continuación local (11 nov, §5.9):** rama `feature/v3.6-regional-atlas-ui`: integra Home/Más y cinco pestañas aprobadas, corrige compilación/cabeceras, y sustituye rectángulos visibles de Hoenn por una recreación CC0 de Ztash. Zoom/pan acotados, clipping, sectores aproximados, lista accesible y ficha por edición con métodos derivados de registros/sprites existentes. Esmeralda intacta; otras ediciones/objetos pendientes. Kanto continúa primero, con visor histórico mejorado pero **sin cartografía reconstruida**. Otras regiones pendientes, Hisui no disponible. Este código **no forma parte del APK RC1 publicado**, cuyos assets no se reemplazan; no es cartografía final ni modo offline completo.
 

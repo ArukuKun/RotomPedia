@@ -969,6 +969,14 @@ Explorador en una sola `LazyColumn` (mapa/filtros/lista desplazables); diálogo 
 - **Confirmación remota:** corrección `9fb5509` subida; [Verify 43084556620](https://github.com/ArukuKun/RotomPedia/actions/runs/43084556620) **success al primer intento**, `BUILD SUCCESSFUL in 10m06s`. Descargado el artefacto: **41 suites / 214 tests / 0 fallos / 0 errores / 0 omitidas**; Python/índices/lint/debug/instrumentación compilada también correctos. `failFast` no ha ocultado una suite parcial. XML/HTML retenidos como evidencia. Sin retry del commit fallido, nuevo tag o APK pública.
 - **Límite de diagnóstico:** el orden incorrecto de cierre es un defecto comprobable del fixture; el CI verde tras corregirlo y retirar el avance manual del looper **no demuestra que sea la única causa** posible de toda flakiness histórica. Conservar diagnóstico completo y regresión de teardown. Bloqueo de esta ejecución CI resuelto; una publicación nueva sigue requiriendo versión creciente y el resto de controles físicos/distribución. No modificar assets RC1 por estos cambios de pruebas.
 
+### 5.11 Entrega de revisión v3.6.0-rc2 (11 nov 2026)
+
+**Solicitud expresa:** el usuario necesita una release descargable para revisar los cambios, como en entregas anteriores. Se prepara **pre-release**, nunca estable, en `feature/v3.6-regional-atlas-ui`, sin reemplazar RC1. `versionName=3.6.0-rc2`, `versionCode=30602 > 30601 > 30514`, paquete intacto. Incluye el diseño/atlas de §5.9 y el fix de pruebas de §5.10; sin ampliar cartografía/datos ni Room.
+
+**Verificación local RC2:** JDK17, comando completo `testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest assembleRelease --stacktrace --max-workers=1` → **BUILD SUCCESSFUL in 5m18s**, 214 Kotlin sin fallos; 44 Python y cuatro índices correctos. APK **release no debuggable** firmada con la clave original existente y comprobada con `apksigner`, `zipalign` y `aapt`: certificado SHA-256 `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`, igual a RC14/RC1; paquete/versión correctos. Sin keystore nuevo. Archivo `release-candidate-output/RotomPedia-v3.6.0-rc2.apk`, **16.762.503 bytes**, SHA-256 `b7d6250c8ee86c1d7de2a3fdfc3c903254f4a5510799957d929d197131fbe5be`, `.sha256` generado sin BOM. APK RC1 y debug de desarrollo intactos.
+
+**Publicación:** preparar tag nuevo `v3.6.0-rc2`, draft con APK/checksum y `docs/RELEASE_V3_6_0_RC2.md`; Actions debe repetir controles y publicar solo tras validar assets. CI, estado público y descarga/digest remotos pendientes en este registro de preparación. No modificar tags/assets anteriores. Actualización física, contraste/gestos en móvil y revisión del usuario pendientes; no anunciar mapas finales ni offline completo.
+
 ### v3.6-A — Investigación y piloto
 
 - [ ] Revisar videos/capturas del **PokeInfo original de Bruno Sousa**, paquete `com.brunosousa.pokeinfo`. No confundirlo con aplicaciones homónimas.
