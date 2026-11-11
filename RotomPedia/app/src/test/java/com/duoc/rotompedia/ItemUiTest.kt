@@ -2,6 +2,8 @@ package com.duoc.rotompedia
 
 import android.content.Context
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,10 +22,10 @@ import com.duoc.rotompedia.viewmodel.EvolutionStage
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.runBlocking
-import org.junit.After
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Rule
+import org.junit.rules.ExternalResource
+import org.junit.rules.RuleChain
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
@@ -33,12 +35,12 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = android.app.Application::class)
 class ItemUiTest {
-    @get:Rule val compose = createComposeRule()
+    private val compose = createComposeRule()
     private lateinit var db: AppDatabase
     private lateinit var repo: ItemRepository
     private lateinit var api: PokeApiService
     private fun resource(name: String) = NamedApiResource(name, "")
-    @Before fun setup() {
+    private fun setup() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).allowMainThreadQueries().build()
         api = Mockito.mock(PokeApiService::class.java)
@@ -47,7 +49,25 @@ class ItemUiTest {
         }
         runBlocking { repo.ensureIndex() }
     }
-    @After fun close() { db.close() }
+    // @After runs BEFORE a Compose rule disposes its content. The database must outlive
+    // the composition and its Room collectors, so close it from an OUTER rule instead.
+    private val databaseRule = object : ExternalResource() {
+        override fun before() = setup()
+        override fun after() { db.close() }
+    }
+    @get:Rule val rules: RuleChain = RuleChain.outerRule(databaseRule).around(compose)
+
+    @Test fun `database stays open until Compose content has been disposed`() {
+        compose.setContent {
+            DisposableEffect(Unit) {
+                onDispose { assertTrue("Room was closed before Compose teardown", db.isOpen) }
+            }
+            Text("Active composition")
+        }
+        compose.onNodeWithText("Active composition").assertIsDisplayed()
+        // The disposal assertion is deliberately executed by the Compose rule AFTER this
+        // method returns, before the outer database rule closes the fixture.
+    }
 
     @Test fun `local item search opens correct berry and displays reviewed Spanish effect`() {
         runBlocking { Mockito.`when`(api.getItem("168")).thenReturn(ItemDetail(168, "shuca-berry", resource("type-protection"))) }
@@ -57,7 +77,6 @@ class ItemUiTest {
         Mockito.verifyNoInteractions(api)
         compose.onNodeWithText("Baya Acardo").performScrollTo().assertIsDisplayed().performClick()
         compose.waitUntil(15_000) {
-            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             compose.onAllNodesWithText(ItemEditorial.shucaEffect).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithText(ItemEditorial.shucaEffect).performScrollTo().assertIsDisplayed()

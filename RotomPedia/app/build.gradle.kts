@@ -1,4 +1,5 @@
 import java.time.Duration
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 // app/build.gradle.kts
 plugins {
@@ -53,6 +54,10 @@ android {
         // Bound CI/local runs even if a Compose idling loop never completes.
         // RC13 already needed 4m22s; slow shared runners need room for the complete suite.
         it.timeout.set(Duration.ofMinutes(15))
+        // Stop on the first failure, not after 14 one-minute idling cascades. On a green
+        // run every test still executes. A normal failed task can finish its XML/HTML reports.
+        it.failFast = true
+        it.testLogging.exceptionFormat = TestExceptionFormat.FULL
     }
     sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
     sourceSets.getByName("test").assets.srcDir("$projectDir/schemas")
