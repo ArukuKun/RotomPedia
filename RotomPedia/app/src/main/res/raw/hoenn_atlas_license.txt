@@ -1,0 +1,8 @@
+Hoenn map recreation by Ztash, 28 December 2023 (corrected 20:45 upload).
+Own work released under CC0 1.0 Universal.
+https://commons.wikimedia.org/w/index.php?title=File:Hoenn_Map.png&oldid=883826344
+https://creativecommons.org/publicdomain/zero/1.0/
+SHA-256: bb7ff006a8625d44bc8ef7b4e10a668e777a1efa1eeb9e3b538bce8fe80cd255
+Community recreation, not an official map. English labels and approximate section
+selection; detailed spatial validation pending. Pokemon trademarks belong to
+their respective owners. Encounter data is separately verified by edition.

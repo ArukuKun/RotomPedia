@@ -15,7 +15,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $expectedCert = '5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa'
 $tag = 'v3.6.0-rc1'
-$branch = 'feature/v3.6-hoenn-atlas-rebuild'
+$branch = 'feature/v3.6-regional-atlas-ui'
 $repo = 'ArukuKun/RotomPedia'
 $baseBranch = 'feature/v3.5-main-games-hisui'
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -23,6 +23,7 @@ $androidRoot = Join-Path $projectRoot 'RotomPedia'
 $gradleBuildFile = Join-Path $androidRoot 'app\build.gradle.kts'
 $defaultDebugKey = Join-Path $env:USERPROFILE '.android\debug.keystore'
 if ([string]::IsNullOrWhiteSpace($KeyStorePath)) { $KeyStorePath = $defaultDebugKey }
+if ($Publish) { throw 'RC1 ya fue publicada. Este script histórico no publica código nuevo con el mismo tag; prepara otra versión creciente y verificada.' }
 
 function Assert-Exit([string]$name) {
     if ($LASTEXITCODE -ne 0) { throw "$name falló (código $LASTEXITCODE). No se publicó nada." }
@@ -65,27 +66,20 @@ $env:ANDROID_HOME=$sdk
 $apkSigner=Find-AndroidTool 'apksigner' $sdk
 $aapt=Find-AndroidTool 'aapt' $sdk
 
-# Validar los tests de generadores antes de compilar. Python 3 es requerido por CI.
-# El alias de Microsoft Store devuelve 9009 sin ser Python: se valida la salida real.
+# Microsoft Store aliases may exist on PATH without actually running Python.
 function Find-Python {
-    $candidates = @()
-    if (-not [string]::IsNullOrWhiteSpace($env:ROTOM_PYTHON)) { $candidates += $env:ROTOM_PYTHON }
-    foreach ($command in @('python3', 'py')) {
-        $found = Get-Command $command -ErrorAction SilentlyContinue
-        if ($found) { $candidates += $found.Source }
-    }
-    $candidates += 'python'
-    $candidates += (Join-Path $env:LOCALAPPDATA 'Temp\opencode\python312\python.exe')
+    $candidates = @($env:ROTOM_PYTHON, 'python3', 'py', 'python',
+        (Join-Path $env:LOCALAPPDATA 'Temp\opencode\python312\python.exe'))
     foreach ($candidate in $candidates) {
+        if ([string]::IsNullOrWhiteSpace($candidate)) { continue }
         try {
             $version = & $candidate --version 2>&1
             if ($LASTEXITCODE -eq 0 -and ($version -join ' ') -match '^Python 3\.') { return $candidate }
         } catch { }
     }
-    throw 'Falta un Python 3 funcional para los tests de datos (el alias de la Microsoft Store no sirve).'
+    throw 'Falta Python 3 funcional; el alias de Microsoft Store no sirve.'
 }
 $pythonExe = Find-Python
-Write-Host "Python de trabajo: $pythonExe"
 Push-Location $projectRoot
 try {
     & $pythonExe -m unittest discover -s tools/tests -v
@@ -111,6 +105,7 @@ if (-not (Test-Path $unsigned)) {
 $outputDir=Join-Path $projectRoot 'release-candidate-output'
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 $signed=Join-Path $outputDir "RotomPedia-$tag.apk"
+if (Test-Path $signed) { throw 'El APK RC1 ya existe localmente; no se reemplaza con una compilación de desarrollo.' }
 
 # La contraseña no se escribe en el script ni en un archivo. apksigner la lee de variables de entorno.
 if (($KeyStorePath -eq $defaultDebugKey) -and ($KeyAlias -eq 'androiddebugkey') -and (-not $PromptPasswords)) {
@@ -165,11 +160,6 @@ if (-not $Publish) {
 # Publicación: se requiere identidad GitHub autenticada, rama nueva, tag nuevo y confirmación.
 foreach ($tool in @('git','gh','robocopy')) {
     if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "Falta $tool. El APK YA se creó localmente; no se publicó." }
-}
-# gh puede no estar en PATH: se añade su ubicación conocida de esta máquina sin tocar el sistema.
-$ghDir = Join-Path $env:LOCALAPPDATA 'Temp\opencode\gh\bin'
-if (-not (Get-Command gh -ErrorAction SilentlyContinue) -and (Test-Path (Join-Path $ghDir 'gh.exe'))) {
-    $env:PATH = "$ghDir;$env:PATH"
 }
 & gh auth status
 Assert-Exit 'Autenticación de GitHub CLI'

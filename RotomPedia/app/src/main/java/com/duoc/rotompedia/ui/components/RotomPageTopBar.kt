@@ -14,7 +14,10 @@ fun RotomPageTopBar(title: @Composable () -> Unit, navigationIcon: @Composable (
     val palette = MaterialTheme.colorScheme
     val frame = LocalRotomPalette.current.frame
     MaterialTheme(colorScheme = palette.copy(onSurface = Color.White, onSurfaceVariant = Color.White, primary = Color.White)) {
-        TopAppBar(title = title, navigationIcon = navigationIcon, actions = actions,
+        TopAppBar(title = title, navigationIcon = navigationIcon, actions = {
+            actions()
+            MaterialTheme(colorScheme = palette) { RotomFaceAction() }
+        },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = frame, titleContentColor = Color.White,
                 navigationIconContentColor = Color.White, actionIconContentColor = Color.White))
     }

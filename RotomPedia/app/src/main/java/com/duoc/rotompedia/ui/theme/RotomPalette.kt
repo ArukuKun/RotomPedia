@@ -48,7 +48,7 @@ fun rotomPalette(form: RotomForm, dark: Boolean): RotomPalette {
         RotomForm.CORTE -> Triple(0xFF276336, 0xFFB5E898, 0xFF315D20)
     }
     return RotomPalette(
-        frame = Color(colors.first), accent = Color(if (dark) colors.second else colors.third),
+        frame = Color(0xFFB52C32), accent = Color(if (dark) colors.second else colors.third),
         reading = Color(if (dark) 0xFF18303C else 0xFFF7FDFE),
         raised = Color(if (dark) 0xFF213F4C else 0xFFE4F2F5),
         ink = Color(if (dark) 0xFFF3FBFF else 0xFF142E3C),

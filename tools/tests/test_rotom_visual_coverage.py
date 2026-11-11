@@ -13,8 +13,10 @@ class RotomVisualCoverageTests(unittest.TestCase):
         main = (KOTLIN / 'MainActivity.kt').read_text(encoding='utf-8')
         self.assertIn('RotomHomeScreen(', main)
         self.assertNotIn('fun MenuButton(', main)
-        self.assertEqual(1, len(re.findall(r'RotompediaTheme\(legacy\s*=\s*true\)', main)))
-        self.assertGreater(main.index('RotompediaTheme(legacy = true)'), main.index('composable("map_viewer/'))
+        self.assertNotIn('RotompediaTheme(legacy = true)', main)
+        reference = (SCREENS / 'RegionalReferenceMapScreen.kt').read_text(encoding='utf-8')
+        self.assertIn('RotomScaffold(', reference)
+        self.assertIn('LocationDetailBottomSheet(', reference)  # historical access preserved, not edition-verified
         self.assertIn('pokemon_moves/{pokemonId}', main)
         self.assertIn('onMovesClick =', main)
 

@@ -1,6 +1,7 @@
 package com.duoc.rotompedia.ui.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,15 +11,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import com.duoc.rotompedia.R
 import com.duoc.rotompedia.ui.theme.*
 import kotlin.math.roundToInt
@@ -45,11 +57,14 @@ internal fun RotomBackground(sideFace: Boolean, faceWidthFraction: Float, modifi
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RotomTopBar(title: String, onNavigateBack: (() -> Unit)?, actions: @Composable RowScope.() -> Unit = {}) {
-    TopAppBar(title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) }, navigationIcon = {
+    TopAppBar(title = {
+        Text(title, fontSize = 19.sp, fontWeight = FontWeight.Bold,
+            maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }, navigationIcon = {
         if (onNavigateBack != null) IconButton(onClick = onNavigateBack, modifier = Modifier.size(RotomDimensions.TouchTarget)) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
         }
-    }, actions = actions, colors = TopAppBarDefaults.topAppBarColors(
+    }, actions = { actions(); RotomFaceAction() }, colors = TopAppBarDefaults.topAppBarColors(
         containerColor = LocalRotomPalette.current.frame, titleContentColor = Color.White,
         navigationIconContentColor = Color.White, actionIconContentColor = Color.White))
 }
@@ -70,23 +85,28 @@ fun RotomPageScaffold(
     content: @Composable (PaddingValues) -> Unit
 ) {
     RotompediaTheme {
-    Scaffold(topBar = topBar, floatingActionButton = floatingActionButton,
-        containerColor = LocalRotomPalette.current.frame) { insets ->
-            BoxWithConstraints(Modifier.fillMaxSize().padding(insets).consumeWindowInsets(insets).imePadding()) {
-                val availableWidth = maxWidth
-                val side = maxWidth > maxHeight
-                val sideFraction = if (maxWidth > 600.dp) 0.22f else 0.25f
-                RotomBackground(side, sideFraction, Modifier.fillMaxSize())
-                if (side) Row(Modifier.fillMaxSize()) {
-                    Box(Modifier.width(availableWidth * sideFraction).fillMaxHeight().testTag("rotom_face"))
-                    RotomReadingPanel(Modifier.weight(1f).fillMaxHeight()) { content(PaddingValues(0.dp)) }
-                } else Column(Modifier.fillMaxSize()) {
-                    Box(Modifier.fillMaxWidth().height(availableWidth * RotomDimensions.FaceAspect).testTag("rotom_face"))
-                    RotomReadingPanel(Modifier.fillMaxWidth().weight(1f)) { content(PaddingValues(0.dp)) }
-                }
+        Scaffold(topBar = topBar, floatingActionButton = floatingActionButton,
+            containerColor = LocalRotomPalette.current.reading) { insets ->
+            Box(Modifier.fillMaxSize().padding(insets).consumeWindowInsets(insets).imePadding()
+                .background(LocalRotomPalette.current.reading).testTag("rotom_content")) {
+                content(PaddingValues(0.dp))
             }
         }
     }
+}
+
+/** Avatar cropped directly from the user's existing Rotom illustration (not a generic emoji). */
+@Composable
+fun RotomFaceAction() {
+    var open by remember { mutableStateOf(false) }
+    IconButton(onClick = { open = true }, modifier = Modifier.size(RotomDimensions.TouchTarget)) {
+        Image(painter = painterResource(R.drawable.rotom_face_original), contentDescription = "Consejo de Rotom",
+            contentScale = ContentScale.Crop, modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)))
+    }
+    if (open) AlertDialog(onDismissRequest = { open = false },
+        title = { Text("¡Bzzzt! Rotom aquí") },
+        text = { Text("Elige una herramienta abajo para continuar tu aventura. En Mapas puedes recuperar tu última región visitada.") },
+        confirmButton = { TextButton(onClick = { open = false }) { Text("Entendido") } })
 }
 
 @Composable
@@ -98,7 +118,7 @@ private fun RotomReadingPanel(modifier: Modifier, content: @Composable BoxScope.
 
 @Composable
 fun RotomCard(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
-    val colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer,
+    val colors = CardDefaults.cardColors(containerColor = if (MaterialTheme.colorScheme.surface.luminance() > .5f) Color.White else MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onSurface)
     val shape = RoundedCornerShape(RotomDimensions.CardCorner)
     val border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.65f))

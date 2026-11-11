@@ -13,6 +13,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.activity.compose.BackHandler
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.duoc.rotompedia.data.maps.MapRegionCatalogue
 import com.duoc.rotompedia.data.maps.LastMapRegionStore
@@ -61,6 +64,16 @@ fun MapFeatureScreen(navController: NavController) {
     val context = LocalContext.current
     val history = remember(context) { LastMapRegionStore(context.applicationContext) }
     var openRegion by rememberSaveable { mutableStateOf(history.lastOpenedRegion()) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle, history) {
+        val observer = LifecycleEventObserver { _, event ->
+            // Restored bottom-tab state may contain the selector after Back; on a NEW visit
+            // resume the last map, without redirecting while actively changing regions.
+            if (event == Lifecycle.Event.ON_RESUME && openRegion == null) openRegion = history.lastOpenedRegion()
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
     val showSelector = { openRegion = null }
 
     // Internal back returns to the region selector; the selector's back exits Mapas.
@@ -75,13 +88,11 @@ fun MapFeatureScreen(navController: NavController) {
                 )
             } else {
                 // Other regions retain the previous viewer until their atlas is rebuilt.
-                RotompediaTheme(legacy = true) {
                     MapViewerScreen(
                         region = requireNotNull(openRegion),
                         onNavigateBack = showSelector,
                         onPokemonClick = { navController.navigate("pokemon_detail/$it") }
                     )
-                }
             }
         }
     } else {
@@ -143,7 +154,7 @@ fun RegionSelectionContent(onRegionSelected: (String) -> Unit) {
                     Text(
                         text = when (region.slug) {
                             "kanto" -> "Primera región · mapa clásico"
-                            "hoenn" -> "Piloto interactivo"
+                            "hoenn" -> "Atlas provisional · Esmeralda"
                             "hisui" -> "En preparación"
                             else -> "Mapa anterior · por rehacer"
                         },
@@ -159,7 +170,7 @@ fun RegionSelectionContent(onRegionSelected: (String) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapViewerScreen(
+internal fun LegacyMapViewerScreen(
     region: String,
     onNavigateBack: () -> Unit = {},
     onPokemonClick: (Int) -> Unit = {}

@@ -7,6 +7,10 @@ import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import com.duoc.rotompedia.ui.components.RotomNavigationShell
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
@@ -68,10 +72,16 @@ fun AppNavigationController() {
         }
     }
     LaunchedEffect(Unit) { auth.checkSession() }
-    NavHost(navController, startDestination = "login") {
+    RotomNavigationShell(navController) { innerPadding ->
+    NavHost(navController, startDestination = "login",
+        modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)) {
         composable("login") { LoginScreen(auth, { navController.navigate("register") }) }
         composable("register") { RegisterScreen({ navController.popBackStack() }, { navController.popBackStack() }, auth) }
         composable("menu_principal_screen") { MenuPrincipalScreen(navController, auth) }
+        composable("more_tools") {
+            RotomMoreToolsScreen(onNavigate = { navController.navigate(it) },
+                onBack = { navController.navigate("menu_principal_screen") { launchSingleTop = true } })
+        }
         composable("pokedex") {
             PokedexScreen({ navController.navigate("pokemon_detail/$it") }, { navController.navigateUp() }, pokemonFactory)
         }
@@ -119,7 +129,6 @@ fun AppNavigationController() {
         composable("map_viewer/{region}", arguments = listOf(navArgument("region") { type = NavType.StringType })) { entry ->
             entry.arguments?.getString("region")?.let { region ->
                 // Existing cartography is explicitly deferred, not presented as rebuilt or verified.
-                RotompediaTheme(legacy = true) {
                     if (region == "hoenn") {
                         VerifiedHoennMapScreen(
                             onNavigateBack = { navController.popBackStack() },
@@ -128,9 +137,9 @@ fun AppNavigationController() {
                     } else {
                         MapViewerScreen(region, { navController.popBackStack() }, { navController.navigate("pokemon_detail/$it") })
                     }
-                }
             }
         }
+    }
     }
 }
 

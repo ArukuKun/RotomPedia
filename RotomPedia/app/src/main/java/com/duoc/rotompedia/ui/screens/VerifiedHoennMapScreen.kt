@@ -2,7 +2,11 @@ package com.duoc.rotompedia.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -33,12 +37,8 @@ import kotlinx.coroutines.withContext
  * First data-backed map entry: Hoenn / Emerald only. The old background image is explicitly
  * illustrative and has NO interactive positions until cartographic rights and mappings are audited.
  * Source encounters are authoritative for this edition; objects and unlisted games are NOT inferred.
- *
- * The suppression is for the known lint false positive ProduceStateDoesNotAssignValue
- * (issuetracker.google.com/issues/349411310): AGP 8.12.3 flags even the canonical
- * `produceState(0) { value = 1 }`, although `value = …` is present in both producers below.
  */
-@Suppress("ProduceStateDoesNotAssignValue")
+@Suppress("ProduceStateDoesNotAssignValue") // AGP 8.12.3 false positive: issuetracker 349411310; both producers assign value.
 @Composable
 fun VerifiedHoennMapScreen(onNavigateBack: () -> Unit, onPokemonClick: (Int) -> Unit) {
     val context = LocalContext.current
@@ -46,18 +46,11 @@ fun VerifiedHoennMapScreen(onNavigateBack: () -> Unit, onPokemonClick: (Int) -> 
     var reload by remember { mutableIntStateOf(0) }
     var loadFailed by remember { mutableStateOf(false) }
     val catalogue by produceState<LocationCatalogue?>(null, reload) {
-        val loaded = try {
-            container.hoennPilot.catalogue()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            loadFailed = true
-            null
-        }
-        value = loaded
+        value = try { container.hoennPilot.catalogue() }
+        catch (e: Exception) { if (e is CancellationException) throw e; loadFailed = true; null }
     }
     val labels by produceState<Map<Int, LocationPokemonLabel>>(emptyMap()) {
-        val loaded = try {
+        value = try {
             withContext(Dispatchers.IO) {
                 val json = context.assets.open("pokemon-index.json").bufferedReader().use { it.readText() }
                 val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -66,12 +59,7 @@ fun VerifiedHoennMapScreen(onNavigateBack: () -> Unit, onPokemonClick: (Int) -> 
                 IndexValidator.validate(envelope, payload)
                 LocationPokemonNames.fromNationalIndex(payload)
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            emptyMap()
-        }
-        value = loaded
+        } catch (e: Exception) { if (e is CancellationException) throw e; emptyMap() }
     }
     var query by rememberSaveable { mutableStateOf("") }
     var withEncounters by rememberSaveable { mutableStateOf(true) }
@@ -115,7 +103,9 @@ fun VerifiedHoennMapScreen(onNavigateBack: () -> Unit, onPokemonClick: (Int) -> 
                     }
                 }
             }
-            Column(Modifier.fillMaxSize().padding(horizontal = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(Modifier.fillMaxSize().padding(horizontal = 10.dp).testTag("hoenn_explorer"),
+                contentPadding = PaddingValues(bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                item(key = "map_and_filters") { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Explora Hoenn", style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary)
                 Text("Toca una ruta, ciudad o cueva. El mapa pertenece a Hoenn; " +
@@ -146,14 +136,14 @@ fun VerifiedHoennMapScreen(onNavigateBack: () -> Unit, onPokemonClick: (Int) -> 
                     }
                 }
                 HoennSectionMap(pilot.locations, highlightedLocationId, selectMapLocation,
-                    Modifier.fillMaxWidth(), matchingLocationIds, if (showExplorer) 205.dp else 340.dp)
+                    Modifier.fillMaxWidth(), matchingLocationIds, if (showExplorer) 205.dp else 280.dp)
                 if (mapFullscreen) {
                     Dialog(onDismissRequest = { mapFullscreen = false },
                         properties = DialogProperties(usePlatformDefaultWidth = false)) {
                         Surface(Modifier.fillMaxSize().padding(8.dp), shape = RoundedCornerShape(16.dp)) {
                             BoxWithConstraints(Modifier.fillMaxSize().padding(8.dp)) {
                                 val availableHeight = (maxHeight - 135.dp).coerceAtLeast(120.dp)
-                                Column(Modifier.fillMaxSize()) {
+                                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically) {
                                         Text("Región de Hoenn", style = MaterialTheme.typography.titleLarge)
@@ -190,8 +180,14 @@ fun VerifiedHoennMapScreen(onNavigateBack: () -> Unit, onPokemonClick: (Int) -> 
                     }
                     if (filtered.isEmpty()) Text("Sin resultados verificados con estos filtros.",
                         style = MaterialTheme.typography.bodySmall)
-                    LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 14.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                } else {
+                    Text("Selecciona una zona del mapa para consultar Pokémon y objetos por edición. " +
+                        "También puedes buscar por nombre o número nacional.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                } }
+                if (showExplorer) {
                         items(filtered, key = { it.area.id }) { result ->
                             val area = result.area
                             RotomCard(onClick = { selectedAreaId = area.id }, modifier = Modifier.fillMaxWidth()) {
@@ -204,12 +200,6 @@ fun VerifiedHoennMapScreen(onNavigateBack: () -> Unit, onPokemonClick: (Int) -> 
                                 }
                             }
                         }
-                    }
-                } else {
-                    Text("Selecciona una zona del mapa para consultar Pokémon y objetos por edición. " +
-                        "La opción de búsqueda está disponible sin llenar el mapa de etiquetas.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             selectedLocationId?.let { id ->
@@ -249,16 +239,23 @@ private fun methodDisplay(method: MapEncounterMethod?): String = AtlasEncounterM
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HoennAreaSheet(area: MapArea, location: MapLocation?, data: AreaEncounters,
+internal fun HoennAreaSheet(area: MapArea, location: MapLocation?, data: AreaEncounters,
     filtered: List<MapEncounter>, methods: Map<Int, MapEncounterMethod>,
     conditions: Map<Int, MapEncounterCondition>, labels: Map<Int, LocationPokemonLabel>,
     category: HoennEncounterCategory, query: String,
     onDismiss: () -> Unit, onPokemonClick: (Int) -> Unit) {
     // The edition is a property of encounter data, not of the Hoenn map itself.
     var selectedTab by rememberSaveable(area.id) { mutableIntStateOf(0) }
-    val families = remember(filtered, methods) {
+    var selectedVersion by rememberSaveable(area.id) { mutableIntStateOf(data.versionId) }
+    var selectedMethod by rememberSaveable(area.id, selectedVersion) { mutableStateOf<Int?>(null) }
+    val editionRows = remember(filtered, selectedVersion) { filtered.filter { it.versionId == selectedVersion } }
+    val availableMethods = remember(editionRows, methods) { AtlasEncounterSelection.methods(editionRows, methods) }
+    val visibleRows = remember(editionRows, selectedMethod) {
+        editionRows.filter { selectedMethod == null || it.methodId == selectedMethod }
+    }
+    val families = remember(visibleRows, methods) {
         AtlasEncounterFamily.entries.mapNotNull { family ->
-            val byMethod = filtered.filter { row ->
+            val byMethod = visibleRows.filter { row ->
                 AtlasEncounterMethods.family(methods[row.methodId]?.slug.orEmpty()) == family
             }.groupBy { it.methodId }.toSortedMap()
             if (byMethod.isEmpty()) null else family to byMethod
@@ -266,18 +263,14 @@ private fun HoennAreaSheet(area: MapArea, location: MapLocation?, data: AreaEnco
     }
     ModalBottomSheet(onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-        LazyColumn(Modifier.fillMaxWidth().padding(horizontal = 18.dp),
+        LazyColumn(Modifier.fillMaxWidth().padding(horizontal = 18.dp).testTag("atlas_encounters"),
             contentPadding = PaddingValues(bottom = 30.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item(key = "atlas_header") {
                 Text(areaDisplay(area, location), style = MaterialTheme.typography.titleLarge)
                 Text("Región de Hoenn · encuentros según edición", style = MaterialTheme.typography.bodySmall)
                 Spacer(Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AssistChip(onClick = {}, enabled = false, label = { Text("Pokémon Esmeralda") })
-                    Text("Única edición verificada actualmente", style = MaterialTheme.typography.labelSmall)
-                }
+                AtlasEditionSelector(AtlasEditions.hoenn, selectedVersion, onSelect = { selectedVersion = it })
                 Spacer(Modifier.height(8.dp))
                 TabRow(selectedTabIndex = selectedTab) {
                     Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 },
@@ -287,8 +280,15 @@ private fun HoennAreaSheet(area: MapArea, location: MapLocation?, data: AreaEnco
                 }
                 Spacer(Modifier.height(12.dp))
                 if (selectedTab == 0) {
-                    Text("${filtered.size} registros · ${category.title}",
+                    Text("${visibleRows.size} registros · ${category.title}",
                         style = MaterialTheme.typography.bodySmall)
+                    if (availableMethods.isNotEmpty()) LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        item { FilterChip(selected = selectedMethod == null, onClick = { selectedMethod = null }, label = { Text("Todos") }) }
+                        items(availableMethods, key = { it.id }) { method ->
+                            FilterChip(selected = selectedMethod == method.id, onClick = { selectedMethod = method.id },
+                                label = { Text(methodDisplay(method)) })
+                        }
+                    }
                     if (query.isNotBlank()) Text("Filtro de búsqueda: ${query.trim()}",
                         style = MaterialTheme.typography.labelSmall)
                     Text("Cada método tiene sus propios encuentros. Los porcentajes son pesos " +
@@ -298,8 +298,8 @@ private fun HoennAreaSheet(area: MapArea, location: MapLocation?, data: AreaEnco
                 }
             }
             if (selectedTab == 0) {
-                if (filtered.isEmpty()) item(key = "atlas_empty_encounters") {
-                    Text(if (data.coverage != AreaCoverage.AVAILABLE)
+                if (visibleRows.isEmpty()) item(key = "atlas_empty_encounters") {
+                    Text(if (selectedVersion != data.versionId || data.coverage != AreaCoverage.AVAILABLE)
                         "No hay registros de encuentros verificados para esta zona y edición. " +
                             "Eso no demuestra que no existan Pokémon aquí."
                         else "No hay resultados con los filtros activos. Prueba otra búsqueda o método.",
@@ -323,7 +323,9 @@ private fun HoennAreaSheet(area: MapArea, location: MapLocation?, data: AreaEnco
                             val pokemon = labels[encounter.pokemonId]
                             RotomCard(onClick = { onPokemonClick(encounter.pokemonId) },
                                 modifier = Modifier.fillMaxWidth()) {
-                                Column(Modifier.fillMaxWidth().padding(10.dp)) {
+                                Row(Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    PokemonImage(encounter.pokemonId, pokemon?.name, Modifier.size(56.dp))
+                                    Column(Modifier.weight(1f)) {
                                     Text(pokemon?.let {
                                         "#${it.nationalNumber.toString().padStart(3, '0')} · ${it.name}"
                                     } ?: "Variedad de ID interno ${encounter.pokemonId}",
@@ -340,6 +342,7 @@ private fun HoennAreaSheet(area: MapArea, location: MapLocation?, data: AreaEnco
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
+                                    }
                                     }
                                 }
                             }

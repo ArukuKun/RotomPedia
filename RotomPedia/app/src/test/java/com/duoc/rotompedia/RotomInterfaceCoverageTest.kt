@@ -32,9 +32,8 @@ class RotomInterfaceCoverageTest {
         RotomThemeManager.setForm(context, RotomForm.NORMAL)
     }
     private fun assertDeviceFrame() {
-        val face = compose.onNodeWithTag("rotom_face").fetchSemanticsNode().boundsInRoot
-        val content = compose.onNodeWithTag("rotom_content").fetchSemanticsNode().boundsInRoot
-        assertTrue(face.bottom <= content.top || face.right <= content.left)
+        compose.onNodeWithTag("rotom_face").assertDoesNotExist()
+        compose.onNodeWithTag("rotom_content").assertExists()
     }
     private fun pokemon(): PokemonViewModel {
         val result = Mockito.mock(PokemonViewModel::class.java)
@@ -42,20 +41,35 @@ class RotomInterfaceCoverageTest {
         return result
     }
 
-    @Test fun `new home has all real destinations rather than the legacy button menu`() {
-        val choices = listOf("Pokédex", "Equipos", "Objetos", "Movimientos", "Habilidades", "Mapas",
-            "Calculadora IV/EV", "Ratio Captura", "Tabla Tipos", "Líderes", "Modo Versus")
+    @Test fun `approved home provides eight high contrast shortcuts and complete more menu`() {
+        val choices = listOf("Pokédex", "Mapas", "Creador de equipos", "Líderes y Alto Mando",
+            "Objetos", "Habilidades", "Tabla de tipos", "Todas las herramientas")
         val routes = mutableListOf<String>()
         compose.setContent { RotompediaTheme { RotomHomeScreen({ routes.add(it) }, {}) } }
         assertDeviceFrame()
-        compose.onNodeWithText("¿Qué exploramos hoy?").assertExists()
+        compose.onNodeWithText("Accesos a tus herramientas").assertExists()
         choices.forEach { title ->
             compose.onNodeWithTag("rotom_home_destinations").performScrollToNode(hasText(title))
-            compose.onNodeWithText(title, substring = false).assertHasClickAction().performClick()
+            compose.onNodeWithText(title, substring = false).performClick()
         }
-        assertEquals(11, routes.distinct().size)
-        assertTrue(routes.contains("catch_rate_calculator?pokemonId=1"))
+        assertEquals(8, routes.distinct().size)
+        assertTrue(routes.contains("more_tools"))
+        compose.onNodeWithContentDescription("Consejo de Rotom").assertHasClickAction()
         compose.onNodeWithContentDescription("Cambiar apariencia").assertHasClickAction()
+    }
+
+    @Test fun `more tools keeps all secondary modules reachable`() {
+        val visited = mutableListOf<String>()
+        compose.setContent { RotompediaTheme { RotomMoreToolsScreen({ visited.add(it) }, {}) } }
+        val titles = listOf("Líderes y Alto Mando", "Objetos", "Habilidades", "Movimientos",
+            "Tabla de tipos", "Calculadora IV/EV", "Calculadora de captura", "Comparador Pokémon")
+        titles.forEach { name ->
+            compose.onNodeWithTag("rotom_more_destinations").performScrollToNode(hasText(name))
+            compose.onNodeWithText(name, substring = false).performClick()
+        }
+        assertEquals(8, visited.distinct().size)
+        assertTrue(visited.contains("moves_reference"))
+        assertTrue(visited.contains("versus"))
     }
 
     @Test fun `login preserves username trimming password and remember choice with no account writes`() {

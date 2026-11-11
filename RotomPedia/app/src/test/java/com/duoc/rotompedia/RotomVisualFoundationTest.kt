@@ -111,7 +111,7 @@ class RotomVisualFoundationTest {
         compose.onNodeWithText("legacy-safe").assertExists()
     }
 
-    @Test fun `portrait face stays outside content at narrow width and large font`() {
+    @Test fun `portrait screens give the reader full space and show original Rotom action`() {
         compose.setContent {
             val density = LocalDensity.current.density
             CompositionLocalProvider(LocalDensity provides Density(density, 1.5f)) {
@@ -120,23 +120,20 @@ class RotomVisualFoundationTest {
                 }
             }
         }
-        val face = compose.onNodeWithTag("rotom_face").fetchSemanticsNode().boundsInRoot
-        val panel = compose.onNodeWithTag("rotom_content").fetchSemanticsNode().boundsInRoot
-        assertTrue(face.height > 0)
-        assertTrue("face must not overlap content", face.bottom <= panel.top)
-        assertEquals(330f / 827f, face.height / face.width, 0.02f)
+        compose.onNodeWithTag("rotom_face").assertDoesNotExist()
+        compose.onNodeWithTag("rotom_content").assertExists()
+        compose.onNodeWithText("Contenido").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Consejo de Rotom").assertHasClickAction()
         compose.onNodeWithContentDescription("Cambiar apariencia").assertHasClickAction()
             .assertWidthIsAtLeast(48.dp).assertHeightIsAtLeast(48.dp)
     }
 
-    @Test fun `landscape uses a protected face column instead of shrinking the artwork above content`() {
+    @Test fun `landscape content has no oversized illustration overlapping the map`() {
         compose.setContent { Box(Modifier.width(320.dp).height(220.dp)) {
             RotomScaffold("Mapas", {}) { Text("Regiones") }
         } }
-        val face = compose.onNodeWithTag("rotom_face").fetchSemanticsNode().boundsInRoot
-        val panel = compose.onNodeWithTag("rotom_content").fetchSemanticsNode().boundsInRoot
-        assertTrue(face.width > 0)
-        assertTrue("face column must not overlap content", face.right <= panel.left)
+        compose.onNodeWithTag("rotom_face").assertDoesNotExist()
+        compose.onNodeWithTag("rotom_content").assertExists()
         compose.onNodeWithText("Regiones").assertIsDisplayed()
     }
 
