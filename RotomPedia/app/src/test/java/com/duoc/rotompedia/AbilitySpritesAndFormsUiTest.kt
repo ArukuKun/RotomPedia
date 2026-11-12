@@ -23,7 +23,6 @@ import com.duoc.rotompedia.data.reference.*
 import com.duoc.rotompedia.ui.screens.*
 import com.duoc.rotompedia.viewmodel.PokemonFormData
 import com.duoc.rotompedia.viewmodel.PokemonFormsState
-import org.junit.After
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -35,9 +34,9 @@ import java.util.Collections
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = android.app.Application::class)
 class AbilitySpritesAndFormsUiTest {
-    @get:Rule val compose = createComposeRule()
+    private val compose = createComposeRule()
+    @get:Rule val resources = disposeComposeBeforeClosingResources(compose) { loader?.shutdown() }
     private var loader: ImageLoader? = null
-    @After fun close() { loader?.shutdown() }
     private fun form(id: Int, name: String, default: Boolean = false) = PokemonFormData(id, name, name,
         "", listOf("water"), 1, 1, 1, 1, 1, 1, default)
 

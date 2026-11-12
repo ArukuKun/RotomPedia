@@ -14,7 +14,6 @@ import com.duoc.rotompedia.data.remote.PokeApiService
 import com.duoc.rotompedia.ui.screens.CompetitiveItemsScreen
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -27,7 +26,8 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = android.app.Application::class)
 class ItemPocketsUiTest {
-    @get:Rule val compose = createComposeRule()
+    private val compose = createComposeRule()
+    @get:Rule val resources = disposeComposeBeforeClosingResources(compose) { close() }
     private lateinit var db: AppDatabase
     private lateinit var repo: ItemRepository
     private lateinit var api: PokeApiService
@@ -43,7 +43,7 @@ class ItemPocketsUiTest {
         }
         runBlocking { pockets = repo.pocketIndex(); rows = repo.observeItems().first() }
     }
-    @After fun close() { db.close() }
+    private fun close() { if (::db.isInitialized) db.close() }
     private fun choosePocket(id: Int) {
         compose.onNodeWithTag("item_pockets").performScrollToNode(hasTestTag("pocket_$id"))
         compose.onNodeWithTag("pocket_$id").performClick()

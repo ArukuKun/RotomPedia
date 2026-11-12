@@ -27,7 +27,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
-import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -40,7 +39,8 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = android.app.Application::class)
 class PokedexNavigationUiTest {
-    @get:Rule val compose = createComposeRule()
+    private val compose = createComposeRule()
+    @get:Rule val resources = disposeComposeBeforeClosingResources(compose) { close() }
     private lateinit var db: AppDatabase
     private lateinit var controller: PokemonExplorerController
     private lateinit var restoration: StateRestorationTester
@@ -79,7 +79,7 @@ class PokedexNavigationUiTest {
         compose.waitUntil(20_000) { controller.result.value.ready && controller.result.value.entries.size == 1025 }
     }
 
-    @After fun close() { db.close() }
+    private fun close() { if (::db.isInitialized) db.close() }
 
     private fun kalosFurfrou() {
         compose.runOnIdle { controller.filter.value = ExplorerFilter(generationId = 6) }

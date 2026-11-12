@@ -48,6 +48,16 @@ jobs:
         # Match local verification and avoid competing Compose/lint/build tasks on small runners.
         run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --stacktrace --max-workers=1
 
+      - name: Retain test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RotomPedia-release-test-reports
+          path: |
+            RotomPedia/app/build/reports/tests/
+            RotomPedia/app/build/test-results/testDebugUnitTest/
+            RotomPedia/app/build/reports/lint-results-debug.*
+
       # The runner's ephemeral debug key must never replace the installable APK.
       # A compatible, locally signed APK + checksum must already exist in a draft.
       - name: Retain CI APK (not an installation update)

@@ -16,7 +16,6 @@ import coil.request.ErrorResult
 import coil.request.SuccessResult
 import com.duoc.rotompedia.data.images.MissingImageCache
 import com.duoc.rotompedia.ui.screens.PokemonImage
-import org.junit.After
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -28,10 +27,10 @@ import java.util.Collections
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = android.app.Application::class)
 class PokemonImageUiTest {
-    @get:Rule val compose = createComposeRule()
+    private val compose = createComposeRule()
+    @get:Rule val resources = disposeComposeBeforeClosingResources(compose) { loader?.shutdown() }
     private val requests = Collections.synchronizedList(mutableListOf<String>())
     private var loader: ImageLoader? = null
-    @After fun close() { loader?.shutdown() }
 
     private fun show(shiny: Boolean = false, succeedArtwork: Boolean = false) {
         val context = ApplicationProvider.getApplicationContext<Context>()

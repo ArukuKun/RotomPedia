@@ -19,7 +19,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
-import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -32,7 +31,8 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = android.app.Application::class)
 class PokedexPolishUiTest {
-    @get:Rule val compose = createComposeRule()
+    private val compose = createComposeRule()
+    @get:Rule val resources = disposeComposeBeforeClosingResources(compose) { close() }
     private lateinit var db: AppDatabase
     private lateinit var controller: PokemonExplorerController
     private val favorites = MutableStateFlow(emptySet<Int>())
@@ -58,7 +58,7 @@ class PokedexPolishUiTest {
         compose.waitUntil(20_000) { controller.result.value.entries.size == 1025 }
     }
 
-    @After fun close() { db.close() }
+    private fun close() { if (::db.isInitialized) db.close() }
 
     @Test fun `list is default with original sprite proportions and no variety dropdowns`() {
         compose.onNodeWithTag("pokedex-list").assertExists()

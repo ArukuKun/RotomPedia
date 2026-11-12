@@ -977,6 +977,16 @@ Explorador en una sola `LazyColumn` (mapa/filtros/lista desplazables); diálogo 
 
 **Publicación:** preparar tag nuevo `v3.6.0-rc2`, draft con APK/checksum y `docs/RELEASE_V3_6_0_RC2.md`; Actions debe repetir controles y publicar solo tras validar assets. CI, estado público y descarga/digest remotos pendientes en este registro de preparación. No modificar tags/assets anteriores. Actualización física, contraste/gestos en móvil y revisión del usuario pendientes; no anunciar mapas finales ni offline completo.
 
+### 5.12 Recuperación tras incidencia de Actions y candidata RC3 (12 nov 2026)
+
+**Continuación de la entrega solicitada, no ampliación funcional.** RC2 (`22b3369`, tag `v3.6.0-rc2`) conserva APK/checksum en borrador. Runs iniciales `43098247872`/`43098243117` quedaron en cola sin jobs durante la incidencia crítica de GitHub del 11 nov (`dvy0t3mvh1lg`). El 12 nov GitHub rechazó cancelarlos como si estuvieran completados y rechazó rerun de Verify como «already running»; no se forzó ni se modificaron sus refs. La recuperación de Release desde el mismo tag (`43218536569`) sí arrancó, pero falló por idling en ItemPockets (intento 1, 58 tests) y ItemUi (intento 2, 69 tests). **RC2 no publicada**; no ocultar esos fallos ni repetirla indefinidamente hasta verde.
+
+**Corrección ampliada de fixtures:** seis clases aún usaban `@After` para cerrar Room/loaders antes del desmontaje de Compose. `ComposeResourceLifetimeRule.kt` ofrece una regla externa común aplicada a `ItemPocketsUiTest`, `PokedexNavigationUiTest`, `PokedexPolishUiTest`, `PokemonExplorerUiTest`, `AbilitySpritesAndFormsUiTest` y `PokemonImageUiTest`. Setup/aserciones/acciones se conservan. Dos tests puros comprueban el orden de limpieza tanto en éxito como ante una aserción fallida. `ItemUiTest` conserva su regla de §5.10. Esto corrige otros defectos concretos de vida de recursos, sin afirmar que se haya demostrado la causa única de toda flakiness. Release retiene también XML/HTML incluso tras fallo.
+
+**Nueva candidata, sin mover RC2:** `3.6.0-rc3` / `30603`, paquete intacto. Sin cambios de pantallas, datos ni Room de producción respecto a RC2; solo pruebas, versión y evidencia de distribución. JDK17: comando completo tests/lint/debug/instrumentación/release correcto en **8m12s**, **216 Kotlin, cero fallos/errores/omitidas; 44 Python/cuatro índices correctos**. APK local `release-candidate-output/RotomPedia-v3.6.0-rc3.apk`, **16.762.503 bytes**, release no debuggable, SHA-256 `849620ff54b5f111767efd0056190afc42152cddf55a99e7b0e6f65330fad8b2`; `.sha256` generado. Certificado original `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa` igual a RC14/RC1; `apksigner`/`zipalign`/metadatos correctos. Sin clave nueva ni reemplazo de APKs anteriores.
+
+**Puerta remota pendiente:** tag nuevo `v3.6.0-rc3`, draft con APK/checksum/notas `RELEASE_V3_6_0_RC3.md`, controles Actions y digest descargado antes de entregar enlace público. Recorrido físico pendiente; mismos límites cartográficos de §5.9/RC2. No estable ni offline completo.
+
 ### v3.6-A — Investigación y piloto
 
 - [ ] Revisar videos/capturas del **PokeInfo original de Bruno Sousa**, paquete `com.brunosousa.pokeinfo`. No confundirlo con aplicaciones homónimas.
