@@ -2,7 +2,7 @@
 
 **Marca / proyecto:** RotomPedia\
 **Visión:** Pokédex y enciclopedia Pokémon en español, inspirada en la experiencia de PokeInfo de Bruno Sousa, con identidad propia, herramientas conectadas, mapas interactivos y un Rotom contextual.\
-**Versión publicada actual:** **v3.6.0-rc1**, pre-release del 10 nov 2026 (tag en `a34b3d1`); RC14 sigue como referencia de compatibilidad, no como estable. Continuación local del diseño aprobado y atlas en §5.9.\
+**Versión publicada actual:** **v3.6.0-rc3 / 30603**, pre-release del 12 nov 2026 (tag en `bb71fc3`), descarga/firma/hash comprobados el 25 nov. RC14 sigue como referencia de compatibilidad, no estable. Diseño aprobado y atlas provisional en §5.9–5.12.\
 **Propósito:** documento de continuidad para OpenCode; conservar el contexto de lo realizado y planificar lo pendiente **sin volver a empezar desde cero**.\
 **Regla de alcance:** implementar solo fases autorizadas por el usuario. La política permanente de §8.1 autoriza commits, push, tags nuevos y pre-releases de esas fases sin pedir permiso adicional; no autoriza fases nuevas, versiones estables, cambios de firma ni operaciones destructivas. No modificar tags/releases anteriores.
 
@@ -985,7 +985,11 @@ Explorador en una sola `LazyColumn` (mapa/filtros/lista desplazables); diálogo 
 
 **Nueva candidata, sin mover RC2:** `3.6.0-rc3` / `30603`, paquete intacto. Sin cambios de pantallas, datos ni Room de producción respecto a RC2; solo pruebas, versión y evidencia de distribución. JDK17: comando completo tests/lint/debug/instrumentación/release correcto en **8m12s**, **216 Kotlin, cero fallos/errores/omitidas; 44 Python/cuatro índices correctos**. APK local `release-candidate-output/RotomPedia-v3.6.0-rc3.apk`, **16.762.503 bytes**, release no debuggable, SHA-256 `849620ff54b5f111767efd0056190afc42152cddf55a99e7b0e6f65330fad8b2`; `.sha256` generado. Certificado original `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa` igual a RC14/RC1; `apksigner`/`zipalign`/metadatos correctos. Sin clave nueva ni reemplazo de APKs anteriores.
 
-**Puerta remota pendiente:** tag nuevo `v3.6.0-rc3`, draft con APK/checksum/notas `RELEASE_V3_6_0_RC3.md`, controles Actions y digest descargado antes de entregar enlace público. Recorrido físico pendiente; mismos límites cartográficos de §5.9/RC2. No estable ni offline completo.
+**Cierre público comprobado el 25 nov tras retomar la sesión:** [v3.6.0-rc3](https://github.com/ArukuKun/RotomPedia/releases/tag/v3.6.0-rc3), `draft=false`, `prerelease=true`, publicada **12 nov 2026 13:20:19 UTC**, tag en `bb71fc322e45bc2a05b725485b95b60127702aeb`. [APK directo](https://github.com/ArukuKun/RotomPedia/releases/download/v3.6.0-rc3/RotomPedia-v3.6.0-rc3.apk) y `.sha256` descargados **sin autenticación**: 16.762.503 bytes, SHA-256 `849620ff54b5f111767efd0056190afc42152cddf55a99e7b0e6f65330fad8b2`, idéntico al local y al digest de GitHub. Checksum coherente y certificado del APK descargado revalidado con `apksigner`, idéntico a RC14. Sin mover tags ni reemplazar assets.
+
+**CI real, sin borrar fallos:** Verify por push `43222852472` success sobre `bb71fc3`. Release del tag `43222863093` falló en sus dos intentos por idling; no se presenta como verde ni como flakiness completamente resuelta. La recuperación **prevista** en `verify-v34a.yml`, [43225610258](https://github.com/ArukuKun/RotomPedia/actions/runs/43225610258), terminó **success**, tanto `verify` como `Publish Verified Draft (manual recovery)`. Repitió Python/índices/Gradle completo, exigió árbol `RotomPedia`/`tools` idéntico al tag y comprobó certificado/checksum/paquete/versión antes de publicar. La supervisión local se interrumpió por red/reinicio, no la publicación. No se omitieron controles ni se publicó una APK de clave efímera del runner. RC2 permanece como borrador histórico no publicado.
+
+**Revisión física pendiente:** instalar sobre RC14/RC1 sin desinstalar; comprobar Home/Más/cinco pestañas, claro/oscuro, selector/memoria, Ruta 102/Ralts, zoom/pan/solapamientos y datos personales. Mismos límites cartográficos de §5.9/RC2; no estable ni offline completo. No se abre otra fase al entregar este APK.
 
 ### v3.6-A — Investigación y piloto
 
