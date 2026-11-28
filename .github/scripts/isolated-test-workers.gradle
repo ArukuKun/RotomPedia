@@ -1,0 +1,9 @@
+// CI-only worker isolation: execute the entire suite, one JVM per test class.
+// Robolectric/Compose process state must not outlive a fixture's resource rules.
+// Keep assertions, fail-fast, Espresso idling policy and the 15-minute task bound intact.
+allprojects {
+    tasks.withType(org.gradle.api.tasks.testing.Test).configureEach {
+        forkEvery = 1
+        maxParallelForks = 1
+    }
+}

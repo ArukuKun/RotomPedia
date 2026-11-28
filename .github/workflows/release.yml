@@ -46,7 +46,7 @@ jobs:
       - name: Build Debug APK
         working-directory: ./RotomPedia
         # Match local verification and avoid competing Compose/lint/build tasks on small runners.
-        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --stacktrace --max-workers=1
+        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --init-script ../.github/scripts/isolated-test-workers.gradle --stacktrace --max-workers=1
 
       - name: Retain test diagnostics
         if: always()
