@@ -118,15 +118,8 @@ fun PokemonExplorerContent(
             }
         }
     }
-    if (showFilters) RotomFilterSheet(onDismiss = { showFilters = false }) {
-        Column(Modifier.fillMaxWidth().fillMaxHeight(0.85f)) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Filtros de Pokémon", style = MaterialTheme.typography.titleMedium)
-                TextButton(onClick = { showFilters = false }) { Text("Aplicar y cerrar") }
-            }
-            ExplorerFilters(filters, onFavorite != null, eggGroups, controller.nationalOnly) { controller.filter.value = it }
-        }
-    }
+    if (showFilters) ExplorerFilterDialog(filters, onFavorite != null, eggGroups, controller.nationalOnly,
+        onDismiss = { showFilters = false }, onApply = { controller.filter.value = it; showFilters = false })
 }
 
 @Composable
@@ -159,11 +152,30 @@ private fun ExplorerSprite(pokemon: ExplorerPokemon) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ExplorerFilters(filter: ExplorerFilter, allowFavorites: Boolean, eggGroups: List<ExplorerEggGroup>,
-    nationalOnly: Boolean, onChange: (ExplorerFilter) -> Unit) {
+internal fun ExplorerFilterDialog(applied: ExplorerFilter, allowFavorites: Boolean, eggGroups: List<ExplorerEggGroup>,
+    nationalOnly: Boolean, onDismiss: () -> Unit, onApply: (ExplorerFilter) -> Unit) {
+    var filter by remember { mutableStateOf(applied) }
+    var group by remember { mutableStateOf<String?>(null) }
+    val onChange: (ExplorerFilter) -> Unit = { filter = it }
     val generations = listOf("Kanto", "Johto", "Hoenn", "Sinnoh", "Teselia", "Kalos", "Alola", "Galar / Hisui", "Paldea")
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.verticalScroll(rememberScrollState()).padding(10.dp)) {
+    RotomFilterSheet(onDismiss = onDismiss) {
+        Column(Modifier.fillMaxWidth().heightIn(max = 600.dp).padding(horizontal = 16.dp)) {
+            Text(group ?: "Filtros de Pokémon", style = MaterialTheme.typography.titleMedium)
+            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+            if (group == null) {
+                val summaries = listOf(
+                    "Categoría" to filter.category.label,
+                    "Grupo huevo" to (eggGroups.firstOrNull { it.slug == filter.eggGroup }?.label ?: "Cualquier grupo huevo"),
+                    "Generación" to (filter.generationId?.let { "Gen. $it · ${generations[it - 1]}" } ?: "Todas"),
+                    "Origen regional" to (filter.regionalOrigin ?: "Todos"),
+                    "Tipo" to (filter.type?.let(::traducirTipo) ?: "Todos")) +
+                    if (allowFavorites) listOf("Favoritos" to if (filter.favoritesOnly) "Solo favoritos" else "Todos") else emptyList()
+                summaries.forEach { (title, value) ->
+                    ListItem(headlineContent = { Text(title) }, supportingContent = { Text(value) },
+                        trailingContent = { Text("›") }, modifier = Modifier.clickable { group = title }.heightIn(min = 48.dp))
+                }
+            }
+            if (group == "Categoría") {
             Text("Categoría", fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 val categories = if (nationalOnly) pokedexCategories else
@@ -174,6 +186,8 @@ private fun ExplorerFilters(filter: ExplorerFilter, allowFavorites: Boolean, egg
                         label = { Text(if (nationalOnly && category == VarietyCategory.ALL) "Nacional" else category.label, fontSize = 11.sp) })
                 }
             }
+            }
+            if (group == "Grupo huevo") {
             Text("Grupo huevo", fontWeight = FontWeight.Bold)
             if (eggGroups.isEmpty()) Text("No disponible", fontSize = 12.sp)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -182,13 +196,18 @@ private fun ExplorerFilters(filter: ExplorerFilter, allowFavorites: Boolean, egg
                     FilterChip(selected = filter.eggGroup == group.slug, onClick = { onChange(filter.copy(eggGroup = group.slug)) }, label = { Text(group.label) })
                 }
             }
+            }
+            if (group == "Generación") {
             Text("Generación", fontWeight = FontWeight.Bold)
+            Text("Generación de la especie, no de la forma regional.", style = MaterialTheme.typography.bodySmall)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(selected = filter.generationId == null, onClick = { onChange(filter.copy(generationId = null)) }, label = { Text("Todas") })
                 generations.forEachIndexed { i, region ->
                     FilterChip(selected = filter.generationId == i + 1, onClick = { onChange(filter.copy(generationId = i + 1)) }, label = { Text(region, fontSize = 11.sp) })
                 }
             }
+            }
+            if (group == "Origen regional") {
             Text("Origen regional", fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(selected = filter.regionalOrigin == null, onClick = { onChange(filter.copy(regionalOrigin = null)) }, label = { Text("Todos") })
@@ -196,6 +215,8 @@ private fun ExplorerFilters(filter: ExplorerFilter, allowFavorites: Boolean, egg
                     FilterChip(selected = filter.regionalOrigin == region, onClick = { onChange(filter.copy(regionalOrigin = region)) }, label = { Text(region.replaceFirstChar(Char::uppercase)) })
                 }
             }
+            }
+            if (group == "Tipo") {
             Text("Tipo", fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 allPokemonTypes.forEach { type ->
@@ -203,9 +224,18 @@ private fun ExplorerFilters(filter: ExplorerFilter, allowFavorites: Boolean, egg
                         onClick = { onChange(filter.copy(type = type.takeUnless { it == "all" })) }, label = { Text(traducirTipo(type), fontSize = 11.sp) })
                 }
             }
-            if (allowFavorites) FilterChip(selected = filter.favoritesOnly,
+            }
+            if (group == "Favoritos" && allowFavorites) FilterChip(selected = filter.favoritesOnly,
                 onClick = { onChange(filter.copy(favoritesOnly = !filter.favoritesOnly)) }, label = { Text("⭐ Favoritos") })
-            TextButton(onClick = { onChange(ExplorerFilter()) }) { Text("Limpiar filtros y búsqueda") }
+            }
+            if (group != null) TextButton(onClick = { group = null }) { Text("Confirmar selección") }
+            else {
+                TextButton(onClick = { filter = ExplorerFilter() }) { Text("Restablecer") }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onDismiss) { Text("Cancelar") }
+                    Button(onClick = { onApply(filter) }) { Text("Aplicar y cerrar") }
+                }
+            }
         }
     }
 }

@@ -122,6 +122,7 @@ class RotomInterfaceCoverageTest {
 
     @Test fun `team builder retains create dialog action inside the common frame`() {
         val teams = Mockito.mock(TeamBuilderViewModel::class.java)
+        Mockito.`when`(teams.currentUsername).thenReturn(MutableStateFlow("rc4-test"))
         Mockito.`when`(teams.equipos).thenReturn(MutableStateFlow<List<EquipoConMiembros>>(emptyList()))
         Mockito.`when`(teams.selectedEquipoId).thenReturn(MutableStateFlow<Long?>(null))
         Mockito.`when`(teams.selectedEquipo).thenReturn(MutableStateFlow<EquipoConMiembros?>(null))

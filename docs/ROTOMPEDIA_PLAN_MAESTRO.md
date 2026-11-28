@@ -991,6 +991,64 @@ Explorador en una sola `LazyColumn` (mapa/filtros/lista desplazables); diálogo 
 
 **Revisión física pendiente:** instalar sobre RC14/RC1 sin desinstalar; comprobar Home/Más/cinco pestañas, claro/oscuro, selector/memoria, Ruta 102/Ralts, zoom/pan/solapamientos y datos personales. Mismos límites cartográficos de §5.9/RC2; no estable ni offline completo. No se abre otra fase al entregar este APK.
 
+### 5.13 Especificación RC4–RC5 e informe técnico 001 (27 nov 2026)
+
+**Fuentes aprobadas:** `RotomPedia_Especificacion_Visual_RC4_RC5.pdf` (6 páginas) e `RotomPedia_Informe_Tecnico_001.pdf` (3 páginas), aportados en la conversación como texto e imágenes. No hay binarios PDF en la carpeta al iniciar: no se inventan hashes ni se afirma haberlos archivado. PDF visual = especificación; informes técnicos = seguimiento acumulativo; **este Markdown sigue siendo el único Plan Maestro**, sin reemplazar historial/checklists. La próxima entrega añadirá evidencia al informe de seguimiento, conservando 001 como línea base.
+
+**Base contrastada:** rama obligatoria `feature/v3.6-regional-atlas-ui`, HEAD `2265d59`; tag RC3 en `bb71fc3`, `30603`, APK/firma/checksum y recuperación de CI en §5.12. El informe cita 216 Kotlin/44 Python, cuatro índices y comparación Main 74 delante/1 detrás como evidencia de su revisión, no como medición nueva. El usuario **probó RC3 en teléfono** y reportó defectos; esto no es aceptación integral. `.idea/vcs.xml` modificado antes de empezar, se conserva fuera de commits.
+
+**Alcance autorizado ahora: exclusivamente RC4** (`30604` cuando proceda entregar). Reproducir N primero; después F/E, insets/contraste, regresiones, firma original y pre-release verificadas. **Detenerse tras entregar RC4 y esperar revisión del usuario antes de RC5.** No nuevos mapas/encuentros/objetos, offline, cambios de esquema/migraciones Room, nuevas herramientas ni versión estable. Conservar Hoenn, selector/memoria y todo el diseño base de Home.
+
+#### RC4 — requisitos y criterios pendientes (PDF visual pp. 2–4, informe pp. 2–3)
+
+**Precisión adicional del usuario, 28 nov:** el selector de movimientos de Equipos no debe ser el listado plano con buscador de `MoveLearnsetPane`. Tras describir secciones, aporta captura y aprueba **exactamente la pantalla existente de Movimientos**: Pokémon/variedad, edición arriba y pestañas Nivel/Huevo/MT-MO/Tutor. Se reutiliza esa misma pantalla para elegir los cuatro movimientos del miembro, conservando Dejar vacío, vuelta al editor, métodos adicionales y datos guardados. **La captura concreta prima sobre la interpretación preliminar de una página con todas las secciones apiladas**: no se rediseña el P3 de la Pokédex ni se crea otro catálogo/tablas/repositorio. El buscador queda secundario en filtros, no como centro del selector. Añadido a RC4 por solicitud expresa; no adelanta RC5.
+
+- [ ] **N-01 P0:** reproducir Home por tarjeta → Pokédex → navbar Inicio; corregir stack y pestaña activa con una fuente de verdad en shell/barra común. Sin reiniciar la app, borrar estado ni atajos visuales.
+- [ ] **N-02 P0:** Atrás cierra primero menú/diálogo/filtro; luego vuelve a pantalla anterior; detalle vuelve al módulo de origen y raíz respeta Android.
+- [ ] **N-03:** preservar filtros/búsqueda/scroll/lista-cuadrícula/última región al cambiar de pestaña; evitar duplicados y restaurar stacks correctos. Probar entradas por tarjeta, navbar, Más y fichas.
+- [ ] **N-04:** un dueño por barra/insets, reservar contenido/system bars, sin filas/acciones debajo de encabezados o navegación Android; texto grande, teclado y horizontal.
+- [ ] **F-01:** bottom sheet compacto con resumen Categoría, Grupo huevo, Generación, Origen regional, Tipo y otros filtros existentes (incluidos Favoritos cuando aplique).
+- [ ] **F-02:** segundo nivel desplazable con solo las opciones del grupo; confirmar retorna al resumen. Mantener selección **única/múltiple actual** por filtro; la maqueta no autoriza cambiar la semántica de Tipo a múltiple si hoy es única.
+- [ ] **F-03:** borrador separado de aplicado; Aplicar confirma/cierra una sola vez, Restablecer limpia solo borrador, Atrás/Cancelar no aplican cambios pendientes. Reabrir parte de lo aplicado.
+- [ ] **F-04:** conservar intersección de filtros/orden nacional/vistas; investigar Gen8 + Galar con datos y semántica antes de declararlo bug. Opciones y botones siempre sobre system bars.
+- [ ] **E-01:** título desplegable de equipos propios y cambio directo de miembros; renombrar nombre no vacío con validaciones existentes.
+- [ ] **E-02:** papelera junto a Exportar Showdown, contraste alto y objetivo ≥48dp; confirmar mostrando nombre exacto.
+- [ ] **E-03:** borrar por ID/propietario, no texto; preservar demás equipos/favoritos/cuentas. **Aclaración del usuario durante RC4:** tras borrar el seleccionado, permanecer en Equipos y volver a su selector, nunca a Inicio ni abrir otro automáticamente; mostrar vacío al borrar el último. Esta precisión sustituye la alternativa inicial de elegir otro equipo.
+- [ ] **E-04:** seis slots, sprites, exportación, matriz, estadísticas/movimientos intactos; comprobar persistencia al cerrar/reabrir sin alterar Room.
+- [ ] **Entrega RC4:** regresiones Kotlin/Python/cuatro índices, lint, build debug/release e instrumentación ejecutada si hay dispositivo/emulador; capturas de ejecución, actualización sobre RC3 sin desinstalar, firma/hash/Actions y descarga verificada. Registrar resultados reales y límites, no confundir tests con pruebas físicas.
+
+#### RC5 — registrada, NO IMPLEMENTAR hasta aprobación de RC4 (PDF visual pp. 5–6)
+
+**Revisión visual del usuario, 28 nov:** captura real de Home en oscuro evidencia el aspecto «forzado»: fondo oscuro combinado con tarjetas de accesos y navbar blancas. No se acepta como un tema oscuro coherente por tener únicamente el fondo oscuro. RC5 deberá integrar superficies propias, separación tonal suave y navegación inferior oscura con texto/iconos contrastados, conservando la estructura aprobada de Home. La observación se conserva como referencia visual y no adelanta RC5 antes de revisar RC4. No tratar las tarjetas blancas actuales como decisión de diseño aceptada para oscuro.
+
+- [ ] **T-01:** forma gobierna barra/botones/selección/superficies/controles de toda la app; conservar Home/carita.
+- [ ] **T-02:** tokens centralizados, revisar hardcodes/navbar/iconos/diálogos/system bars; no teñir sprites ni tipos.
+- [ ] **T-03:** `onPrimary`/`onSurface` y AA 4,5:1 texto normal / 3:1 grande-controles; no acentos claros como texto blanco.
+- [ ] **T-04:** persistencia independiente forma/modo, sin reiniciar navegación ni tocar imágenes/preferencias ajenas.
+
+| Forma RC5 | Principal | Secundario | Acento | Fondo claro |
+|---|---|---|---|---|
+| Normal | `#B52B30` | `#DC4B16` | `#44BCEB` | `#F3FAFC` |
+| Calor (propuesta inicial) | `#951B3C` | `#CF3558` | `#F79AAB` | `#FFF1F4` |
+| Lavado | `#225EAA` | `#3989D4` | `#83CFEB` | `#EFF7FC` |
+| Frío (propuesta inicial) | `#3D7195` | `#9EDFF7` | `#D6F5FF` | `#F4FBFF` |
+| Ventilador (hereda Frío anterior) | `#347D98` | `#68B9D1` | `#B7E8F1` | `#F0FAFC` |
+| Corte | `#34734C` | `#68A74B` | `#A8D591` | `#F2F8EF` |
+
+Modo oscuro propio RC5, no inversión automática: fondo `#121C23`, superficie `#202E38`, texto `#E5F1F5`, secundario `#B2C6CF`, borde `#354B57`, barra Normal `#8F292F`; acentos de cada forma con contraste validado. Validar seis formas × claro/oscuro, iconos/diálogos/system bars y reinicio **después de aceptar RC4**. No aplicar ahora esta paleta como supuesto arreglo de contraste RC4.
+
+**Registro de ejecución RC4 en curso (sin entrega todavía):**
+
+- N-01 reproducido antes de editar producción: prueba real Home/shell → Pokédex → Inicio falló `expected menu_principal_screen, actual pokedex`. Se separó el retorno al ancla Home de la restauración de stacks; Home y navbar comparten `navigateMainDestination`. La pertenencia de fichas/herramientas viaja en `savedStateHandle` de cada entrada, sin pestaña activa recordada aparte. Primer enfoque con `currentBackStack` rechazado por lint (`RestrictedApi`); sustituido por listener/API pública, **sin suprimir lint**. Regresiones verdes de entradas por tarjeta/navbar, cambios repetidos, estado de texto y retorno de ficha al mapa.
+- F: resumen y segundo nivel, borrador aislado, confirmar grupo vuelve al resumen, cancelar/restablecer/aplicar cubiertos. Gen8 + Galar auditado en el asset: **20 formas de Galar**, especies Gen1=11/Gen2=2/Gen3=2/Gen5=5, **ninguna Gen8**. Generación sigue siendo la de la especie; se añadió aclaración visible, no se alteraron identidades/datos para forzar resultados.
+- E: desplegable de título con equipos propios, renombrado no vacío, papelera 48dp junto a exportación, confirmación por nombre y borrado por ID/propietario. Aclaración posterior del usuario implementada: selección nula tras borrar → selector **dentro de Equipos**, sin ir a Home ni elegir otro. Nueva regresión de ViewModel/Room comprueba dos equipos homónimos y último equipo, además de prueba de UI de menú/rename/cancelar/confirmar.
+- Última tanda dirigida: **5 pruebas RC4 correctas**, `assembleDebug` correcto (32s). Tanda anterior dirigida con Pokédex y lint/build debug/instrumentación correcta (2m19s), antes del último ajuste de eliminación/cierre del sheet. La suite completa anterior pasó sus tests, pero se detuvo en el error lint del enfoque descartado; **no equivale a una ejecución completa verde del estado final**. Python **3.12.10**, **44 tests/cuatro índices correctos**. La carpeta Python anterior estaba incompleta; se usó distribución oficial embebida nueva bajo temporal, sin reemplazarla. Java ejecutado: **Temurin 21.0.12.1**, pese al nombre antiguo `jdk17` del directorio.
+- Emulador existente API37 iniciado sin wipe. No había paquete instalado; se instaló la APK pública RC3, se creó una cuenta QA independiente y el equipo `RC3_Preservar`. Compilación **debug de desarrollo aún numerada RC3**, instalada encima con `adb install -r`, conserva cuenta/equipo tras reinicio y nuevo login. **No es todavía actualización release RC3→RC4 firmada/validada**. Capturas reales: `docs/evidence/rc4/rc3-team-before-upgrade.png` y `development-team-preserved.png`.
+- Verificación ADB real de la precisión E-03: crear `RC4_Eliminar_Prueba`, confirmar eliminación y observar `Constructor de Equipos`, equipo anterior intacto, barra de Equipos. Captura `development-selector-after-delete.png`. No se borró el equipo de preservación. Atrás desde segundo nivel del sheet reveló que el callback podía dejarlo oculto sin desmontar: corregido para cerrar/descartar el borrador; nueva verificación en dispositivo pendiente.
+- Instrumentación ejecutada en API37: **1 prueba de contexto correcta, 2 de UI fallidas antes de ejecutar sus acciones**, incompatibilidad Espresso 3.6.1 con `android.hardware.input.InputManager.getInstance` (`NoSuchMethodException`). No hay capturas de esos tests ni se presentan como verdes. Los nuevos tests usan Home/shell y sheet reales con destino Pokédex ligero, no certifican E2E completo. Resolver compatibilidad/dispositivo soportado y repetir; mantener evidencia de este fallo.
+
+**Pendientes antes de entregar:** completar revisión Back/insets, teclado/texto grande/horizontal, estado/scroll/mapas, persistencia de miembros/favoritos y borrado entre propietarios; suite completa/lint/build del estado definitivo, instrumentación, incremento a `30604`, actualización firmada RC3→RC4, informe acumulativo, commit/Actions/publicación pre-release y descarga/hash remoto. RC5 intacta; informe 001 sigue siendo histórico. Nada de esta tanda autoriza marcar RC4 entregada.
+
 ### v3.6-A — Investigación y piloto
 
 - [ ] Revisar videos/capturas del **PokeInfo original de Bruno Sousa**, paquete `com.brunosousa.pokeinfo`. No confundirlo con aplicaciones homónimas.

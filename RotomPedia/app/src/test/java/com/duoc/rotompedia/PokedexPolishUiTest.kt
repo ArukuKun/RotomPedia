@@ -102,9 +102,12 @@ class PokedexPolishUiTest {
 
     @Test fun `Gigamax filter is available and navigates to exact variety not national id`() {
         compose.onNodeWithContentDescription("Filtrar Pokémon").performClick()
+        compose.onNodeWithText("Categoría").performClick()
         compose.onNodeWithText("Gigamax", substring = false).performScrollTo().performClick()
-        compose.waitUntil(20_000) { controller.result.value.entries.size == 34 }
+        compose.runOnIdle { assertNotEquals(VarietyCategory.GMAX, controller.filter.value.category) }
+        compose.onNodeWithText("Confirmar selección").performClick()
         compose.onNodeWithText("Aplicar y cerrar").performClick()
+        compose.waitUntil(20_000) { controller.result.value.entries.size == 34 }
         compose.onNodeWithTag("pokedex-list").performScrollToIndex(1)
         compose.onNodeWithText("Charizard Gigamax").performClick()
         compose.runOnIdle { assertEquals(10196, chosen) }
@@ -114,9 +117,12 @@ class PokedexPolishUiTest {
 
     @Test fun `egg group filter from shared Spanish metadata is interactive`() {
         compose.onNodeWithContentDescription("Filtrar Pokémon").performClick()
+        compose.onNodeWithText("Grupo huevo").performClick()
         compose.onNodeWithText("Ditto", substring = false).performScrollTo().performClick()
-        compose.waitUntil(20_000) { controller.result.value.entries.map { it.slug } == listOf("ditto") }
+        compose.runOnIdle { assertNull(controller.filter.value.eggGroup) }
+        compose.onNodeWithText("Confirmar selección").performClick()
         compose.onNodeWithText("Aplicar y cerrar").performClick()
+        compose.waitUntil(20_000) { controller.result.value.entries.map { it.slug } == listOf("ditto") }
         compose.onNodeWithTag("pokemon_132").assertExists()
         compose.onNodeWithText("Cuadrícula").performClick()
         compose.onNodeWithTag("pokemon_132").assertExists()

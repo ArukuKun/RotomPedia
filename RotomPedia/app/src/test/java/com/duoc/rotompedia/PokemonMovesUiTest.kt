@@ -152,4 +152,33 @@ class PokemonMovesUiTest {
         compose.onNodeWithText("Hielo Oscuro").assertDoesNotExist()
         assertEquals(1, repo.calls)
     }
+
+    @Test fun `team selector reuses approved learning pages and assigns or clears the requested slot`() {
+        val repo = Repo(index, rows)
+        val model = PokemonMovesViewModel(10117, repo, SavedStateHandle(mapOf("edition" to "x-y")))
+        var slot by mutableIntStateOf(1)
+        val assignments = mutableMapOf<Int, String?>()
+        compose.setContent { RotompediaTheme {
+            PokemonMovesScreen(model, "Variedad elegida", {}, selectionSlot = slot,
+                onMoveSelected = { assignments[slot] = it.nameEn }, onClear = { assignments[slot] = null })
+        } }
+        compose.waitUntil(10_000) { model.data.value != null }
+        compose.onNodeWithText("Buscar movimiento").assertDoesNotExist()
+        compose.onNodeWithTag("learn_tab_level-up").assertExists()
+        compose.onNodeWithTag("learn_tab_egg").assertExists()
+        compose.onNodeWithTag("learn_tab_machine").assertExists()
+        compose.onNodeWithTag("learn_tab_tutor").assertExists()
+        (1..4).forEach { target ->
+            compose.runOnIdle { slot = target }
+            compose.onNodeWithText("Asignar movimiento $target").assertExists()
+            compose.onNodeWithTag("learn_tab_machine").performClick()
+            compose.onNodeWithText("Lanzallamas", substring = false).performClick()
+            compose.runOnIdle { assertEquals("Flamethrower", assignments[target]) }
+        }
+        compose.onNodeWithText("Dejar vacío").performClick()
+        compose.runOnIdle { assertNull(assignments[4]); assertEquals(4, assignments.size) }
+        assertEquals("x-y", model.edition.value)
+        assertEquals(10117, repo.target)
+        assertEquals(1, repo.calls)
+    }
 }

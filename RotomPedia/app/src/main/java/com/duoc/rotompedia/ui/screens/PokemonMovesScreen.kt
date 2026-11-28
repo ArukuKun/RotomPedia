@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.duoc.rotompedia.data.PokemonFormCatalog
+import com.duoc.rotompedia.data.PokemonMove
 import com.duoc.rotompedia.data.items.IndexedItem
 import com.duoc.rotompedia.data.items.ItemLabels
 import com.duoc.rotompedia.data.reference.*
@@ -56,7 +57,8 @@ internal fun learningMoves(index: ReferenceIndex, rows: List<LearnRow>, edition:
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun PokemonMovesScreen(model: PokemonMovesViewModel, pokemonLabel: String, onBack: () -> Unit,
-    items: List<IndexedItem> = emptyList(), onItemClick: (Int) -> Unit = {}) {
+    items: List<IndexedItem> = emptyList(), onItemClick: (Int) -> Unit = {},
+    selectionSlot: Int? = null, onMoveSelected: ((PokemonMove) -> Unit)? = null, onClear: (() -> Unit)? = null) {
     val loaded by model.data.collectAsState()
     val loading by model.loading.collectAsState()
     val failed by model.failed.collectAsState()
@@ -78,6 +80,11 @@ fun PokemonMovesScreen(model: PokemonMovesViewModel, pokemonLabel: String, onBac
         Column(Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
             Text(pokemonLabel, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 8.dp))
+            if (selectionSlot != null) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Text("Asignar movimiento $selectionSlot", style = MaterialTheme.typography.labelLarge)
+                if (onClear != null) TextButton(onClick = onClear) { Text("Dejar vacío") }
+            }
             if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
             if (failed) Text("No se pudieron cargar los movimientos. Inténtalo de nuevo.", color = MaterialTheme.colorScheme.error)
             loaded?.let { data ->
@@ -107,7 +114,11 @@ fun PokemonMovesScreen(model: PokemonMovesViewModel, pokemonLabel: String, onBac
                             if (edition == null) item { Text("Selecciona una edición.") }
                             else if (rows.isEmpty()) item { Text("No hay movimientos con estos filtros.") }
                             items(rows, key = { it.id }) { row ->
-                                LearningMoveCard(row, data.index, edition, items) { selected = row.id }
+                                LearningMoveCard(row, data.index, edition, items) {
+                                    if (onMoveSelected != null && row.reference != null) {
+                                        onMoveSelected(ReferencePresentation.legacy(row.reference, edition))
+                                    } else selected = row.id
+                                }
                             }
                         }
                     }
@@ -135,7 +146,11 @@ fun PokemonMovesScreen(model: PokemonMovesViewModel, pokemonLabel: String, onBac
                 extras.forEach { method ->
                     item(key = "heading_$method") { Text(ReferencePresentation.method(method), fontWeight = FontWeight.Bold) }
                     items(learningMoves(data.index, data.learnset.rows, edition, method, query, type, category), key = { "$method/${it.id}" }) { row ->
-                        LearningMoveCard(row, data.index, edition, items) { selected = row.id }
+                        LearningMoveCard(row, data.index, edition, items) {
+                            if (onMoveSelected != null && row.reference != null) {
+                                onMoveSelected(ReferencePresentation.legacy(row.reference, edition))
+                            } else selected = row.id
+                        }
                     }
                 }
             }

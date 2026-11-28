@@ -3,22 +3,26 @@ package com.duoc.rotompedia.ui.screens
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.duoc.rotompedia.di.AppContainer
 import com.duoc.rotompedia.viewmodel.PokemonMovesViewModel
+import com.duoc.rotompedia.data.PokemonMove
 import kotlinx.coroutines.CancellationException
 
 @Composable
-fun PokemonMovesRoute(pokemonId: Int, onBack: () -> Unit, onItemClick: (Int) -> Unit) {
+fun PokemonMovesRoute(pokemonId: Int, onBack: () -> Unit, onItemClick: (Int) -> Unit,
+    selectionSlot: Int? = null, onMoveSelected: ((PokemonMove) -> Unit)? = null, onClear: (() -> Unit)? = null) {
     val container = AppContainer.get(LocalContext.current)
-    val factory = remember(container, pokemonId) {
+    val factory = remember(container, pokemonId, selectionSlot) {
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T =
-                PokemonMovesViewModel(pokemonId, container.moves, extras.createSavedStateHandle()) as T
+                PokemonMovesViewModel(pokemonId, container.moves,
+                    if (selectionSlot == null) extras.createSavedStateHandle() else SavedStateHandle()) as T
         }
     }
     val model: PokemonMovesViewModel = viewModel(factory = factory)
@@ -31,5 +35,6 @@ fun PokemonMovesRoute(pokemonId: Int, onBack: () -> Unit, onItemClick: (Int) -> 
         try { container.items.ensureIndex() }
         catch (e: Exception) { if (e is CancellationException) throw e }
     }
-    PokemonMovesScreen(model, selected?.let { "${it.numberLabel} · ${it.displayName}" } ?: "Movimientos", onBack, items, onItemClick)
+    PokemonMovesScreen(model, selected?.let { "${it.numberLabel} · ${it.displayName}" } ?: "Movimientos", onBack, items, onItemClick,
+        selectionSlot, onMoveSelected, onClear)
 }

@@ -312,13 +312,19 @@ fun MoveLearnsetPane(pokemonId: Int, modifier: Modifier = Modifier, repository: 
 
 @Composable
 fun MovePickerDialog(slotIndex: Int, pokemonId: Int, onDismiss: () -> Unit, onMoveSelected: (PokemonMove) -> Unit, onClear: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(Modifier.fillMaxWidth().fillMaxHeight(0.94f)) {
-            Column(Modifier.padding(12.dp)) {
-                Text("Elegir movimiento $slotIndex", style = MaterialTheme.typography.titleMedium)
-                Row { TextButton(onDismiss) { Text("Cerrar") }; TextButton(onClear) { Text("Dejar vacío") } }
-                MoveLearnsetPane(pokemonId, Modifier.weight(1f), onSelect = onMoveSelected)
-            }
+    // Keep selection modal over the member editor, with its own cancellable VM lifetime.
+    // Reuse the exact edition + four learning pages approved for the Pokémon screen.
+    val owner = remember(pokemonId, slotIndex) {
+        object : androidx.lifecycle.ViewModelStoreOwner {
+            override val viewModelStore = androidx.lifecycle.ViewModelStore()
+        }
+    }
+    DisposableEffect(owner) { onDispose { owner.viewModelStore.clear() } }
+    Dialog(onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+        CompositionLocalProvider(androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner provides owner) {
+            PokemonMovesRoute(pokemonId, onDismiss, onItemClick = {}, selectionSlot = slotIndex,
+                onMoveSelected = onMoveSelected, onClear = onClear)
         }
     }
 }

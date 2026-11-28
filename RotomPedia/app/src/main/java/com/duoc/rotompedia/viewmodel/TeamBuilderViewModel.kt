@@ -46,12 +46,16 @@ class TeamBuilderViewModel(
         val owner = sessions.capture()
         viewModelScope.launch(Dispatchers.IO) {
             teams.delete(owner, equipoId)
-            if (selection.value == owner?.let { it to equipoId }) selection.value = null
+            if (owner != null && sessions.capture() == owner && selection.value == (owner to equipoId)) {
+                // Stay in Equipos and return to its selector, even when other teams remain.
+                selection.value = null
+            }
         }
     }
     fun actualizarNombreEquipo(equipoId: Long, nuevoNombre: String) {
+        if (nuevoNombre.isBlank()) return
         val owner = sessions.capture()
-        viewModelScope.launch(Dispatchers.IO) { teams.rename(owner, equipoId, nuevoNombre) }
+        viewModelScope.launch(Dispatchers.IO) { teams.rename(owner, equipoId, nuevoNombre.trim()) }
     }
     fun agregarPokemonAlSlot(equipoId: Long, slot: Int, pokemonId: Int, nombre: String,
         spriteUrl: String, tipo1: String, tipo2: String?, hp: Int = 0, atk: Int = 0,

@@ -162,6 +162,7 @@ class PokedexNavigationUiTest {
         compose.onNodeWithText("Filtrar", substring = false).assertDoesNotExist()
         compose.onNodeWithContentDescription("Filtrar Pokémon").performClick()
         compose.onNodeWithText("Filtros de Pokémon").assertExists()
+        compose.onNodeWithText("Categoría").performClick()
         compose.onNodeWithText("Variedades estables").assertDoesNotExist()
         compose.onNodeWithText("Forma alternativa", substring = false).assertDoesNotExist()
         compose.onNodeWithText("Combate", substring = false).assertDoesNotExist()

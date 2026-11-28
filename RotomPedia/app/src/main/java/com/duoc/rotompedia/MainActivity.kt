@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import com.duoc.rotompedia.ui.components.RotomNavigationShell
+import com.duoc.rotompedia.ui.components.navigateMainDestination
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
@@ -28,6 +29,9 @@ import com.duoc.rotompedia.util.RotomAppearanceManager
 import com.duoc.rotompedia.util.RotomThemeManager
 import com.duoc.rotompedia.viewmodel.*
 import java.util.concurrent.Executor
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.first
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +44,7 @@ class MainActivity : FragmentActivity() {
 
 @Composable
 fun MenuPrincipalScreen(navController: NavController, authViewModel: AuthViewModel) {
-    RotomHomeScreen({ navController.navigate(it) }, { authViewModel.cerrarSesion() })
+    RotomHomeScreen({ navController.navigateMainDestination(it) }, { authViewModel.cerrarSesion() })
 }
 
 @Composable
@@ -63,10 +67,18 @@ fun AppNavigationController() {
     val executor = ContextCompat.getMainExecutor(activity)
     val session by auth.userSession.collectAsState()
     LaunchedEffect(session) {
+        // A remembered session can arrive before NavHost installs its graph on recreation.
+        navController.currentBackStackEntryFlow.first()
+        val navigationContext = currentCoroutineContext()
         when (session) {
             is UserSession.Active -> showBiometricPrompt(activity, executor, onSuccess = {
-                navController.navigate("menu_principal_screen") { popUpTo("login") { inclusive = true } }
-            }, onErrorOrCancel = { auth.cerrarSesion() })
+                if (navigationContext.isActive && navController.currentDestination?.route in listOf("login", "register")) {
+                    navController.navigate("menu_principal_screen") {
+                        launchSingleTop = true
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            }, onErrorOrCancel = { if (navigationContext.isActive) auth.cerrarSesion() })
             is UserSession.Inactive -> navController.navigate("login") { popUpTo(0) }
             is UserSession.Undetermined -> Unit
         }
@@ -79,8 +91,8 @@ fun AppNavigationController() {
         composable("register") { RegisterScreen({ navController.popBackStack() }, { navController.popBackStack() }, auth) }
         composable("menu_principal_screen") { MenuPrincipalScreen(navController, auth) }
         composable("more_tools") {
-            RotomMoreToolsScreen(onNavigate = { navController.navigate(it) },
-                onBack = { navController.navigate("menu_principal_screen") { launchSingleTop = true } })
+            RotomMoreToolsScreen(onNavigate = { navController.navigate(it) { launchSingleTop = true } },
+                onBack = { navController.popBackStack() })
         }
         composable("pokedex") {
             PokedexScreen({ navController.navigate("pokemon_detail/$it") }, { navController.navigateUp() }, pokemonFactory)

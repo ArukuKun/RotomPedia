@@ -1,6 +1,7 @@
 package com.duoc.rotompedia.ui.screens
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -71,22 +73,52 @@ fun TeamBuilderScreen(
     val selectedEquipoId by teamBuilderViewModel.selectedEquipoId.collectAsState()
     val selectedEquipo by teamBuilderViewModel.selectedEquipo.collectAsState()
     val analysis by teamBuilderViewModel.teamAnalysis.collectAsState()
+    val readingColors = MaterialTheme.colorScheme
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var slotToSelectPokemon by remember { mutableStateOf<Int?>(null) }
     var memberToEditStats by remember { mutableStateOf<MiembroEquipo?>(null) }
+    var teamMenu by remember { mutableStateOf(false) }
+    var deleteTarget by remember { mutableStateOf<EquipoConMiembros?>(null) }
+    var renameTarget by remember { mutableStateOf<EquipoConMiembros?>(null) }
+    val username by teamBuilderViewModel.currentUsername.collectAsState()
+    LaunchedEffect(username) { deleteTarget = null; renameTarget = null; teamMenu = false }
+    BackHandler(selectedEquipoId != null && !showCreateDialog && slotToSelectPokemon == null &&
+        memberToEditStats == null && deleteTarget == null && renameTarget == null && !teamMenu) {
+        teamBuilderViewModel.seleccionarEquipo(null)
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = if (selectedEquipoId == null) "Constructor de Equipos" else selectedEquipo?.equipo?.nombre ?: "Mi Equipo",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.Bold,
-                        color = RotomColors.text
-                    )
+                    Box {
+                        Row(Modifier.clickable { teamMenu = true }.heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (selectedEquipoId == null) "Constructor de Equipos" else selectedEquipo?.equipo?.nombre ?: "Mi Equipo",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontWeight = FontWeight.Bold,
+                                color = RotomColors.text,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Seleccionar equipo")
+                        }
+                        MaterialTheme(colorScheme = readingColors) {
+                            DropdownMenu(expanded = teamMenu, onDismissRequest = { teamMenu = false }) {
+                                equipos.forEach { item ->
+                                    DropdownMenuItem(text = { Text(item.equipo.nombre) }, onClick = {
+                                        teamBuilderViewModel.seleccionarEquipo(item.equipo.id)
+                                        teamMenu = false
+                                    })
+                                }
+                                DropdownMenuItem(text = { Text("Nuevo Equipo") }, onClick = {
+                                    teamMenu = false
+                                    showCreateDialog = true
+                                })
+                            }
+                        }
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -106,12 +138,12 @@ fun TeamBuilderScreen(
                 actions = {
                     if (selectedEquipoId != null) {
                         IconButton(onClick = {
-                            selectedEquipoId?.let { teamBuilderViewModel.eliminarEquipo(it) }
+                            renameTarget = selectedEquipo
                         }) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Eliminar Equipo",
-                                tint = RotomColors.negative
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Renombrar equipo",
+                                tint = RotomColors.text
                             )
                         }
                     }
@@ -176,7 +208,7 @@ fun TeamBuilderScreen(
                             TeamListItemCard(
                                 item = item,
                                 onClick = { teamBuilderViewModel.seleccionarEquipo(item.equipo.id) },
-                                onDelete = { teamBuilderViewModel.eliminarEquipo(item.equipo.id) }
+                                onDelete = { deleteTarget = item }
                             )
                         }
                     }
@@ -188,6 +220,7 @@ fun TeamBuilderScreen(
                     TeamDetailContent(
                         equipoConMiembros = equipo,
                         analysis = analysis,
+                        onDeleteTeam = { deleteTarget = equipo },
                         onSlotClick = { slot ->
                             val currentMember = equipo.miembros.find { it.slot == slot }
                             if (currentMember != null) {
@@ -203,6 +236,25 @@ fun TeamBuilderScreen(
                 }
             }
         }
+    }
+
+    deleteTarget?.let { target ->
+        AlertDialog(onDismissRequest = { deleteTarget = null }, title = { Text("Eliminar equipo") },
+            text = { Text("¿Eliminar «${target.equipo.nombre}»? Esta acción no se puede deshacer.") },
+            confirmButton = { TextButton(onClick = {
+                teamBuilderViewModel.eliminarEquipo(target.equipo.id); deleteTarget = null
+            }) { Text("Eliminar") } },
+            dismissButton = { TextButton(onClick = { deleteTarget = null }) { Text("Cancelar") } })
+    }
+    renameTarget?.let { target ->
+        var name by remember(target.equipo.id) { mutableStateOf(target.equipo.nombre) }
+        AlertDialog(onDismissRequest = { renameTarget = null }, title = { Text("Renombrar equipo") },
+            text = { OutlinedTextField(value = name, onValueChange = { name = it }, singleLine = true,
+                label = { Text("Nombre del equipo") }, isError = name.isBlank()) },
+            confirmButton = { TextButton(enabled = name.isNotBlank(), onClick = {
+                teamBuilderViewModel.actualizarNombreEquipo(target.equipo.id, name); renameTarget = null
+            }) { Text("Guardar") } },
+            dismissButton = { TextButton(onClick = { renameTarget = null }) { Text("Cancelar") } })
     }
 
     // Diálogo editor de estadísticas competitivas del miembro (Sprint 3)
@@ -373,7 +425,8 @@ fun TeamDetailContent(
     equipoConMiembros: EquipoConMiembros,
     analysis: TypeEffectiveness.TeamAnalysisResult,
     onSlotClick: (Int) -> Unit,
-    onRemoveMember: (Int) -> Unit
+    onRemoveMember: (Int) -> Unit,
+    onDeleteTeam: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -387,11 +440,7 @@ fun TeamDetailContent(
     ) {
         // Header de miembros y botón de exportar Showdown
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Column(Modifier.fillMaxWidth()) {
                 Text(
                     text = "Miembros (${equipoConMiembros.miembros.size}/6)",
                     fontSize = 18.sp,
@@ -399,8 +448,9 @@ fun TeamDetailContent(
                     color = RotomColors.text
                 )
 
-                if (equipoConMiembros.miembros.isNotEmpty()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedButton(
+                        enabled = equipoConMiembros.miembros.isNotEmpty(),
                         onClick = {
                             val showdown = equipoConMiembros.miembros
                                 .sortedBy { it.slot }
@@ -423,6 +473,11 @@ fun TeamDetailContent(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = RotomColors.accent)
                     ) {
                         Text("Exportar Showdown", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    FilledIconButton(onClick = onDeleteTeam, modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF9C1C28), contentColor = Color.White)) {
+                        Icon(Icons.Default.Delete, contentDescription = "Eliminar Equipo")
                     }
                 }
             }
