@@ -1,0 +1,6 @@
+﻿
+com.duoc.rotompedia.Rc4DeviceUiTest:..
+
+Time: 14.603
+
+OK (2 tests)

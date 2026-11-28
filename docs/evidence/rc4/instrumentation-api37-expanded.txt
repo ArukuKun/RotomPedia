@@ -1,0 +1,21 @@
+﻿
+com.duoc.rotompedia.ExampleInstrumentedTest:.
+com.duoc.rotompedia.Rc4AppAcceptanceTest:.
+Error in productionPokedexFiltersBackAndTabState(com.duoc.rotompedia.Rc4AppAcceptanceTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 20000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:431)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.duoc.rotompedia.Rc4AppAcceptanceTest.productionPokedexFiltersBackAndTabState(Rc4AppAcceptanceTest.kt:81)
+.
+com.duoc.rotompedia.Rc4DeviceUiTest:..
+
+Time: 61.855
+There was 1 failure:
+1) productionPokedexFiltersBackAndTabState(com.duoc.rotompedia.Rc4AppAcceptanceTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 20000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:431)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.duoc.rotompedia.Rc4AppAcceptanceTest.productionPokedexFiltersBackAndTabState(Rc4AppAcceptanceTest.kt:81)
+
+FAILURES!!!
+Tests run: 6,  Failures: 1

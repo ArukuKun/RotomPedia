@@ -1,0 +1,8 @@
+﻿
+com.duoc.rotompedia.ExampleInstrumentedTest:.
+com.duoc.rotompedia.Rc4AppAcceptanceTest:...
+com.duoc.rotompedia.Rc4DeviceUiTest:..
+
+Time: 46.423
+
+OK (6 tests)

@@ -53,6 +53,27 @@ RC5. RC4 no anuncia un modo oscuro rediseñado ni nuevas paletas por forma.
 5. Editar un miembro → Movimientos → elegir slot y edición → pestañas → elegir
    movimiento → Guardar. Cerrar/reabrir y comprobar exportación/estadísticas.
 
-Verificación final, certificado, SHA-256 y evidencia de ejecución se añaden
-antes de publicar. Seguimiento acumulativo en informe técnico 002; el único
-Plan Maestro sigue siendo `docs/ROTOMPEDIA_PLAN_MAESTRO.md` (§5.13).
+## Verificación de esta candidata
+
+- **222 pruebas Kotlin**, cero fallos/errores/omitidas; **44 Python**, cuatro
+  índices, lint y builds debug/instrumentación/release correctos localmente
+  (JDK21 real). Verify de rama `46102307509` correcto también en JDK17.
+- **7 instrumentadas correctas** en el emulador API37, incluidos NavHost real,
+  renombrado/recreación, borrado al selector y elección/persistencia de movimiento.
+  Otras **2 pruebas** correctas en oscuro/fuente 150%; comprobaciones adicionales
+  de filtros en horizontal real y teclado, con capturas en `docs/evidence/rc4`.
+  Esto no sustituye la revisión de tu teléfono ni certifica todos los tamaños.
+- Actualización **release RC3 → release RC4 ejecutada sin desinstalar**:
+  cuenta, equipo, Bulbasaur/508 EV/Solar Beam y favorito conservados.
+- Incompatibilidad inicial de Espresso con API37 resuelta actualizando solo
+  dependencias de instrumentación. Fallos anteriores conservados en el Plan.
+- APK **release no debuggable**, **16.778.887 bytes**, firma/alineación/versión
+  verificadas. Certificado SHA-256 original:
+  `5831c434c9ab62110644c025634679dba6101a99621eac2906f1bbcba1a3f1aa`.
+- SHA-256 de `RotomPedia-v3.6.0-rc4.apk`:
+  `78be60f95484ec4eb20e0300273acf80c7ce2137c1942bd5cd80f65e8a4b144c`.
+
+Actions del tag valida de nuevo antes de publicar; APK y checksum adjuntos.
+Seguimiento acumulativo en informe técnico 002; el único Plan Maestro sigue
+siendo `docs/ROTOMPEDIA_PLAN_MAESTRO.md` (§5.13). **Tras entregar RC4 se espera
+tu revisión antes de implementar RC5.**

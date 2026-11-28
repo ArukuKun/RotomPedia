@@ -1,0 +1,29 @@
+﻿
+com.duoc.rotompedia.ExampleInstrumentedTest:.
+com.duoc.rotompedia.Rc4AppAcceptanceTest:
+Error in productionPokedexFiltersBackAndTabState(com.duoc.rotompedia.Rc4AppAcceptanceTest):
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'pokedex-grid')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists(SemanticsNodeInteraction.kt:125)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists$default(SemanticsNodeInteraction.kt:124)
+	at com.duoc.rotompedia.Rc4AppAcceptanceTest.productionPokedexFiltersBackAndTabState(Rc4AppAcceptanceTest.kt:65)
+.
+com.duoc.rotompedia.Rc4DeviceUiTest:..
+
+Time: 31.49
+There was 1 failure:
+1) productionPokedexFiltersBackAndTabState(com.duoc.rotompedia.Rc4AppAcceptanceTest)
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'pokedex-grid')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists(SemanticsNodeInteraction.kt:125)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists$default(SemanticsNodeInteraction.kt:124)
+	at com.duoc.rotompedia.Rc4AppAcceptanceTest.productionPokedexFiltersBackAndTabState(Rc4AppAcceptanceTest.kt:65)
+
+FAILURES!!!
+Tests run: 5,  Failures: 1

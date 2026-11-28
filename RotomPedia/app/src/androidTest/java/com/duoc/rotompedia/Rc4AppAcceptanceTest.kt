@@ -103,8 +103,17 @@ class Rc4AppAcceptanceTest {
         compose.onNodeWithText("Nombre del equipo").performTextInput(name)
         compose.onNodeWithText("Crear", substring = false).performClick()
         compose.waitUntil(10_000) { compose.onAllNodesWithText(name, substring = false).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithContentDescription("Renombrar equipo").performClick()
+        compose.onNodeWithText("Nombre del equipo", substring = false).performTextClearance()
+        compose.onNodeWithText("Guardar", substring = false).assertIsNotEnabled()
+        val renamed = "$name renombrado"
+        compose.onNodeWithText("Nombre del equipo", substring = false).performTextInput(renamed)
+        compose.onNodeWithText("Guardar", substring = false).performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithText(renamed, substring = false).fetchSemanticsNodes().isNotEmpty() }
+        compose.activityRule.scenario.recreate()
+        compose.onNodeWithText(renamed, substring = false).assertExists()
         compose.onNodeWithContentDescription("Eliminar Equipo").performClick()
-        compose.onNodeWithText("¿Eliminar «$name»? Esta acción no se puede deshacer.").assertExists()
+        compose.onNodeWithText("¿Eliminar «$renamed»? Esta acción no se puede deshacer.").assertExists()
         compose.onNodeWithText("Cancelar", substring = false).performClick()
         compose.onNodeWithContentDescription("Eliminar Equipo").performClick()
         compose.onNodeWithText("Eliminar", substring = false).performClick()

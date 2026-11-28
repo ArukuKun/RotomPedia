@@ -1,0 +1,222 @@
+﻿
+com.duoc.rotompedia.ExampleInstrumentedTest:.
+com.duoc.rotompedia.Rc4AppAcceptanceTest:
+Error in productionPokedexFiltersBackAndTabState(com.duoc.rotompedia.Rc4AppAcceptanceTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '4' nodes that satisfy: (Text + EditableText contains 'Fuego' (ignoreCase: false))
+Nodes found:
+1) Node #316 at (l=0.0, t=1544.0, r=1080.0, b=1803.0)px, Tag: 'pokemon_4'
+IsTraversalGroup = 'true'
+Focused = 'false'
+ContentDescription = '[Charmander]'
+Text = '[#004, Charmander, Fuego]'
+Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+MergeDescendants = 'true'
+Has 1 child, 5 siblings
+2) Node #331 at (l=0.0, t=1824.0, r=1080.0, b=2083.0)px, Tag: 'pokemon_5'
+IsTraversalGroup = 'true'
+Focused = 'false'
+ContentDescription = '[Charmeleon]'
+Text = '[#005, Charmeleon, Fuego]'
+Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+MergeDescendants = 'true'
+Has 1 child, 5 siblings
+3) Node #346 at (l=0.0, t=2104.0, r=1080.0, b=2363.0)px, Tag: 'pokemon_6'
+IsTraversalGroup = 'true'
+Focused = 'false'
+ContentDescription = '[Charizard]'
+Text = '[#006, Charizard, Fuego, Volador]'
+Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+MergeDescendants = 'true'
+Has 1 child, 5 siblings
+4) Node #461 at (l=379.0, t=1728.0, r=543.0, b=1812.0)px
+Selected = 'false'
+Focused = 'false'
+Role = 'Checkbox'
+Text = '[Fuego]'
+Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+MergeDescendants = 'true'
+Has 19 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:72)
+	at com.duoc.rotompedia.Rc4AppAcceptanceTest.productionPokedexFiltersBackAndTabState(Rc4AppAcceptanceTest.kt:47)
+
+Error in productionDeleteReturnsToTeamSelector(com.duoc.rotompedia.Rc4AppAcceptanceTest):
+java.lang.IllegalArgumentException: Cannot navigate to NavDeepLinkRequest{ uri=android-app://androidx.navigation/menu_principal_screen }. Navigation graph has not been set for NavController androidx.navigation.NavHostController@c783ff4.
+	at androidx.navigation.NavController.navigate(NavController.kt:1803)
+	at androidx.navigation.NavController.navigate(NavController.kt:2225)
+	at androidx.navigation.NavController.navigate$default(NavController.kt:2220)
+	at androidx.navigation.NavController.navigate(NavController.kt:2205)
+	at com.duoc.rotompedia.MainActivityKt$AppNavigationController$1$1.invokeSuspend$lambda$2(MainActivity.kt:69)
+	at com.duoc.rotompedia.MainActivityKt$AppNavigationController$1$1.$r8$lambda$CK6Tycm1J6WIZRnCMM7_7EP9aNk(MainActivity.kt:0)
+	at com.duoc.rotompedia.MainActivityKt$AppNavigationController$1$1$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.duoc.rotompedia.MainActivityKt.showBiometricPrompt(MainActivity.kt:151)
+	at com.duoc.rotompedia.MainActivityKt.access$showBiometricPrompt(MainActivity.kt:1)
+	at com.duoc.rotompedia.MainActivityKt$AppNavigationController$1$1.invokeSuspend(MainActivity.kt:68)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at androidx.compose.ui.test.ApplyingContinuationInterceptor$SendApplyContinuation.resumeWith(ApplyingContinuationInterceptor.kt:65)
+	at androidx.compose.ui.test.FrameDeferringContinuationInterceptor$FrameDeferredContinuation.resumeWith(FrameDeferringContinuationInterceptor.jvm.kt:194)
+	at kotlinx.coroutines.internal.DispatchedContinuationKt.resumeCancellableWith(DispatchedContinuation.kt:283)
+	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable(Cancellable.kt:30)
+	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable$default(Cancellable.kt:25)
+	at kotlinx.coroutines.CoroutineStart.invoke(CoroutineStart.kt:110)
+	at kotlinx.coroutines.AbstractCoroutine.start(AbstractCoroutine.kt:126)
+	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch(Builders.common.kt:56)
+	at kotlinx.coroutines.BuildersKt.launch(dex-id-196fbd9f2b8c9b50e176a20ee200de6b14934c9c:1)
+	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch$default(Builders.common.kt:47)
+	at kotlinx.coroutines.BuildersKt.launch$default(dex-id-196fbd9f2b8c9b50e176a20ee200de6b14934c9c:1)
+	at androidx.compose.runtime.LaunchedEffectImpl.onRemembered(Effects.kt:291)
+	at androidx.compose.runtime.CompositionImpl$RememberEventDispatcher.dispatchRememberObservers(Composition.kt:1295)
+	at androidx.compose.runtime.CompositionImpl.applyChangesInLocked(Composition.kt:984)
+	at androidx.compose.runtime.CompositionImpl.applyChanges(Composition.kt:1005)
+	at androidx.compose.runtime.Recomposer.composeInitial$runtime_release(Recomposer.kt:1099)
+	at androidx.compose.runtime.CompositionImpl.composeInitial(Composition.kt:633)
+	at androidx.compose.runtime.CompositionImpl.setContent(Composition.kt:619)
+	at androidx.compose.ui.platform.WrappedComposition$setContent$1.invoke(Wrapper.android.kt:123)
+	at androidx.compose.ui.platform.WrappedComposition$setContent$1.invoke(Wrapper.android.kt:114)
+	at androidx.compose.ui.platform.AndroidComposeView.setOnViewTreeOwnersAvailable(AndroidComposeView.android.kt:1289)
+	at androidx.compose.ui.platform.WrappedComposition.setContent(Wrapper.android.kt:114)
+	at androidx.compose.ui.platform.WrappedComposition.onStateChanged(Wrapper.android.kt:164)
+	at androidx.lifecycle.LifecycleRegistry$ObserverWithState.dispatchEvent(LifecycleRegistry.kt:322)
+	at androidx.lifecycle.LifecycleRegistry.addObserver(LifecycleRegistry.kt:199)
+	at androidx.compose.ui.platform.WrappedComposition$setContent$1.invoke(Wrapper.android.kt:121)
+	at androidx.compose.ui.platform.WrappedComposition$setContent$1.invoke(Wrapper.android.kt:114)
+	at androidx.compose.ui.platform.AndroidComposeView.onAttachedToWindow(AndroidComposeView.android.kt:1364)
+	at android.view.View.dispatchAttachedToWindow(View.java:23535)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3627)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3634)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3634)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3634)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3634)
+	at android.view.ViewRootImpl.performTraversals(ViewRootImpl.java:4017)
+	at android.view.ViewRootImpl.doTraversal(ViewRootImpl.java:3351)
+	at android.view.ViewRootImpl$TraversalCallback.onVsync(ViewRootImpl.java:11448)
+	at android.view.Choreographer$CallbackRecord.run(Choreographer.java:1664)
+	at android.view.Choreographer.doCallbacks(Choreographer.java:1252)
+	at android.view.Choreographer.doFrame(Choreographer.java:1209)
+	at android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:1640)
+	at android.os.Handler.handleCallback(Handler.java:1095)
+	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+	at android.os.Handler.dispatchMessage(Handler.java:125)
+	at android.os.Looper.loopOnce(Looper.java:296)
+	at android.os.Looper.loop(Looper.java:397)
+	at android.app.ActivityThread.main(ActivityThread.java:9523)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:939)
+
+com.duoc.rotompedia.Rc4DeviceUiTest:..
+
+Time: 16.811
+There were 2 failures:
+1) productionPokedexFiltersBackAndTabState(com.duoc.rotompedia.Rc4AppAcceptanceTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but found '4' nodes that satisfy: (Text + EditableText contains 'Fuego' (ignoreCase: false))
+Nodes found:
+1) Node #316 at (l=0.0, t=1544.0, r=1080.0, b=1803.0)px, Tag: 'pokemon_4'
+IsTraversalGroup = 'true'
+Focused = 'false'
+ContentDescription = '[Charmander]'
+Text = '[#004, Charmander, Fuego]'
+Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+MergeDescendants = 'true'
+Has 1 child, 5 siblings
+2) Node #331 at (l=0.0, t=1824.0, r=1080.0, b=2083.0)px, Tag: 'pokemon_5'
+IsTraversalGroup = 'true'
+Focused = 'false'
+ContentDescription = '[Charmeleon]'
+Text = '[#005, Charmeleon, Fuego]'
+Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+MergeDescendants = 'true'
+Has 1 child, 5 siblings
+3) Node #346 at (l=0.0, t=2104.0, r=1080.0, b=2363.0)px, Tag: 'pokemon_6'
+IsTraversalGroup = 'true'
+Focused = 'false'
+ContentDescription = '[Charizard]'
+Text = '[#006, Charizard, Fuego, Volador]'
+Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+MergeDescendants = 'true'
+Has 1 child, 5 siblings
+4) Node #461 at (l=379.0, t=1728.0, r=543.0, b=1812.0)px
+Selected = 'false'
+Focused = 'false'
+Role = 'Checkbox'
+Text = '[Fuego]'
+Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+MergeDescendants = 'true'
+Has 19 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:72)
+	at com.duoc.rotompedia.Rc4AppAcceptanceTest.productionPokedexFiltersBackAndTabState(Rc4AppAcceptanceTest.kt:47)
+2) productionDeleteReturnsToTeamSelector(com.duoc.rotompedia.Rc4AppAcceptanceTest)
+java.lang.IllegalArgumentException: Cannot navigate to NavDeepLinkRequest{ uri=android-app://androidx.navigation/menu_principal_screen }. Navigation graph has not been set for NavController androidx.navigation.NavHostController@c783ff4.
+	at androidx.navigation.NavController.navigate(NavController.kt:1803)
+	at androidx.navigation.NavController.navigate(NavController.kt:2225)
+	at androidx.navigation.NavController.navigate$default(NavController.kt:2220)
+	at androidx.navigation.NavController.navigate(NavController.kt:2205)
+	at com.duoc.rotompedia.MainActivityKt$AppNavigationController$1$1.invokeSuspend$lambda$2(MainActivity.kt:69)
+	at com.duoc.rotompedia.MainActivityKt$AppNavigationController$1$1.$r8$lambda$CK6Tycm1J6WIZRnCMM7_7EP9aNk(MainActivity.kt:0)
+	at com.duoc.rotompedia.MainActivityKt$AppNavigationController$1$1$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+	at com.duoc.rotompedia.MainActivityKt.showBiometricPrompt(MainActivity.kt:151)
+	at com.duoc.rotompedia.MainActivityKt.access$showBiometricPrompt(MainActivity.kt:1)
+	at com.duoc.rotompedia.MainActivityKt$AppNavigationController$1$1.invokeSuspend(MainActivity.kt:68)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at androidx.compose.ui.test.ApplyingContinuationInterceptor$SendApplyContinuation.resumeWith(ApplyingContinuationInterceptor.kt:65)
+	at androidx.compose.ui.test.FrameDeferringContinuationInterceptor$FrameDeferredContinuation.resumeWith(FrameDeferringContinuationInterceptor.jvm.kt:194)
+	at kotlinx.coroutines.internal.DispatchedContinuationKt.resumeCancellableWith(DispatchedContinuation.kt:283)
+	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable(Cancellable.kt:30)
+	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable$default(Cancellable.kt:25)
+	at kotlinx.coroutines.CoroutineStart.invoke(CoroutineStart.kt:110)
+	at kotlinx.coroutines.AbstractCoroutine.start(AbstractCoroutine.kt:126)
+	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch(Builders.common.kt:56)
+	at kotlinx.coroutines.BuildersKt.launch(dex-id-196fbd9f2b8c9b50e176a20ee200de6b14934c9c:1)
+	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch$default(Builders.common.kt:47)
+	at kotlinx.coroutines.BuildersKt.launch$default(dex-id-196fbd9f2b8c9b50e176a20ee200de6b14934c9c:1)
+	at androidx.compose.runtime.LaunchedEffectImpl.onRemembered(Effects.kt:291)
+	at androidx.compose.runtime.CompositionImpl$RememberEventDispatcher.dispatchRememberObservers(Composition.kt:1295)
+	at androidx.compose.runtime.CompositionImpl.applyChangesInLocked(Composition.kt:984)
+	at androidx.compose.runtime.CompositionImpl.applyChanges(Composition.kt:1005)
+	at androidx.compose.runtime.Recomposer.composeInitial$runtime_release(Recomposer.kt:1099)
+	at androidx.compose.runtime.CompositionImpl.composeInitial(Composition.kt:633)
+	at androidx.compose.runtime.CompositionImpl.setContent(Composition.kt:619)
+	at androidx.compose.ui.platform.WrappedComposition$setContent$1.invoke(Wrapper.android.kt:123)
+	at androidx.compose.ui.platform.WrappedComposition$setContent$1.invoke(Wrapper.android.kt:114)
+	at androidx.compose.ui.platform.AndroidComposeView.setOnViewTreeOwnersAvailable(AndroidComposeView.android.kt:1289)
+	at androidx.compose.ui.platform.WrappedComposition.setContent(Wrapper.android.kt:114)
+	at androidx.compose.ui.platform.WrappedComposition.onStateChanged(Wrapper.android.kt:164)
+	at androidx.lifecycle.LifecycleRegistry$ObserverWithState.dispatchEvent(LifecycleRegistry.kt:322)
+	at androidx.lifecycle.LifecycleRegistry.addObserver(LifecycleRegistry.kt:199)
+	at androidx.compose.ui.platform.WrappedComposition$setContent$1.invoke(Wrapper.android.kt:121)
+	at androidx.compose.ui.platform.WrappedComposition$setContent$1.invoke(Wrapper.android.kt:114)
+	at androidx.compose.ui.platform.AndroidComposeView.onAttachedToWindow(AndroidComposeView.android.kt:1364)
+	at android.view.View.dispatchAttachedToWindow(View.java:23535)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3627)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3634)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3634)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3634)
+	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3634)
+	at android.view.ViewRootImpl.performTraversals(ViewRootImpl.java:4017)
+	at android.view.ViewRootImpl.doTraversal(ViewRootImpl.java:3351)
+	at android.view.ViewRootImpl$TraversalCallback.onVsync(ViewRootImpl.java:11448)
+	at android.view.Choreographer$CallbackRecord.run(Choreographer.java:1664)
+	at android.view.Choreographer.doCallbacks(Choreographer.java:1252)
+	at android.view.Choreographer.doFrame(Choreographer.java:1209)
+	at android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:1640)
+	at android.os.Handler.handleCallback(Handler.java:1095)
+	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+	at android.os.Handler.dispatchMessage(Handler.java:125)
+	at android.os.Looper.loopOnce(Looper.java:296)
+	at android.os.Looper.loop(Looper.java:397)
+	at android.app.ActivityThread.main(ActivityThread.java:9523)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:939)
+
+FAILURES!!!
+Tests run: 5,  Failures: 2
